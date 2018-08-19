@@ -1,0 +1,97 @@
+%--------This section sets up the document class and packages.
+\usepackage[includeheadfoot, margin=20mm, headheight=20mm]{geometry} 
+\usepackage{fancyhdr}
+\usepackage{mwe}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{xcolor,graphicx}
+\usepackage{hyperref}
+\usepackage{centernot}
+\usepackage{tikz}  % Uncomment this line iff you are using the tikz package to add drawings
+\usepackage{tkz-euclide}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\pgfplotsset{plot coordinates/math parser=false}
+\usepackage[toc,page]{appendix}
+
+\allowdisplaybreaks
+\pgfplotsset{soldot/.style={color=blue,only marks,mark=*}} \pgfplotsset{holdot/.style={color=blue,fill=white,only marks,mark=*}}
+
+\usepackage{tocloft}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand\labelenumi{(\roman{enumi})}
+
+%--- This section makes possible customized theorem numbering.
+\newtheorem{innercustomgeneric}{\customgenericname}
+\providecommand{\customgenericname}{}
+\newcommand{\newcustomtheorem}[2]{%
+  \newenvironment{#1}[1]
+  {%
+   \renewcommand\customgenericname{#2}%
+   \renewcommand\theinnercustomgeneric{##1}%
+   \innercustomgeneric
+  }
+  {\endinnercustomgeneric}
+}
+\newcustomtheorem{cthm}{Theorem}
+\newcustomtheorem{caxm}{Axiom}
+\newcustomtheorem{clem}{Lemma}
+\newcustomtheorem{ccor}{Corollary}
+\newcustomtheorem{cprop}{Proposition}
+\newcustomtheorem{cdefn}{Definition}
+\newcustomtheorem{ceg}{Example}
+\newcustomtheorem{crmk}{Remark}
+\newcustomtheorem{ccus}{}
+\newcustomtheorem{cprob}{Problem}
+
+%---The following code sets up the way theorems are typeset and labeled.
+%\newtheorem{thm}{Theorem}
+\newtheorem*{thm}{Theorem}
+%\newtheorem{lem}[thm]{Lemma}
+\newtheorem*{lem}{Lemma}
+%\newtheorem{cor}[thm]{Corollary}
+\newtheorem*{cor}{Corollary}
+%\newtheorem{prop}[thm]{Proposition}
+\newtheorem*{prop}{Proposition}
+\theoremstyle{definition}
+%\newtheorem{defn}[thm]{Definition}
+\newtheorem*{defn}{Definition}
+\newtheorem*{axm}{Axiom}
+\newtheorem*{eg}{Example}
+\theoremstyle{remark}
+%\newtheorem{rmk}[thm]{Remark}
+\newtheorem*{rmk}{Remark}
+\newtheorem*{sol}{Solution}
+
+%---The following code defines a few extra commands that will be useful in some exercises.
+\newcommand{\abs}[1]{\lvert#1\rvert}     % Absolute value symbol
+\newcommand{\Abs}[1]{\Bigg\lvert#1\Bigg\rvert}     % Absolute value symbol (big)
+\newcommand{\Z}{\mathbb Z}              % The set of integers
+\newcommand{\Q}{\mathbb Q}              % The set of rationals
+\newcommand{\R}{\mathbb R}              % The set of reals
+\newcommand{\N}{\mathbb N}              % The set of natural numbers
+\newcommand{\C}{\mathbb C}              % The set of complex numbers
+\newcommand{\F}{\mathbb F}  
+
+\newcommand{\ZZ}{\mathcal{Z}}
+\newcommand{\OO}{\mathcal{O}}
+\newcommand{\CC}{\mathcal{C}}
+\newcommand{\UU}{\mathcal{U}}
+\newcommand{\power}{\mathcal{P}}         % The power set of a set
+\newcommand{\bfun}{\mathcal{F}}          % The finite subsets
+\newcommand{\Id}{\mathrm{Id}}            % The identity function
+\newcommand{\nil}{\emptyset}             % Empty set
+\newcommand{\inflim}[1]{\lim_{#1\to\infty}} % Limit to infinity
+\newcommand{\ninflim}[1]{\lim_{#1\to\infty}}% Limit to negative infinity
+\providecommand{\BVec}[1]{\mathbf{#1}}   % Bold font for vectors
+\DeclareMathOperator{\gon}{gon}          % A polygon
+\DeclareMathOperator{\Fun}{Fun}          % The set of all functions from one set to another
+\DeclareMathOperator{\Perm}{Perm}        % The set of all permutations on a set
+\DeclareMathOperator{\Int}{int} %interior of a set
+\DeclareMathOperator{\cl}{cl} %closure of a set
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\sinc}{sinc}
+%\newcommand{\Re}{\mathrm{Re}} %real part

@@ -1,0 +1,89 @@
+\documentclass[11pt, oneside, a4paper]{article}
+
+
+\input{preamble.tex}
+%---header/style/enumeration-------
+\pagestyle{fancy}
+\lhead{Capstone}
+\chead{MCS}
+\rhead{2018-2019 Semester 1}
+\author{
+    Student: Linfan XIAO\\
+    Supervisor: Prof. David Smith
+    }
+%----------------------------------
+
+%-----------MY INFORMATION---------
+%\title{{\fontfamily{qbk}\selectfont
+\title{\textsc{Capstone Proposal}}
+\date{\vspace{-5ex}} 
+%----------------------------------
+%unnumbered sections in TOC
+\setcounter{secnumdepth}{0}
+
+%-----This is where the GOOD STUFF begins---
+\begin{document}
+
+\maketitle
+
+\thispagestyle{fancy}
+
+
+\section{Title}
+Algorithmic solution of high order partial differential equations in Julia via the Fokas transform method.
+
+\section{Subject Areas}
+Differential equations, numerical methods, computer science.
+
+\section{Challenges}
+\subsection{Theoretical knowledge}
+Understanding the algorithm requires advanced calculus and linear algebra. 
+
+The student has taken advanced courses such as complex analysis and familiarized herself with topics such as ordinary differential equations, numerical methods, and matrix calculus via auditing, independent reading, and self-studying.
+
+\subsection{Implementation}
+Implementing the algorithm in Julia in the form of a package requires coping with technical issues in regular maintenance, e.g., version compatibility. 
+
+The student has done work on numerical methods using the Julia language and has a working Julia environment set up. Although this will be her first attempt at developing a package in Julia, previous experiences of development projects in other languages (R, Python) should smoothen the process.
+
+\section{Scope}
+Solving evolution partial differential equations (PDEs) usually requires a combination of ad-hoc methods and special treatments. The recently discovered ``Fokas method'' enables solving many of these equations algorithmically. 
+%The Fokas method gives an analytic representation of the solution, in terms of integrals along contours in the complex plane and Fourier transforms. The precise integrand is determined by solving a complicated system of linear equations. 
+
+The first goal of this project is to write a software package to implement the Fokas method in the Julia mathematical programming language that allows mathematicians to quickly obtain the analytic solution of complicated evolution PDEs. The second goal is to develop a hybrid analytic-numerical integrator suitable for providing a numerical description for the analytic solution.
+
+\section{Expectations associated with grade achievement}
+
+A detailed description of the Fokas method demonstrating adequate understanding of the algorithm as it is relevant to the implementation.
+
+\noindent A Julia package with complete documentation.
+
+\section{Semester 1 plan with time allocation}
+
+\begin{center}
+    \begin{tabular}{|l|l|} 
+    \hline
+    week 1 & Draft project proposal. \\ 
+    \hline
+    week 2 & Finalize proposal with supervisor. \\ 
+    \hline
+    week 3 & Learn about linear constant-coefficient PDEs.\\
+    \hline 
+    week 4 & Read the paper on which the algorithm is to be based on.\\ 
+    \hline
+    weeks 5-8 & Implement the algorithm in Julia.\\
+    \hline
+    week 9 & Organize the implementation as a package in Julia.\\
+    \hline
+    week 10 & Write a full documentation for the package.\\
+    \hline
+    week 11 & Survey available integrators in Julia.\\
+    \hline
+    week 12 & Learn about elementary asymptotic analysis in the complex field.\\
+    \hline
+    week 13 & Start building a hybrid analytic-numerical integrator in Julia.\\
+    \hline
+    \end{tabular}
+    \end{center}
+
+\end{document}
