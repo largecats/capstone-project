@@ -1,0 +1,533 @@
+\documentclass[10.5pt, oneside, a4paper]{article}
+\input{preamble.tex}
+%---header/style/enumeration-------
+\pagestyle{fancy}
+\lhead{Capstone}
+\chead{MCS}
+\rhead{2018-2019 Semester 1}
+\author{Linfan}
+%----------------------------------
+
+%-----------MY INFORMATION---------
+%\title{{\fontfamily{qbk}\selectfont
+\title{Reading notes}
+\date{\vspace{-5ex}}
+%----------------------------------
+%unnumbered sections in TOC
+%\setcounter{secnumdepth}{0}
+
+%-----This is where the GOOD STUFF begins---
+\begin{document}
+
+\maketitle
+
+\thispagestyle{fancy}
+
+This document contains all notes taken while reading materials (e.g., textbooks, literature) in preparation for capstone. Black text are information consolidated from the readings; blue text are notes; red text are questions.
+
+\tableofcontents
+\listoftodos
+
+\newpage
+\section{\href{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Theory of Ordinary Differential Equations (Coddington Levinson)}}
+
+\subsection{Chapter 11: Algebraic properties of linear boundary-value problems on a finite interval}
+
+\subsubsection{Introduction}
+\begin{defn}
+Let $L$ be the \href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{linear differential operator of oder $n$ ($n\geq 1$)}} defined by
+\[Lx = p_0x^{(n)} + p_1x^{(n-1)} + \cdots + p_{n-1}x' + p_nx\]
+where the $p_k$ are complex-valued functions of class $C^{n-k}$ on a closed bounded interval $[a,b]$ {\color{blue}(i.e., derivatives $p_k, p'_k, \ldots, p^{(n-k)}_k$ exist on $[a,b]$ and are continuous)} and $p_0(t)\neq 0$ on $[a,b]$.
+\end{defn}
+
+\begin{defn}
+    \href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{Homogeneous boundary conditions}} refer to a set of equations/constraints of the type
+\begin{equation}\label{eq:homogeneous boundary conditions}
+    \sum_{k=1}^n (M_{jk}x^{(k-1)}(a) + N_{jk}x^{(k-1)}(b))=0 \quad (j=1,\ldots,m) 
+\end{equation}
+where $M_{jk}, N_{jk}$ are complex constants.
+\end{defn}
+
+\begin{defn}
+    A \href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{homogeneous boundary-value problem}} concerns finding the solutions of 
+    \[Lx=0\] on $[a,b]$ which satisfy some homogeneous boundary conditions defined above.
+\end{defn}
+
+\begin{defn}
+    For any homogeneous boundary value problem, an \href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint problem}} refers to the problem of finding the solutions of
+    \[L^{+}x:=(-1)^n(\bar{p}_0x)^{(n)}+(-1)^{n-1}(\bar{p}_1x)^{(n-1)}+\cdots+\bar{p}_nx=0\]
+    on $[a,b]$ which satisfy some homogeneous boundary conditions ``complementary'' to the conditions associated with the solutions of $Lx=0$.
+\end{defn}
+
+\begin{thm}{\href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{(Green's formula)}}
+    For $u, v\in C^n$ on $[a,b]$,
+    \begin{equation}\label{eq:green's formula}
+        \int_{t_1}^{t_2}(Lu)\bar{v}\,dt - \int_{t_1}^{t_2}u(\bar{L^+v})\,dt = [uv](t_2) - [uv](t_1) 
+    \end{equation}
+    where $a\leq t_1<t_2\leq b$ and $[uv](t)$ is the form in $(u, u', \ldots, u^{(n-1)})$ and $(v, v', \ldots, v^{(n-1)})$ given by
+    \[[uv](t)=\sum_{m=1}^n\sum_{j+k=m-1}(-1)^i u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t).\]
+\end{thm}
+\begin{rmk}
+    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as {\color{blue}(checked for $n=2$)}
+    \begin{equation}\label{eq:[uv](t) in B matrix}
+        [uv](t)=\sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t) 
+    \end{equation}
+        where $B_{jk}$ are the $j, k$-entry of the $n\times n$ matrix
+    \[
+        B(t)=\begin{bmatrix}
+            B_{11} & B_{12} & \cdots & \cdots & p_0(t)\\
+            \vdots & \vdots & \cdots & -p_0(t) & 0\\
+            (-1)^{n-1}p_0(t) & 0 & \cdots & 0 & 0.
+        \end{bmatrix}
+    \]
+    Since $B(t)$ is square with $\det B(t)=(p_0(t))^n$ where $p_0(t)\neq 0$ on $[a,b]$ (as in the definition of $L$), $B(t)$ is nonsingular/invertible for $t\in [a,b]$.
+\end{rmk}
+
+\begin{defn}
+    For vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$, define the product
+    \[f\cdot g:=\sum_{i=1}^k f_i\bar{g}_i.\]
+\end{defn}
+
+\begin{defn}
+    A \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{semibilinear form}} is a complex-valued function $\mathcal{S}$ defined for pairs of vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$ satisfying
+    \begin{align*}
+        \mathcal{S}(\alpha f+\beta g, h)&=\alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h)\\
+        \mathcal{S}(f, \alpha g + \beta h) &= \bar{\alpha}\mathcal{S}(f,g) + \bar{\beta}\mathcal{S}(f, h)
+    \end{align*}
+    for any complex numbers $\alpha, \beta$ and vectors $f,g,h$.
+
+    {\color{blue}Note that $\mathcal{S}$ is linear in the first argument but not the second one. If $\mathcal{S}$ were bilinear, it would be linear in each argument.}
+\end{defn}
+\begin{rmk}
+    If
+    \[S = \begin{bmatrix}
+        s_{11} & \cdots & s_{1k}\\
+        \vdots &  & \vdots\\
+        s_{k1} & \cdots & s_{kk}
+    \end{bmatrix},\]
+    then $Sf\cdot g$ is a semibilinear form
+    {\color{blue}    
+    \begin{equation}\label{eq:semibilinear form}
+        \begin{split}
+        \mathcal{S}(f,g) &:= Sf\cdot g\\
+        &= \begin{bmatrix}
+            s_{11} & \cdots & s_{1k}\\
+            \vdots & & \vdots\\
+            s_{k1} & \cdots & s_{kk}
+        \end{bmatrix} \begin{bmatrix}
+            f_1\\
+            \vdots\\
+            f_k
+        \end{bmatrix} \cdot \begin{bmatrix}
+            g_1\\
+            \vdots\\
+            g_k
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            \sum_{j=1}^k s_{1j}f_j\\
+            \vdots\\
+            \sum_{j=1}^k s_{kj}f_j
+        \end{bmatrix}\cdot \begin{bmatrix}
+            g_1\\
+            \vdots\\
+            g_k
+        \end{bmatrix}\\
+        &= \sum_{i=1}^k\left(\sum_{j=1}^k s_{ij}f_j\right)\bar{g}_i\\
+        &=\sum_{i,j=1}^k s_{ij}f_i\bar{g}_i. 
+        \end{split}
+    \end{equation}
+    Indeed:
+    \begin{align*}
+        \mathcal{S}(\alpha f+\beta g, h)
+        &= \sum_{i,j=1}^k s_{ij}(\alpha f_j + \beta g_j)\bar{h}_i\\
+        &= \alpha \sum_{i,j=1}^k s_{ij}f_j\bar{h}_i + \beta \sum_{i,j=1}^k g_j\bar{h}_i\\
+        &= \alpha Sf\cdot h + \beta Sg\cdot h\\
+        &= \alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h).
+    \end{align*}
+    Similarly,
+    \begin{align*}
+        \mathcal{S}(f, \alpha g + \beta h)
+        &= \sum_{i,j=1}^k s_{ij}f_j(\bar{\alpha g_i + \beta h_i})\\
+        &= \bar{\alpha}\sum_{i,j=1}^k s_{ij}f_j\bar{g}_i + \bar{\beta}\sum_{i,j=1}^k f_j \bar{h}_i\\
+        &= \bar{\alpha}Sf\cdot g + \bar{\beta}Sf\cdot h\\
+        &= \bar{\alpha}\mathcal{S}(f,g) + \bar{\beta}\mathcal{S}(f,h).
+    \end{align*}
+    }
+\end{rmk}
+
+\begin{rmk}
+    Under a similar matrix framework, we see that $[uv](t)$ is a semibilinear form with matrix $B(t)$:
+
+    {\color{blue}
+    Let $\vec{u}=(u, u', \ldots, u^{(n-1)})$ and $\vec{v}=(v, v', \ldots, v^{(n-1)})$. Then we have
+    \begin{align*}
+        [uv](t) &= \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)\quad\mbox{(by \eqref{eq:[uv](t) in B matrix})}\\
+        &= \sum_{i,j=1}^n (B_{ij}u^{(j-1)}\overline{v}^{(i-1)})(t)\\
+        &= (B\vec{u}\cdot \vec{v})(t)\\
+        &= \mathcal{S}(\vec{u},\vec{v})(t).
+    \end{align*}
+    With this notation, we can rewrite the right hand side of Green's formula as
+    \begin{align*}
+        [uv](t_2)-[uv](t_1) &= \sum_{j,k=1}^n B_{jk}(t_2)u^{(k-1)}(t_2)\bar{v}^{(j-1)}(t_2) - \sum_{j,k=1}^n B_{jk}(t_2)u^{(k-1)}(t_1)\bar{v}^{(j-1)}(t_1)\\
+        &= B(t_2)\vec{u}(t_2)\cdot \vec{v}(t_2) - B(t_1)\vec{u}(t_1)\cdot \vec{v}(t_1)\\
+        &= \begin{bmatrix}
+            B_{11}(t_2) & \cdots & B_{1n}(t_2)\\
+            \vdots &  & \vdots\\
+            B_{n1}(t_2) & \ldots & B_{nn}(t_2)
+        \end{bmatrix} 
+        \begin{bmatrix}
+        u(t_2)\\
+        \vdots\\
+        u^{(n-1)}(t_2)
+        \end{bmatrix}\cdot 
+        \begin{bmatrix}
+            \bar{v}(t_2)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_2)
+        \end{bmatrix} -\\
+        &\qquad \begin{bmatrix}
+            B_{11}(t_1) & \cdots & B_{1n}(t_1)\\
+            \vdots &  & \vdots\\
+            B_{n1}(t_1) & \ldots & B_{nn}(t_1)
+        \end{bmatrix} 
+        \begin{bmatrix}
+        u(t_1)\\
+        \vdots\\
+        u^{(n-1)}(t_1)
+        \end{bmatrix}\cdot 
+        \begin{bmatrix}
+            \bar{v}(t_1)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_1)
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            -B_{11}(t_1) & \cdots & -B_{1n}(t_1)\\
+            \vdots &  & \vdots\\
+            -B_{n1}(t_1) & \ldots & -B_{nn}(t_1)
+        \end{bmatrix} 
+        \begin{bmatrix}
+        u(t_1)\\
+        \vdots\\
+        u^{(n-1)}(t_1)
+        \end{bmatrix}\cdot 
+        \begin{bmatrix}
+            \bar{v}(t_1)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_1)
+        \end{bmatrix} + \\
+        &\qquad \begin{bmatrix}
+            B_{11}(t_2) & \cdots & B_{1n}(t_2)\\
+            \vdots &  & \vdots\\
+            B_{n1}(t_2) & \ldots & B_{nn}(t_2)
+        \end{bmatrix} 
+        \begin{bmatrix}
+        u(t_2)\\
+        \vdots\\
+        u^{(n-1)}(t_2)
+        \end{bmatrix}\cdot 
+        \begin{bmatrix}
+            \bar{v}(t_2)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_2)
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            -B_{11}(t_1) & \cdots & -B_{1n}(t_1) & 0 & \cdots & 0\\
+            \vdots &  & \vdots & \vdots &  & \vdots\\
+            -B_{n1}(t_1) & \cdots & -B_{nn}(t_1) & 0 & \cdots & 0\\
+            0 & \cdots & 0 & B_{11}(t_2) & \cdots & B_{1n}(t_2)\\
+            \vdots &  & \vdots & \vdots &  & \vdots\\
+            0 & \cdots & 0 & B_{n1}(t_2) & \cdots & B_{nn}(t_2)
+        \end{bmatrix} 
+        \begin{bmatrix}
+            u(t_1)\\
+            \vdots\\
+            u^{(n-1)}(t_1)\\
+            u(t_2)\\
+            \vdots\\
+            u^{(n-1)}(t_2)
+        \end{bmatrix}\cdot
+        \begin{bmatrix}
+            \bar{v}(t_1)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_1)\\
+            \bar{v}(t_2)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_2)
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            -B(t_1) & 0_n\\
+            0_n & B(t_2)
+        \end{bmatrix}
+        \begin{bmatrix}
+            u(t_1)\\
+            \vdots\\
+            u^{(n-1)}(t_1)\\
+            u(t_2)\\
+            \vdots\\
+            u^{(n-1)}(t_2)
+        \end{bmatrix}\cdot
+        \begin{bmatrix}
+            \bar{v}(t_1)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_1)\\
+            \bar{v}(t_2)\\
+            \vdots\\
+            \bar{v}^{(n-1)}(t_2)
+        \end{bmatrix}\\
+        &=:\hat{B}
+        \begin{bmatrix}
+            \vec{u}(t_1)\\
+            \vec{u}(t_2)
+        \end{bmatrix}\cdot
+        \begin{bmatrix}
+            \vec{v}(t_1)\\
+            \vec{v}(t_2)
+        \end{bmatrix}.
+    \end{align*}
+    }
+    Since \href[page=298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{$\det\hat{B}=(-1)^n\det B(t_1)\det B(t_2)$}\unsure{Why the $(-1)^n$?}, $\hat{B}$ is nonsingular for $t_1, t_2\in [a,b]$ {\color{blue}(since $B(t)$ is nonsingular for $t\in [a,b]$, as shown before)}.
+\end{rmk}
+
+\subsubsection{Boundary form formula}
+\begin{defn}\label{defn:boundary form}
+    Given any set of $2mn$ complex constants $M_{ij}, N_{ij}$ ($i=1,\ldots, m;\,j=1,\ldots,n$), define $m$ \href[page=298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{boundary operators (boundary forms)}} $U_1,\ldots,U_m$ for functions $x$ on $[a,b]$, for which $x^{(j)}$ ($j=1,\ldots,n-1$) exists at $a$ and $b$, by
+    \begin{equation}\label{eq:U_i defn}
+        U_i x = \sum_{j=1}^n (M_{ij}x^{(j-1)}(a) + N_{ij}x^{(j-1)}(b))\quad\mbox{($i=1,\ldots,m$)} 
+    \end{equation}
+    $U_i$ are \textbf{linearly independent} if the only set of complex constants $c_1, \ldots, c_m$ for which
+    \[\sum_{i=1}^m c_i U_ix=0\]
+    for all $x\in C^{n-1}$ on $[a,b]$ is $c_1=c_2=\cdots =c_m=0$.
+\end{defn}
+\begin{rmk}
+    Note that for $\alpha, \beta\in\C$ and $x_1, x_2\in C^{n-1}$ on $[a,b]$,
+    {\color{blue}
+    \begin{align*}
+        U_i(\alpha x_1+\beta x_2) &= \sum_{j=1}^n (M_{ij}(\alpha x_1 + \beta x_2)^{(j-1)}(a) + N_{ij}(\alpha x_1 + \beta x_2)^{(j-1)}(b))\\
+        &= \alpha \sum_{j=1}^n (M_{ij}x_1^{(j-1)}(a) + N_{ij}x_1^{(j-1)}(b)) + \beta \sum_{j=1}^n (M_{ij}x_2^{(j-1)}(a) + N_{ij}x_2^{(j-1)}(b))\quad\mbox{(by linearity of derivatives)}\\
+        &= \alpha U_i x_1 + \beta U_i x_2.
+    \end{align*}
+    }
+    So $U_i$ are linear operators.
+\end{rmk}
+
+\begin{rmk}
+    To describe \eqref{eq:U_i defn} with matrices, define
+    \[
+        \xi:= \begin{bmatrix}x\\ x'\\ \vdots \\ x^{(n-1)}
+        \end{bmatrix};
+            \quad
+        U := \begin{bmatrix}U_1\\ U_2\\ \vdots \\ U_m
+        \end{bmatrix};
+            \quad
+        M := \begin{bmatrix}
+            M_{11} & \cdots & M_{1n}\\
+            \vdots &  & \vdots\\
+            M_{m1} & \cdots & M_{mn}
+        \end{bmatrix};
+        \quad
+        N := \begin{bmatrix}
+            N_{11} & \cdots & N_{1n}\\
+            \vdots &  & \vdots\\
+            N_{m1} & \cdots & N_{mn}
+        \end{bmatrix}.
+    \]
+    Then \eqref{eq:U_i defn} can be written as
+    \[Ux = M\xi(a) + N\xi(b).\]
+    {\color{blue}
+    Indeed:
+    \begin{align*}
+        M\xi(a) + N\xi(b) &= \begin{bmatrix}
+            M_{11} & \cdots & M_{1n}\\
+            \vdots &  & \vdots\\
+            M_{m1} & \cdots & M_{mn}
+        \end{bmatrix}\begin{bmatrix}x(a)\\ x'(a)\\ \vdots \\ x^{(n-1)}(a)
+            \end{bmatrix} + \begin{bmatrix}
+                N_{11} & \cdots & N_{1n}\\
+                \vdots &  & \vdots\\
+                N_{m1} & \cdots & N_{mn}
+            \end{bmatrix}\begin{bmatrix}x(b)\\ x'(b)\\ \vdots \\ x^{(n-1)}(b)
+            \end{bmatrix}\\
+            &= \begin{bmatrix}
+                \sum_{j=1}^n M_{1j}x^{(j-1)}(a)\\
+                \vdots\\
+                \sum_{j=1}^n M_{mj}x^{(j-1)}(a)
+            \end{bmatrix} + \begin{bmatrix}
+                \sum_{j=1}^n N_{1j}x^{(j-1)}(b)\\
+                \vdots\\
+                \sum_{j=1}^n N_{mj}x^{(j-1)}(b)
+            \end{bmatrix}\\
+            &= \begin{bmatrix}
+                \sum_{j=1}^n (M_{1j}x^{(j-1)}(a) + N_{1j}x^{(j-1)}(b))\\
+                \vdots\\
+                \sum_{j=1}^n (M_{mj}x^{(j-1)}(a) + N_{mj}x^{(j-1)}(b))
+            \end{bmatrix}\\
+            &= \begin{bmatrix}
+                U_1 x\\
+                \vdots\\
+                U_m x
+            \end{bmatrix} = \begin{bmatrix}U_1\\ U_2\\ \vdots \\ U_m
+            \end{bmatrix}x = Ux.
+    \end{align*}
+    }
+    Define the $m\times 2n$ matrix
+    \[(M:N):=\begin{bmatrix}
+        M_{11} & \cdots & M_{1n} & N_{11} & \cdots & N_{1n}\\
+        \vdots &  & \vdots & \vdots & & \vdots\\
+        M_{m1} & \cdots & M_{mn} & N_{m1} & \cdots & N_{mn}
+    \end{bmatrix}.\]
+    Then $U_1,\ldots,U_m$ are linearly independent if and only if $\rank(M:N)=m$, or equivalently, $\rank(U)=m$. 
+    {\color{blue}
+    Recall that the rank of a matrix is the largest number of linearly independent rows or columns in it. For a matrix $A_{m\times n}$, $\rank(A)\leq \min\{m,n\}$ and $\rank(A)=\rank(A^T)$.
+
+    $Ux$ can be written as
+    \begin{align*}
+        Ux &= \begin{bmatrix}
+            \sum_{j=1}^n (M_{1j}x^{(j-1)}(a) + N_{1j}x^{(j-1)}(b))\\
+            \vdots\\
+            \sum_{j=1}^n (M_{mj}x^{(j-1)}(a) + N_{mj}x^{(j-1)}(b))
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            M_{11} & \cdots & M_{1n} & N_{11} & \cdots & N_{1n}\\
+            \vdots &  & \vdots & \vdots & & \vdots\\
+            M_{m1} & \cdots & M_{mn} & N_{m1} & \cdots & N_{mn}
+        \end{bmatrix} \begin{bmatrix}x(a)\\\vdots\\x^{(n-a)}(a)\\ x(b)\\\vdots\\x^{(n-1)}(b)\end{bmatrix}\\
+        &= (M:N)\begin{bmatrix}
+            \xi(a)\\
+            \xi(b)
+        \end{bmatrix}.
+    \end{align*}
+    }
+\end{rmk}
+
+\begin{defn}\label{defn:complementary boundary form}
+    If $U=(U_1,\ldots, U_m)$ is any boundary form with $\rank(U)=m$ and $U_c=(U_{m+1},\ldots,U_{2n})$ any form with $\rank(U_c)=2n-m$ such that $(U_1,\ldots, U_{2n})$ has rank $2n$, then $U$ and $U_c$ are \href[page=299]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{complementary boundary forms}}. ``Adjoining'' $U_{m+1},\ldots, U_{2n}$ to $U_1,\ldots,U_m$ is equivalent to imbedding the matrix $(M:N)$ in a $2n\times 2n$ nonsingular matrix {\color{blue}(recall that for square matrices, nonsingular $\iff$ full rank)}.
+\end{defn}
+
+We wish to describe the right hand side of Green's formula \eqref{eq:green's formula} as a linear combination of a boundary form $U$ and a complementary form $U_c$. To do so, we consider the following results about the semibilinear form \eqref{eq:semibilinear form}.
+
+\begin{defn}
+    For a matrix $A=(a_{ij})$, its \href[page=299]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint}} is defined as the conjugate transpose $A^* = (\bar{a}_{ij})$.
+\end{defn}
+\begin{prop}
+    In the context of the semibilinear form \eqref{eq:semibilinear form}, we have
+    \begin{equation}\label{eq:semibilinear adjoint}
+        Sf\cdot g = f\cdot S^*g. 
+    \end{equation}
+\end{prop}
+{\color{blue}
+    \begin{proof}
+        \begin{align*}
+            Sf\cdot g &= \sum_{i,j=1}^k s_{ij}f_j\bar{g}_i \quad\mbox{(by \eqref{eq:semibilinear form})};\\
+            f\cdot S^*g &= \begin{bmatrix}
+                f_1\\
+                \vdots\\
+                f_k
+            \end{bmatrix}\cdot \begin{bmatrix}
+                \bar{s}_{11} & \cdots & \bar{s}_{k1}\\
+                \vdots & & \vdots\\
+                \bar{s}_{1k} & \cdots & \bar{s}_{kk}
+            \end{bmatrix} \begin{bmatrix}
+                g_1\\
+                \vdots\\
+                g_k
+            \end{bmatrix}\\
+            &= \begin{bmatrix}
+                f_1\\
+                \vdots\\
+                f_k
+            \end{bmatrix}\cdot \begin{bmatrix}
+                \sum_{j=1}^k \bar{s}_{j1}g_j\\
+                \vdots\\
+                \sum_{j=1}^k \bar{s}_{jk}g_j
+            \end{bmatrix}\\
+            &= \sum_{i=1}^k f_i\cdot \overline{\left(\sum_{j=1}^k\bar{s}_{ji}g_j\right)}\\
+            &= \sum_{i=1}^k f_i\cdot \left(\sum_{j=1}^k s_{ji}\bar{g}_j\right)\\
+            &= \sum_{i,j=1}^k s_{ji}f_i\bar{g}_j = Sf\cdot g.
+        \end{align*}
+    \end{proof}
+}
+
+\begin{prop}\label{prop:unique nonsingular G in semibilinear form}
+    Let $\mathcal{S}$ be the semibilinear form associated with a nonsingular matrix $S$. Suppose $\bar{f}:=Ff$ where $F$ is a nonsingular matrix. Then there exists a unique nonsingular matrix $G$ such that if $\bar{g}=Gg$, then $\mathcal{S}(f,g)=\bar{f}\cdot \bar{g}$ for all $f, g$.
+\end{prop}
+{\color{blue}
+\begin{proof}
+    Let $G:=(SF^{-1})^*$, then
+    \begin{align*}
+        \mathcal{S}(f,g) &= Sf\cdot g\\
+        &= S(F^{-1}F)f\cdot g\\
+        &= SF^{-1}(Ff)\cdot g\\
+        &= SF^{-1}\bar{f} \cdot g\\
+        &= \bar{f}\cdot (SF^{-1})^*g \quad\mbox{(by \eqref{eq:semibilinear adjoint})}\\
+        &= \bar{f}\cdot G*g\\
+        &= \bar{f}\cdot \bar{g}.
+    \end{align*}
+    To see that $G$ is nonsingular, note that $\det G = \det((\overline{SF^{-1}})^T) = \det(\overline{SF^{-1}}) = \overline{\det(SF^{-1})} = \overline{\det(S)\det(F)^{-1}}\neq 0$ since $S, F$ are nonsingular.
+\end{proof}
+}
+
+\begin{prop}
+    Suppose $\mathcal{S}$ is associated with the unit matrix $E$, i.e., $\mathcal{S}(f,g)=f\cdot g$. Let $F$ be a nonsingular matrix such that the first $j$ ($1\leq j<k$) components of $\bar{f}=Ff$ are the same as those of $f$. Then the unique nonsingular matrix $G$ such that $\bar{g}=Gg$ and $\bar{f}\cdot \bar{g}=f\cdot g$ (as in Proposition \ref{prop:unique nonsingular G in semibilinear form}) is such that the last $k-j$ components of $\bar{g}$ are linear combinations of the last $k-j$ components of $g$ with nonsingular coefficient matrix.
+\end{prop}
+{\color{blue}
+\begin{proof}
+    We note that for the condition on $F$ to hold, $F$ must have the form
+\[\begin{bmatrix}E_j & 0_+\\
+F_+ & F_{k-j}\end{bmatrix}_{k\times k}\]
+where $E_j$ is the $j\times j$ identity matrix, $0_+$ is the $j\times (k-j)$ zero matrix, $F_+$ is a $(k-j)\times j$ matrix, and $F_{k-j}$ a $(k-j)\times (k-j)$ matrix. Let $G$ be the unique nonsingular matrix in Proposition \ref{prop:unique nonsingular G in semibilinear form}. Write $G$ as
+\[\begin{bmatrix}G_j & G_-\\
+G_= & G_{k-j}\end{bmatrix}_{k\times k}\]
+where $G_j, G_-, G_=, G_{k-j}$ are $j\times j, j\times (k-j), (k-j)\times j, (k-j)\times (k-j)$ matrices, respectively. By the definition of $G$,
+\[f\cdot g = Ff\cdot Gg = \bar{f}\cdot Gg = G^*\bar{f}\cdot g = G^*Ff\cdot g,\]
+(where the third equality follows from a reverse application of \eqref{eq:semibilinear adjoint} with $\bar{f}$ as $f$, $G^*$ as $S$) which implies
+\[G^*F = E_k.\]
+Since
+\begin{align*}
+    G^*F &= \begin{bmatrix}
+        G^*_j & G^*_=\\
+        G^*_- & G^*_{k-j}
+    \end{bmatrix}\begin{bmatrix}E_j & 0_+\\
+    F_+ & F_{k-j}\end{bmatrix}\\
+    &= \begin{bmatrix}
+        G^*_j + G^*_= F_+ & G^*_= F_{k-j}\\
+        G^*_- + G^*_{k-j} F_+ & G^*_{k-j}F_{k-j}
+    \end{bmatrix}\\
+    &= \begin{bmatrix}
+        E_j & 0_{j\times (k-j)}\\
+        0_{(k-j)\times j} & E_{k-j}
+    \end{bmatrix}.
+\end{align*}
+Thus, $G^*_=F_{k-j}=0_+$, the $j\times (k-j)$ zero matrix. But $\det F = \det(E_j)\cdot \det(F_{k-j})\neq 0$, so $\det F_{k-j}\neq 0$ and we must have $G^*_==0_+$, i.e., $G_= =0_{(k-j)\times j}$. Thus, $G$ is upper-triangular, and so $\det G = \det G_j \cdot \det G_{k-j}\neq 0$, which implies $\det G_{k-j}\neq 0$ and $G_{k-j}$ is nonsingular. Hence,
+\[\bar{g} = Gg = \begin{bmatrix}G_j & G_-\\
+0_{(k-j)\times j} & G_{k-j}\end{bmatrix} \begin{bmatrix}
+g_1\\
+\vdots\\
+g_k
+\end{bmatrix}\]
+where $G_{k-j}$ is the nonsingular coefficient matrix such that
+\[\begin{bmatrix}
+    \bar{g}_{j-1}\\
+    \vdots\\
+    \bar{g}_{k}
+\end{bmatrix} = G_{k-j}\begin{bmatrix}
+    g_{j-1}\\
+    \vdots\\
+    g_{k}
+\end{bmatrix}.\]
+\end{proof}
+}
+
+\begin{thm}\href[page=300]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{(Boundary-form formula)}\label{thm:boundary form formula}
+    Given any boundary form $U$ of rank $m$ (Definition \ref{defn:boundary form}), and any complementary form $U_c$ (Definition \ref{defn:complementary boundary form}), there exist unique boundary forms $U_c^+$, $U^+$ of rank $m$ and $2n-m$, respectively, such that
+    \begin{equation}\label{eq:boundary form formula}
+        [xy](b)-[xy](a) = Ux\cdot U_c^+y + U_cx\cdot U^+y.
+    \end{equation}
+    If $\tilde{U}_c$ is any other complementary form to $U$, and $\tilde{U}^+_c, \tilde{U}^+$ the corresponding forms of rank $m$ and $2n-m$, then
+    \[\tilde{U}^+ y = C^*U^+y\]
+    for some nonsingular matrix $C$.
+\end{thm}
+\begin{proof}
+
+\end{proof}
+
+\end{document}
