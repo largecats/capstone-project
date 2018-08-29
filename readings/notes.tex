@@ -23,7 +23,7 @@
 
 \thispagestyle{fancy}
 
-This document contains all notes taken while reading materials (e.g., textbooks, literature) in preparation for capstone. Black text are information consolidated from the readings; blue text are notes; red text are questions.
+This document contains all notes taken while reading materials (e.g., textbooks, literature) in preparation for the capstone project. Black text are information consolidated from the readings; blue text are notes (proofs, explanations); red text are questions.
 
 \tableofcontents
 \listoftodos
@@ -166,8 +166,9 @@ where $M_{jk}, N_{jk}$ are complex constants.
         &= (B\vec{u}\cdot \vec{v})(t)\\
         &= \mathcal{S}(\vec{u},\vec{v})(t).
     \end{align*}
-    With this notation, we can rewrite the right hand side of Green's formula as
-    \begin{align*}
+    With this notation, we can rewrite the right hand side of Green's formula as a semibilinear form below:
+    \begin{equation}\label{eq:green's formula in semibilinear form}
+        \begin{split}
         [uv](t_2)-[uv](t_1) &= \sum_{j,k=1}^n B_{jk}(t_2)u^{(k-1)}(t_2)\bar{v}^{(j-1)}(t_2) - \sum_{j,k=1}^n B_{jk}(t_2)u^{(k-1)}(t_1)\bar{v}^{(j-1)}(t_1)\\
         &= B(t_2)\vec{u}(t_2)\cdot \vec{v}(t_2) - B(t_1)\vec{u}(t_1)\cdot \vec{v}(t_1)\\
         &= \begin{bmatrix}
@@ -283,7 +284,8 @@ where $M_{jk}, N_{jk}$ are complex constants.
             \vec{v}(t_1)\\
             \vec{v}(t_2)
         \end{bmatrix}.
-    \end{align*}
+    \end{split}
+    \end{equation}
     }
     Since \href[page=298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{$\det\hat{B}=(-1)^n\det B(t_1)\det B(t_2)$}\unsure{Why the $(-1)^n$?}, $\hat{B}$ is nonsingular for $t_1, t_2\in [a,b]$ {\color{blue}(since $B(t)$ is nonsingular for $t\in [a,b]$, as shown before)}.
 \end{rmk}
@@ -310,7 +312,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
     So $U_i$ are linear operators.
 \end{rmk}
 
-\begin{rmk}
+\begin{rmk}\label{rmk:writing Ux in M, N (M:N)}
     To describe \eqref{eq:U_i defn} with matrices, define
     \[
         \xi:= \begin{bmatrix}x\\ x'\\ \vdots \\ x^{(n-1)}
@@ -390,7 +392,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
             M_{11} & \cdots & M_{1n} & N_{11} & \cdots & N_{1n}\\
             \vdots &  & \vdots & \vdots & & \vdots\\
             M_{m1} & \cdots & M_{mn} & N_{m1} & \cdots & N_{mn}
-        \end{bmatrix} \begin{bmatrix}x(a)\\\vdots\\x^{(n-a)}(a)\\ x(b)\\\vdots\\x^{(n-1)}(b)\end{bmatrix}\\
+        \end{bmatrix} \begin{bmatrix}x(a)\\\vdots\\x^{(n-1)}(a)\\ x(b)\\\vdots\\x^{(n-1)}(b)\end{bmatrix}\\
         &= (M:N)\begin{bmatrix}
             \xi(a)\\
             \xi(b)
@@ -526,8 +528,52 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
     \[\tilde{U}^+ y = C^*U^+y\]
     for some nonsingular matrix $C$.
 \end{thm}
+{\color{blue}
 \begin{proof}
-
+    Recall from \eqref{eq:green's formula in semibilinear form} that the left hand side of \eqref{eq:boundary form formula} can be considered as a semibilinear form $\mathcal{S}(f,g)=\hat{B}f\cdot g$ for vectors
+\[
+    f=
+    \begin{bmatrix}
+        x(a)\\
+        \vdots\\
+        x^{(n-1)}(a)\\
+        x(b)\\
+        \vdots\\
+        x^{(n-1)}(b)
+    \end{bmatrix},\,
+    g=
+    \begin{bmatrix}
+        y(a)\\
+        \vdots\\
+        y^{(n-1)}(a)\\
+        y(b)\\
+        \vdots\\
+        y^{(n-1)}(b)
+    \end{bmatrix}
+\]
+with the nonsingular matrix
+\[
+    \hat{B}=
+    \begin{bmatrix}
+        -B(a) & 0_n\\
+        0_n & B(b)
+    \end{bmatrix}.
+\]
+Recall from Remark \ref{rmk:writing Ux in M, N (M:N)} that 
+\[Ux = M\xi(a) + N\xi(b) = (M:N)\begin{bmatrix}\xi(a)\\ \xi(b)\end{bmatrix}\]
+for $M, N, \xi$ are as defined there. With the definition of $f$, we have $f=\begin{bmatrix}\xi(a)\\ \xi(b)\end{bmatrix}$ and thus
+\[Ux = (M:N)f.\]
+By Definition \ref{defn:complementary boundary form}, $U_c x = (\tilde{M}:\tilde{N})f$ for two appropriate matrices $\tilde{M}, \tilde{N}$ for which
+\[H = \begin{bmatrix}M & N\\
+\tilde{M} & \tilde{N}\end{bmatrix}_{2n\times 2n}\]
+has rank $2n$. Thus,
+\[\begin{bmatrix}Ux\\ U_cx\end{bmatrix} = \begin{bmatrix}(M:N)f\\(\tilde{M}:\tilde{N})f\end{bmatrix} = \begin{bmatrix}M & N\\
+\tilde{M} & \tilde{N}\end{bmatrix}f = Hf.\]
+By Proposition \ref{prop:unique nonsingular G in semibilinear form}, there exists a unique $2n\times 2n$ nonsingular matrix $J$ such that $\mathcal{S}(f,g) = Hf\cdot Jg$. Let $U^+, U_c^+$ be such that\todo{Is the direction correct? e.g., from the existence of $J$, construct $U^+$ and $U_c^+$.}
+\[Jg = \begin{bmatrix}U_c^+ y\\ U^+y\end{bmatrix},\]
+then \eqref{eq:boundary form formula} holds since
+\[[xy](b)-[xy](a)=\mathcal{S}(f,g) = Hf\cdot Jg = \begin{bmatrix}Ux\\ U_cx\end{bmatrix}\cdot\begin{bmatrix}U_c^+ y \\ U^+y\end{bmatrix} = Ux\cdot U_c^+y + U_cx\cdot U^+y.\]
 \end{proof}
+}
 
 \end{document}
