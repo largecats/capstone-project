@@ -65,7 +65,9 @@ where $M_{jk}, N_{jk}$ are complex constants.
         \int_{t_1}^{t_2}(Lu)\bar{v}\,dt - \int_{t_1}^{t_2}u(\overline{L^+v})\,dt = [uv](t_2) - [uv](t_1) 
     \end{equation}
     where $a\leq t_1<t_2\leq b$ and $[uv](t)$ is the form in $(u, u', \ldots, u^{(n-1)})$ and $(v, v', \ldots, v^{(n-1)})$ given by
-    \[[uv](t)=\sum_{m=1}^n\sum_{j+k=m-1}(-1)^i u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t).\]
+    \begin{equation}\label{eq:[uv](t) defn}
+        [uv](t)=\sum_{m=1}^n\sum_{j+k=m-1}(-1)^i u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)
+    \end{equation}
 \end{thm}
 \begin{rmk}
     \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as {\color{blue}(checked for $n=2$)}
@@ -819,7 +821,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
 \end{defn}
 
 {\color{blue}
-\begin{rmk}
+\begin{rmk}\label{rmk:U Phi}
     We note that
     \begin{align*}
         U\Phi &= M\Phi(a) + N\Phi(b)\\
@@ -955,7 +957,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \[\alpha_1=\alpha_2=\cdots=\alpha_k=0\]
     and $U_c\varphi_i$ are linearly independent.
 
-    Let $\psi_1,\ldots,\psi_n$ be $n$ linearly independent solutions of $L^+x=0$. \unsure[inline]{How do I know they exist?} Suppose $\Psi$ is the corresponding fundamental matrix. Since $\varphi_i$, $\psi_j$ are solutions to $\pi_m$ and $L^+x=0$,\unsure[inline]{This is not the same as requiring $\psi_j$ to be solutions to $\pi_{2n-m}$, is it? Since there is an extra $U^+\psi_j=0$ to fulfill?} respectively, {\color{blue}by Proposition \ref{prop:(Lu,v)=(u,L^+v)}},\unsure[inline]{Proposition \ref{prop:(Lu,v)=(u,L^+v)} requires that $U\varphi_i=0$ and $U^+\psi_j=0$; are these conditions fulfilled?}
+    Let $\psi_1,\ldots,\psi_n$ be $n$ linearly independent solutions of $L^+x=0$. Suppose $\Psi$ is the corresponding fundamental matrix. Since $\varphi_i$, $\psi_j$ are solutions to $\pi_m$ and $L^+x=0$,\unsure[inline]{This is not the same as requiring $\psi_j$ to be solutions to $\pi_{2n-m}$, is it? Since there is an extra $U^+\psi_j=0$ to fulfill?} respectively, {\color{blue}by Proposition \ref{prop:(Lu,v)=(u,L^+v)}},\unsure[inline]{Proposition \ref{prop:(Lu,v)=(u,L^+v)} requires that $U\varphi_i=0$ and $U^+\psi_j=0$; are these conditions fulfilled?}
     \[(L\varphi_i, \psi_j) = (\varphi_i, L^+\psi_j).\]
     By Green's formula (\ref{eq:green's formula}),
     \[0 = (L\varphi_i, \psi_j) - (\varphi_i, L^+\psi_j) = [\varphi_i\psi_j](b) - [\varphi_i\psi_j](a)\]
@@ -998,7 +1000,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     If $\varphi$ and $\bar{\varphi}$ are two solutions of \ref{eq:nonhomogeneous boundary-value problem}, their difference $\varphi-\bar{\varphi}$ is a solution of $\pi_m$. Hence, if $\pi_m$ has $k$ linearly independent solutions $\varphi_1,\ldots,\varphi_k$, then $\varphi=\bar{\varphi}+\sum_{i=1}^k c_i\varphi_i$ for some constants $c_i\in\C$ {\color{blue}(since $\varphi_1,\ldots,\varphi_k$ are a basis for the solution space of $\pi_m$)}.
 \end{rmk}
 
-\begin{prop}
+\begin{prop}\label{prop:Ax=b has a solution iff condition}
     Let $A$ be a matrix and $b$ a vector. $Ax=b$ has a solution if and only if $b\cdot u=u^*b=0$ for every solution $u$ of $A^*x=0$.
 \end{prop}
 
@@ -1007,5 +1009,216 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \begin{equation}\label{eq:nonhomogeneous problem has solution iff condition}
         (f,\psi)=\gamma\cdot U_c^+\psi
     \end{equation}
+    holds for every solution $\psi$ of the adjoint homogeneous problem $\pi_{2n-m}^+$.
 \end{thm}
+\begin{rmk}
+    Since $(f,\psi)$ is an inner product, $\gamma=0$ implies $f$ is orthogonal to all solutions $\psi$ of $\pi_{2n-m}^+$.
+\end{rmk}
+\begin{proof}
+    Let $\varphi$ be a solution of \ref{eq:nonhomogeneous boundary-value problem}. Let $\psi$ be a solution of the adjoint homogeneous problem $\pi_{2n-m}^+$. Then by Green's formula (\ref{eq:green's formula}) and the boundary-form formula (\ref{eq:boundary form formula}), 
+    \begin{align*}
+        (L\varphi, \psi) - (\varphi, L^+\psi) &= U\varphi\cdot U_c^+\psi + U_c\varphi\cdot U^+\psi.
+    \end{align*}
+    Since $L\varphi=f$, $U\varphi=\gamma$, $L^+\psi=0$, and $U^+\psi=0$, the above implies that
+    \begin{align*}
+        (f,\psi) - (\varphi, 0) = \gamma\cdot U_c^+\psi + 0,
+    \end{align*}
+    or
+    \[(f,\psi)=\gamma\cdot U_c^+\psi.\]
+    Now suppose \ref{eq:nonhomogeneous problem has solution iff condition} holds for all solutions $\psi$ of $\pi_{2n-m}^+$. Let $\varphi_1,\ldots,\varphi_n$ be a fundamental set for $Lx=0$. Let $\bar{\varphi}$ be a solution of $Lx=f$. Then every solution $\varphi$ of $Lx=f$ is of the form
+    \[\varphi = \bar{\varphi} + \sum_{i=1}^n c_i\varphi_i\]
+    for some constants $c_i\in\C$. Applying $U$ to both sides, we have that \ref{eq:nonhomogeneous boundary-value problem} has a solution if and only if there exist $c_i$ such that
+    \[U\varphi = U\bar{\varphi} + \sum_{i=1}^n c_i U\varphi_i\]
+    is equal to $\gamma$. Equivalently,
+    \begin{equation}\label{eq:(U Phi)c=}
+        (U\Phi)c=\gamma-U\bar{\varphi}
+    \end{equation}
+    where $\Phi$ is the fundamental matrix corresponding to $\varphi_1,\ldots,\varphi_n$, and $c$ a constant vector.
+    {\color{blue}
+    Note that by Remark \ref{rmk:U Phi},
+    \begin{align*}
+        (U\Phi)c &= \begin{bmatrix}
+            U_1\varphi_1 & \cdots & U_1\varphi_n\\
+            \vdots & & \vdots\\
+            U_m\varphi_1 & \cdots & U_m\varphi_n\\
+        \end{bmatrix} \begin{bmatrix}
+            c_1\\
+            \vdots\\
+            c_n
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            \sum_{i=1}^n c_i U_1\varphi_i\\
+            \vdots\\
+            \sum_{i=1}^n c_i U_m\varphi_i
+        \end{bmatrix}\\
+        &= \sum_{i=1}^n\begin{bmatrix}
+            c_i U_1\varphi_i\\
+            \vdots\\
+            c_i U_m\varphi_i
+        \end{bmatrix}\\
+        &= \sum_{i=1}^n c_i U\varphi_i
+    \end{align*}
+    }
+    By Proposition \ref{prop:Ax=b has a solution iff condition}, the above has a solution $c$ if and only if $\gamma-U\bar{\varphi}$ is orthogonal to every solution $u$ of
+    \begin{equation}\label{eq:U Phi * u = 0}
+    (U\Phi)^* u=0,
+    \end{equation}
+    that is,
+    \begin{equation}\label{eq:orthogonal with u}
+        (\gamma-U\bar{\varphi})\cdot u = 0
+    \end{equation}
+    Suppose $\pi^+_{2n-m}$ have exactly $k^+$ linearly independent solutions $\psi_1,\ldots,\psi_{k^+}$. By the same argument in Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m-n l.i.d solutions}, the $k^+$ vectors $U_c^+\psi_1,\ldots, U_c^+\psi_{k^+}$ are linearly independent $m$-dimensional vectors which are solutions to \ref{eq:U Phi * u = 0}. Let $k$ be the number of linearly independent solutions of $\pi_m$. Then by Theorem \ref{thm:exactly k l.i.d solutions iff rank n-k}, $\rank(U\Phi)=n-k$. Thus, the number of linearly independent solutions of \ref{eq:U Phi * u = 0} is $m-\rank(U\Phi^*) = m-\rank(U\Phi) = m - (n-k)$. But by Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m-n l.i.d solutions}, $k^+ = m-n+k$. Thus, {\color{blue}since $U_c^+\varphi_i$ are basis for the solution space of \ref{eq:U Phi * u = 0}}, \ref{eq:orthogonal with u} holds for every $u$ satisfying \ref{eq:U Phi * u = 0} if and only if
+    \begin{equation}\label{eq:orthogonal with U_c^+varphi_i}
+        (\gamma-U\bar{\varphi})\cdot U_c^+\psi_i=0\quad(i=1,\ldots,k^+)
+    \end{equation}
+    By Green's formula (\ref{eq:green's formula}) and the boundary-form formula (\ref{eq:boundary form formula}),
+    {\color{blue}
+    \begin{equation}
+        \begin{split}
+        (L\bar{\varphi},\psi_i) - (\bar{\varphi}, L^+\psi_i) &= U_{\bar{\varphi}}\cdot U_c^+\psi_i + U_c\bar{\varphi}\cdot U^+\psi_i.
+        \end{split}
+    \end{equation}
+    But $\psi_i$ is a solution to $\pi^+_{2n-m}$, so $L^+\psi_i=0$ and $U^+\psi_i=0$. Thus, the above becomes
+    \begin{equation}\label{eq:(f,psi_i)}
+        (f,\psi_i)=(L\bar{\varphi},\psi_i) = (L\bar{\varphi},\psi_i) - 0 =  U_{\bar{\varphi}}\cdot U_c^+\psi_i + 0 =  U_{\bar{\varphi}}\cdot U_c^+\psi_i.
+    \end{equation}
+    But by the hypothesis, \ref{eq:nonhomogeneous problem has solution iff condition} holds. Thus, 
+    \[
+        U_{\bar{\varphi}}\cdot U_c^+\psi_i \stackrel{\text{\ref{eq:(f,psi_i)}}}{=} (f,\psi_i) \stackrel{\text{\ref{eq:nonhomogeneous problem has solution iff condition}}}{=} \gamma\cdot U_c^+\psi_i.
+    \]
+    Hence,
+    \[(\gamma-U\bar{\varphi})\cdot U_c^+\psi_i=0.\]
+    So \ref{eq:orthogonal with U_c^+varphi_i} is satisfied. Reversing the direction of the argument from \ref{eq:orthogonal with U_c^+varphi_i}, we have that \ref{eq:orthogonal with u} holds. This implies that \ref{eq:(U Phi)c=} has a solution $c$, which then implies that \ref{eq:nonhomogeneous boundary-value problem} has a solution.
+    }
+\end{proof}
+
+\begin{cor}
+    \ref{eq:nonhomogeneous boundary-value problem} has a unique solution if $m=n$ and the only solution of $\pi_n$ is the trivial one.
+\end{cor}
+\begin{proof}
+    {\color{blue}
+    Suppose $m=n$ and $\pi_n$ only has the trivial solution (note that $\pi_n$ is the homogeneous problem). 
+    % By Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m-n l.i.d solutions}, $\pi_n^+$ has only $1+n-n=1$ solution. But we already know that the trivial solution is one solution of $\pi_n^+$. So $\pi_n^+$ has only the trivial solution $\psi=0$. 
+    Let $\varphi$, $\bar{\varphi}$ be two solutions of \ref{eq:nonhomogeneous boundary-value problem}. Then $\varphi-\bar{\varphi}$ is a solution of $\pi_n$. By the hypothesis, $\varphi-\bar{\varphi}=0$. Thus, \ref{eq:nonhomogeneous boundary-value problem} has a unique solution $\varphi$.
+    }
+    \unsure[inline]{This is different from \href[page=307]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{the proof in the book}. Actually in the corollary statement, is the sentence after ``and'' part of the conclusion or condition?}
+\end{proof}
+
+{\color{blue}
+\begin{defn}
+    The \textbf{Dirac's delta function} can be loosely thought of as a function on $\R$ which is zero everywhere except at the origin, where it is infinite. It is given by
+    \[\delta(x)=
+    \begin{cases}
+        +\infty\quad&\mbox{$x=0$}\\
+        0\quad&\mbox{$x\neq 0$}.
+    \end{cases}    
+    \]
+    It is also constrained to satisfy the identity
+    \[\int_{-\infty}^\infty\delta(x)\,dx=1.\]
+\end{defn}
+
+\begin{defn}\footnote{\url{http://mathworld.wolfram.com/GreensFunction.html}}
+    Given a linear differential operator $L=L(x)$, a \textbf{Green's function} $G=G(x,s)$ at the point $s\in\Omega\in\R^n$ corresponding to $L$ is any solution of
+    \begin{equation}\label{eq:LG(x,s)=delta(x-s)}
+        LG(x,s)=\delta(x-s)
+    \end{equation}
+    where $\delta$ denotes the Dirac's delta function.
+\end{defn}
+
+\begin{rmk}
+    A Green's function is an \textbf{integral kernel} that can be used to solve differential equations, such as ordinary differential equations with initial or boundary value conditions. Recall the Fourier kernel $e^{i\lambda x}$ in the Fourier transform
+    \[\mathcal{F}[f]:=\frac{1}{\sqrt{2\pi}}\int_{-\infty}^\infty f(x)e^{i\lambda x}\,dx.\]
+
+    To see the motivation for defining Green's function, we note that multiplying both sides of \ref{eq:LG(x,s)=delta(x-s)} by a function $f(s)$ and integrating with respect to $s$ gives
+    \[\int LG(x,s)f(s)\,ds = \int \delta(x-s)f(s)\,ds.\]
+    The right-hand side reduces to $f(x)$ due to properties of $\delta$, and because $L$ is a linear operator acting only on $x$ and not on $s$, the left-hand side can be rewritten as 
+    \[L\left(\int G(x,s)f(s)\,ds\right).\]
+    This reduction is particularly useful when solving for $u=u(x)$ in differential equations of the form
+    \[Lu(x)=f(x),\]
+    since we have
+    \[Lu(x) = L\left(\int G(x,s)f(s)\,ds\right),\]
+    which implies
+    \[u(x)=\int G(x,s)f(s)\,ds.\]
+\end{rmk}
+}
+
+Suppose $m=n$. By Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m-n l.i.d solutions}, $\pi_n$ and $\pi^+_n$ have the same number $k$ of linearly independent solutions. If $k=0$, then $\pi_n$  has only the trivial solution. In this case, it is possible to solve the nonhomogeneous problem \ref{eq:nonhomogeneous boundary-value problem} explicitly in terms of the Green's function:
+
+{\color{blue}
+\begin{prop}\label{prop:green's function as solution}
+    The nonhomogeneous problem
+    \[Lx=f\quad Ux=0\]
+    has a unique solution given by $x(t)=\int_a^b f(s)G(s,t)\,ds$ where $G(s,t)$ is a Green's function satisfying some properties.
+\end{prop}
+
+\begin{defn}\label{defn:eigenvalue problem}
+    The problem
+    \[\pi:\quad Lx=\ell x\quad Ux=0\]
+    is an \href[page=201]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{eigenvalue problem}}. If $\ell$ is such that $\pi$ has a nontrivial solution, then $\ell$ is an \textbf{eigenvalue} of $\pi$, and the nontrivial solutions of $\pi$ are the \textbf{eigenfunctions} of $\pi$.
+\end{defn}
+
+We introduce \href[page=204]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{the following results}.
+
+\begin{prop}\label{prop:existence of G}
+    Let $\pi$ denote the problem
+    \[Lx-\ell x = 0 \quad Ux=0.\]
+    If $\pi$ has no (nontrivial) solution for at least one value of $\ell$, then there exists unique $G=G(t,\tau,\ell)$ defined for $(t,\tau)$ on the square $a\leq t,\tau\leq b$ and for all complex $\ell$ except the eigenvalues of $\pi$ and having the following properties:
+    \begin{itemize}
+        \item[(i)] $\frac{\partial ^k G}{\partial t^k}$ ($k=0,1,\ldots,n-2$) exist and are continuous in $(t,\tau,\ell)$ for $(t,\tau)$ on the square $a\leq t$, $\tau\leq b$ and $\ell$ not at an eigenvalue of $\pi$. Moreover, $\frac{\partial ^k G}{\partial t^k}$ for $k=n-1, n$ are continuous in $(t,\tau,\ell)$ for $(t,\tau)$ on the triangles $a\leq t\leq \tau\leq b$ and $a\leq \tau\leq t\leq b$ and $\ell$ not an eigenvalue of $\pi$.
+        \item[(ii)]
+        \[\frac{\partial^{n-1}G}{\partial t^{n-1}}(r+0, r, \ell) - \frac{\partial^{n-1}G}{\partial t^{n-1}}(r-0, r, \ell) = \frac{1}{p_0(\tau)}.\]
+        \item[(iii)] As a function of $t$, $G$ satisfies $Lx=\ell x$ if $t\neq \tau$.
+        \item[(iv)] As a function of $t$, $G$ satisfies the boundary conditions $Ux=0$ for $a\leq \tau\leq b$.
+    \end{itemize}
+
+    If for one value of $\ell$ the homogeneous problem $\pi$ has no solution, then it would have solutions only for a set of $\ell$ which are the zeroes of an entire function.
+\end{prop}
+}
+Here, $\ell=0$ and it is assumed that $\pi_n$ has only the trivial solution. Denote $G(t,\tau,0)$ as $G(t,\tau)$. The unique solution of \ref{eq:nonhomogeneous boundary-value problem} with $\gamma=0$ is given by
+\[\mathcal{G}f(t)=\int_a^b G(t,\tau)f(\tau)\,d\tau.\]
+If $\pi_n$ has only the trivial solution, then by Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m-n l.i.d solutions}, $\pi_n^+$ has only the trivial solution (with $k=1$ and $m=n$). By Proposition \ref{prop:existence of G}, the Green's function $G^+$ for $\pi_n^+$ exists and is unique.
+
+\begin{thm}\label{thm:G^+(t,tau) = bar G(tau, t)}
+    If $\pi_n$ has only the trivial solution, Green's function $G^+$ for $\pi_n^+$ is given by
+    \begin{equation}\label{eq:G^+(t,tau)=bar G(tau, t)}
+        G^+(t,\tau)=\bar{G}(\tau,t).
+    \end{equation}
+\end{thm}
+\begin{proof}
+    Let $a<\tau_1<\tau_2<b$. Consider the functions $G_1$ and $G_2^+$ given by $G_1(t)=G(t,\tau_1)$, $G_2^+(t)=G^+(t,\tau_2)$. Then applying Green's formula \ref{eq:green's formula} to the intervals $[a, \tau_1-0]$, $[\tau_1+0, \tau_2-0]$, $[\tau_2+0, b]$, we have
+    \begin{equation}\label{eq:green's formula on G_1G_2^+}
+        [G_1G_2^+](\tau_1-0) - [G_1G_2^+](a) + [G_1G_2^+](\tau_2-0) - [G_1G_2^+](\tau_1+0) + [G_1G_2^+](b) - [G_1G_2^+](\tau_2+0)=0
+    \end{equation}
+    \unsure[inline]{Why is the equation $0$?}
+    By the boundary-form formula \ref{eq:boundary form formula},
+    \begin{equation}
+        [G_1G_2^+](b) - [G_1G_2^+](a)=0.
+    \end{equation}
+    \unsure[inline]{Doesn't this follow from \ref{eq:green's formula on G_1G_2^+}?}
+    From the form of $[xy](t)$ \ref{eq:[uv](t) defn} it follows that the only terms of interest in \ref{eq:green's formula on G_1G_2^+} are those involving the $(n-1)$st derivatives\unsure{Why?}, and these are
+    \begin{equation}\label{eq:n-1st derivatives in [xy](t)}
+        p_0(t)[(-1)^{n-1}x(t)\bar{y}^{(n-1)}(t) + x^{(n-1)}(t)\bar{y}(t)].
+    \end{equation}
+    Now by Proposition \ref{prop:existence of G}(ii), $G$ satisfies
+    \begin{equation}
+        \frac{\partial^{n-1}G}{\partial t^{n-1}}(r+0, r, \ell) - \frac{\partial^{n-1}G}{\partial t^{n-1}}(r-0, r, \ell) = \frac{1}{p_0(\tau)}.
+    \end{equation}
+    Similarly for $G^+$,
+    \begin{equation}
+        \frac{\partial^{n-1}G^+}{\partial t^{n-1}}(r+0, r, \ell) - \frac{\partial^{n-1}G^+}{\partial t^{n-1}}(r-0, r, \ell) = \frac{1}{(-1)^n \bar{p}_0(\tau)}.
+    \end{equation}
+    Thus, $\bar{G}^+(\tau_1,\tau_2) - G(\tau_2,\tau_1)=0$.\unsure{How?}
+\end{proof}
+
+\begin{rmk}
+    To consider $G(t,\tau,\ell)$, the differential operation $(L-l)$ is considered instead of $L$. Let $L_1=L-\ell$. Consider the problem
+    \begin{equation}\label{eq:(L-l)x=0}
+        L_1x=0\quad Ux=0
+    \end{equation}
+    The adjoint problem is given in $L_1^+=L^+-\bar{\ell}$ and $U^+$. Applying Theorem \ref{thm:G^+(t,tau) = bar G(tau, t)} to \ref{eq:(L-l)x=0},\unsure[inline]{We assume $\pi_n$ only has the trivial solution?} we have
+    \[G^+(t,\tau,\ell) = \bar{G}(\tau,t,\bar{\ell}).\]
+    For the self-adjoint problem where $L^+=L$ and $U$ equivalent to $U^+$, it follows that 
+    \[G(t,\tau,\ell) = \bar{G}(\tau,t,\ell).\]
+\end{rmk}
+
 \end{document}
