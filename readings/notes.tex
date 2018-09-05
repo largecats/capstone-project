@@ -1,4 +1,4 @@
-\documentclass[10.5pt, oneside, a4paper]{article}
+\documentclass[11pt, oneside, a4paper]{article}
 \input{preamble.tex}
 %---header/style/enumeration-------
 \pagestyle{fancy}
@@ -103,7 +103,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
     for any complex numbers $\alpha, \beta$ and vectors $f,g,h$.
 
     {\color{blue}Note that $\mathcal{S}$ is linear in the first argument but not the second one. If $\mathcal{S}$ were bilinear, it would be linear in each argument.}
-	\DAS{Indeed, because it is semilinear in the second argument, it is also called ``sesquilinear'' (Latin for one and a half is sesquus.}
+	\DAS{Indeed, because it is semilinear in the second argument, it is also called ``sesquilinear'' (Latin for one and a half is sesquus).}
 \end{defn}
 \begin{rmk}
     If
@@ -529,6 +529,7 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
 \end{proof}
 }
 
+
 \begin{thm}\href[page=300]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{(Boundary-form formula)}\label{thm:boundary form formula}
     Given any boundary form $U$ of rank $m$ (Definition \ref{defn:boundary form}), and any complementary form $U_c$ (Definition \ref{defn:complementary boundary form}), there exist unique boundary forms $U_c^+$, $U^+$ of rank $m$ and $2n-m$, respectively, such that
     \begin{equation}\label{eq:boundary form formula}
@@ -537,7 +538,7 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
     If $\tilde{U}_c$ is any other complementary form to $U$, and $\tilde{U}^+_c, \tilde{U}^+$ the corresponding forms of rank $m$ and $2n-m$, then
     \[\tilde{U}^+ y = C^*U^+y\]
     for some nonsingular matrix $C$.\unsure[inline]{Does this mean that, given a boundary form, its adjoint boundary forms are related to each other by linear transformation?}
-	\DAS{Yes. It is a kind of uniqueness result. It says that the adjoint boundary forms are unique \emph{up to linear transformation}. This can be understood further as saying that you don't need to find the ``right'' adjoint boundary form; any adjoint boundary form is good enough because they are all, from the point of view of their action, the same object. In practice, we will usually aim to have our boundary forms in (some sense of) reduced row-echelon form for convenience and comparability. Theorem~\ref{thm:boundary form formula} says that such a form is only canonical because it is something we have decided upon, not because it is mathematically better.}
+	\DAS{Yes. It is a kind of uniqueness result. It says that the adjoint boundary forms are unique \emph{up to linear transformation}. This can be understood further as saying that you don't need to find the ``right'' adjoint boundary form; any adjoint boundary form is good enough because they are all, from the point of view of their action, the same object. In practice, we will usually aim to have our boundary forms in (some sense of) reduced row-echelon form for convenience and comparability. Theorem \ref{thm:boundary form formula} says that such a form is only canonical because it is something we have decided upon, not because it is mathematically better.}
 \end{thm}
 \begin{proof}
     {\color{blue}
@@ -587,9 +588,8 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
     \[[xy](b)-[xy](a)=\mathcal{S}(f,g) = Hf\cdot Jg = \begin{bmatrix}Ux\\ U_cx\end{bmatrix}\cdot\begin{bmatrix}U_c^+ y \\ U^+y\end{bmatrix} = Ux\cdot U_c^+y + U_cx\cdot U^+y.\]
     }
     The second statement in the theorem follows from Proposition \ref{prop:last k-j components linear combination} with $Hf$ and $Jg$ corresponding to $f$ and $g$\unsure[inline]{Proposition \ref{prop:last k-j components linear combination} poses condition on $F$ and invokes the existence of $G$; what are the objects corresponding to $F$ and $G$ here?}.
-	\DAS{Not sure. It seems to me that unicity of $J$ is only once $H$ has been chosen, so a different $H$ (ie different complementary boundary form) will give you a different $J$, hence different adjoint boundary form and different complementary adjoint boundary form. So the task is to understand how the chain of changes new complementary boundary form $\to$ new $H$ $\to$ new $J$ $\to$ new adjoint boundary forms provides this linearity result. I guess Proposition~\ref{prop:last k-j components linear combination} must help with this in some way.}
+	\DAS{Not sure. It seems to me that unicity of $J$ is only once $H$ has been chosen, so a different $H$ (ie different complementary boundary form) will give you a different $J$, hence different adjoint boundary form and different complementary adjoint boundary form. So the task is to understand how the chain of changes new complementary boundary form $\to$ new $H$ $\to$ new $J$ $\to$ new adjoint boundary forms provides this linearity result. I guess Proposition \ref{prop:last k-j components linear combination} must help with this in some way.}
 \end{proof}
-
 
 \subsubsection{Homogeneous Boundary-value Problems and Adjoint Problems}
 
@@ -623,9 +623,10 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
     \end{equation}
 \end{proof}
 }
+
 \begin{rmk}
     Let $D, D^+$ be the set of functions $u\in C^n$ satisfying \eqref{eq:homogeneous boundary condition} and \eqref{eq:adjoint boundary condition}, respectively. Then Theorem \ref{thm:boundary form formula} shows that $D^+$ is uniquely determined by $U$, although $U^+$ is not {\color{blue}(because $U^+$ is uniquely determined by $U$ and $U_c$?)}.\unsure[inline]{$U^+$ is not uniquely determined by $U$ but by $U$ and $U_c$. But $D^+$ is the set of functions $x$ satisfying $U^+x=0$; if $U^+$ is not uniquely determined by $U$, how can $D^+$ be?}
-	\DAS{Apply the unnumbered equation after~\eqref{eq:boundary form formula} to equation~\eqref{eq:adjoint boundary condition}. Because the RHS of equation~\qref{eq:adjoint boundary condition} is $0$ and $C^\star$ is linear, we still get $0$.}
+	\DAS{Apply the unnumbered equation after \eqref{eq:boundary form formula} to equation \eqref{eq:adjoint boundary condition}. Because the RHS of equation \eqref{eq:adjoint boundary condition} is $0$ and $C^\star$ is linear, we still get $0$.}
 \end{rmk}
 
 {\color{blue}
@@ -784,7 +785,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \[\pi_m:\,Lx=0\quad Ux=0\]
     on $[a,b]$ is a \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{homogeneous boundary-value problem of rank $m$}}. The problem
     \[\pi_{2n-m}^+:\,L^+x=0\quad U^+x=0\]
-    on $[a,b]$ is the \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint boundary-value problem to $\pi_m$}}.\unsure[inline]{Given that $U^+$ is not uniquely determined by $U$, is the adjoint problem unique?} \DAS{That depends on what you mean by ``problem''. If you think of the problem as the pair $(L^+,U^+)$, then no it is not unique. But if you think of the problem as being ``the set of all functions $x$ in an appropriate space satisfying $L^+x=0$ and $U^+x=0$, then yes the adjoint problem is unique. This is effectively the same statement as my comment on the non-unicity of $U^+$ above.} In fact, $\pi_m$ and $\pi_{2n-m}^+$ are adjoint problems to each other. The zero function on $[a,b]$ is a solution to both $\pi_m$ and $\pi_{2n-m}^+$, known as the \textbf{trivial solution}.
+    on $[a,b]$ is the \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint boundary-value problem to $\pi_m$}}.\unsure[inline]{Given that $U^+$ is not uniquely determined by $U$, is the adjoint problem unique?} \DAS{That depends on what you mean by ``problem''. If you think of the problem as the pair $(L^+,U^+)$, then no it is not unique. But if you think of the problem as being ``the set of all functions $x$ in an appropriate space satisfying $L^+x=0$ and $U^+x=0$'', then yes the adjoint problem is unique. This is effectively the same statement as my comment on the non-unicity of $U^+$ above.} In fact, $\pi_m$ and $\pi_{2n-m}^+$ are adjoint problems to each other. The zero function on $[a,b]$ is a solution to both $\pi_m$ and $\pi_{2n-m}^+$, known as the \textbf{trivial solution}.
 \end{defn}
 
 \begin{thm}\label{thm:self-adjoint boundary condition}
@@ -1169,6 +1170,11 @@ Suppose $m=n$. By Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m
     \[\pi:\quad Lx=\ell x\quad Ux=0\]
     is an \href[page=201]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{eigenvalue problem}}. If $\ell$ is such that $\pi$ has a nontrivial solution, then $\ell$ is an \textbf{eigenvalue} of $\pi$, and the nontrivial solutions of $\pi$ are the \textbf{eigenfunctions} of $\pi$.
 \end{defn}
+\begin{rmk}
+    Recall from linear algebra that if $T$ is a linear transformation from a vector space $V$ over a field $\F$ into itself and $v\in V$, $v\neq \vec{0}$, then $v$ is an eigenvector of $T$ if $T(v)=\lambda v$ for some $\lambda\in\F$, and $\lambda$ the eigenvalue associated with $v$. 
+
+    Here, if $L$ is a linear differential operator, and $u$ is not the zero function, then $u$ is an eigenfunction of $\pi$ if $Lu=\ell u$ for some $\ell$, and $\ell$ the eigenvalue associated with $u$.
+\end{rmk}
 
 We introduce \href[page=204]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{the following results}.
 
@@ -1234,4 +1240,9 @@ If $\pi_n$ has only the trivial solution, then by Theorem \ref{thm:exactly k l.i
     \[G(t,\tau,\ell) = \bar{G}(\tau,t,\ell).\]
 \end{rmk}
 
+\newpage
+\subsection{Chapter 12: Non-self-adjoint boundary-value problems}
+\subsubsection{Introduction}
+
 \end{document}
+

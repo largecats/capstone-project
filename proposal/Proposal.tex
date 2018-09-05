@@ -9,7 +9,7 @@
 \rhead{2018-2019 Semester 1}
 \author{
     Student: Linfan XIAO\\
-    Supervisor: Prof. David Smith
+    Supervisor: Professor David Smith
     }
 %----------------------------------
 
@@ -60,30 +60,108 @@ A detailed description of the Fokas method demonstrating adequate understanding 
 
 \section{Semester 1 plan with time allocation}
 
+Estimated consultation time is one hour per week. Consultation consists of communication via material submissions and comments on git repository as well as one-on-one meetings.
+
+\begin{ganttchart}[
+    x unit=0.7cm,
+    y unit title=0.6cm,
+    y unit chart=0.4cm,
+    hgrid, vgrid, today=4, 
+    group height=.2,
+    bar height = .2]{1}{13}
+    \gantttitle{AY2018-19}{13} \\
+    \gantttitlelist{1,...,13}{1} \\
+    \ganttgroup{Proposal}{1}{4} \\
+    \ganttbar{Draft proposal}{1}{1}\\
+    \ganttbar{Finalize proposal}{2}{2}\\
+    \ganttmilestone{Proposal}{4}\\
+    \ganttgroup{Literature reading}{2}{6}\\
+    \ganttbar{Linear constant-coefficient PDEs}{2}{4}\\
+    \ganttbar{Papers on the Fokas method}{5}{6}\\
+    \ganttgroup{Implementation}{7}{13}\\
+    \ganttbar{Implement algorithm in Julia}{7}{10}\\
+    \ganttmilestone{Report 1}{9}\\
+    \ganttbar{Organizing package}{11}{11}\\
+    \ganttbar{Presentation}{11}{12}\\
+    \ganttbar{Write documentation}{12}{13}\\
+    \ganttmilestone{Report 2}{13}
+\end{ganttchart}
+
 \begin{center}
-    \begin{tabular}{|l|l|} 
-    \hline
-    week 1 & Draft project proposal. \\ 
-    \hline
-    week 2 & Finalize proposal with supervisor. \\ 
-    \hline
-    week 3 & Learn about linear constant-coefficient PDEs.\\
-    \hline 
-    week 4 & Read the paper on which the algorithm is to be based on.\\ 
-    \hline
-    weeks 5-8 & Implement the algorithm in Julia.\\
-    \hline
-    week 9 & Organize the implementation as a package in Julia.\\
-    \hline
-    week 10 & Write a full documentation for the package.\\
-    \hline
-    week 11 & Survey available integrators in Julia.\\
-    \hline
-    week 12 & Learn about elementary asymptotic analysis in the complex field.\\
-    \hline
-    week 13 & Start building a hybrid analytic-numerical integrator in Julia.\\
-    \hline
+    \begin{tabular}{|l|l|l|} 
+        \hline
+        Time & Task & Deliverable\\
+        \hline
+        week 1 & Draft project proposal. & \\ 
+        \hline
+        week 2 & Finalize proposal with supervisor.& \\ 
+        \hline
+        week 3 & Learn about linear constant-coefficient PDEs.&\\
+        \hline
+        week 4 & Learn about linear constant-coefficient PDEs.&\\
+        \hline 
+        7 Sep 5pm & & Proposal\\
+        \hline
+        week 5 & Read the papers on the Fokas method.&\\
+        \hline
+        week 6 & Read the papers on the Fokas method.&\\
+        \hline
+        week 7 & Implement the algorithm in Julia.&\\
+        \hline
+        week 8 & Implement the algorithm in Julia.&\\
+        \hline
+        week 9 & Implement the algorithm in Julia.&\\
+        \hline
+        19 Oct 5pm & & Report 1\\
+        \hline
+        week 10 & Implement the algorithm in Julia.&\\
+        \hline
+        week 11 & Organize the implementation as a package in Julia.& Presentation\\
+        \hline
+        week 12 & Write a full documentation for the package.& Presentation\\
+        \hline
+        week 13 & Write a full documentation for the package.&\\
+        \hline
+        16 Nov 5pm & & Report 2\\
+        \hline
     \end{tabular}
-    \end{center}
+    % \begin{tabular}{|l|l|l|} 
+    % \hline
+    % Time & Task & Deliverable\\
+    % \hline
+    % week 1 & Draft project proposal. & \\ 
+    % \hline
+    % week 2 & Finalize proposal with supervisor.& \\ 
+    % \hline
+    % week 3 & Learn about linear constant-coefficient PDEs.&\\
+    % \hline 
+    % week 4 & Read the paper on which the algorithm is to be based on.&\\
+    % \hline
+    % 7 Sep 5pm & & Proposal\\
+    % \hline
+    % weeks 5 & Implement the algorithm in Julia.&\\
+    % \hline
+    % weeks 6 & Implement the algorithm in Julia.&\\
+    % \hline
+    % weeks 7 & Implement the algorithm in Julia.&\\
+    % \hline
+    % weeks 8 & Implement the algorithm in Julia.&\\
+    % \hline
+    % week 9 & Organize the implementation as a package in Julia.&\\
+    % \hline
+    % 19 Oct 5pm & & Report 1\\
+    % \hline
+    % week 10 & Write a full documentation for the package.&\\
+    % \hline
+    % week 11 & Survey available integrators in Julia. & Presentation\\
+    % \hline
+    % week 12 & Learn about elementary asymptotic analysis in the complex field. & Presentation\\
+    % \hline
+    % week 13 & Start building a hybrid analytic-numerical integrator in Julia. &\\
+    % \hline
+    % 16 Nov 5pm & & Report 2\\
+    % \hline
+    % \end{tabular}
+\end{center}
 
 \end{document}
