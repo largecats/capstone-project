@@ -28,6 +28,8 @@ This document contains all notes taken while reading materials (e.g., textbooks,
 \tableofcontents
 \listoftodos
 
+\DAS{This is great progress, Linda. Is there a theorem in here that allows us to explicitly construct (a valid example of the nonunique) $U^+$ from $U$?}
+
 \newpage
 \section{\href{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Theory of Ordinary Differential Equations (Coddington Levinson)}}
 
@@ -61,6 +63,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
 
 \begin{thm}{\href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{(Green's formula)}}
     For $u, v\in C^n$ on $[a,b]$,
+	\DAS{Think about why we are asking for so much smoothness as $C^n$. Can you get away with any less? Consider looking up functions of bounded variation or absolutely continuous functions.}
     \begin{equation}\label{eq:green's formula}
         \int_{t_1}^{t_2}(Lu)\bar{v}\,dt - \int_{t_1}^{t_2}u(\overline{L^+v})\,dt = [uv](t_2) - [uv](t_1) 
     \end{equation}
@@ -100,6 +103,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
     for any complex numbers $\alpha, \beta$ and vectors $f,g,h$.
 
     {\color{blue}Note that $\mathcal{S}$ is linear in the first argument but not the second one. If $\mathcal{S}$ were bilinear, it would be linear in each argument.}
+	\DAS{Indeed, because it is semilinear in the second argument, it is also called ``sesquilinear'' (Latin for one and a half is sesquus.}
 \end{defn}
 \begin{rmk}
     If
@@ -293,6 +297,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
     \end{equation}
     }
     Since \href[page=298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{$\det\hat{B}=(-1)^n\det B(t_1)\det B(t_2)$}\unsure{Why the $(-1)^n$?}, $\hat{B}$ is nonsingular for $t_1, t_2\in [a,b]$ {\color{blue}(since $B(t)$ is nonsingular for $t\in [a,b]$, as shown before)}.
+	\DAS{The $(-1)^n$ comes fromt he fact that $n$ rows of $\hat{B}$ have been multiplied by $-1$, compared to $\hat{B}$ being defined as the block diagonal matrix $\begin{bmatrix}B(t_1)&0\\0&B(t_2)\end{bmatrix}$. You can check the standard formula for the determinant of a block diagonal matrix in (for example) the matrix cookbook.}
 \end{rmk}
 
 \subsubsection{Boundary form formula}
@@ -527,11 +532,12 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
 \begin{thm}\href[page=300]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{(Boundary-form formula)}\label{thm:boundary form formula}
     Given any boundary form $U$ of rank $m$ (Definition \ref{defn:boundary form}), and any complementary form $U_c$ (Definition \ref{defn:complementary boundary form}), there exist unique boundary forms $U_c^+$, $U^+$ of rank $m$ and $2n-m$, respectively, such that
     \begin{equation}\label{eq:boundary form formula}
-        [xy](b)-[xy](a) = Ux\cdot U_c^+y + U_{cx}\cdot U^+y.
+        [xy](b)-[xy](a) = Ux\cdot U_c^+y + U_{cx}\cdot U^+y. \quad\mbox{\DAS{typo}}
     \end{equation}
     If $\tilde{U}_c$ is any other complementary form to $U$, and $\tilde{U}^+_c, \tilde{U}^+$ the corresponding forms of rank $m$ and $2n-m$, then
     \[\tilde{U}^+ y = C^*U^+y\]
     for some nonsingular matrix $C$.\unsure[inline]{Does this mean that, given a boundary form, its adjoint boundary forms are related to each other by linear transformation?}
+	\DAS{Yes. It is a kind of uniqueness result. It says that the adjoint boundary forms are unique \emph{up to linear transformation}. This can be understood further as saying that you don't need to find the ``right'' adjoint boundary form; any adjoint boundary form is good enough because they are all, from the point of view of their action, the same object. In practice, we will usually aim to have our boundary forms in (some sense of) reduced row-echelon form for convenience and comparability. Theorem~\ref{thm:boundary form formula} says that such a form is only canonical because it is something we have decided upon, not because it is mathematically better.}
 \end{thm}
 \begin{proof}
     {\color{blue}
@@ -575,11 +581,13 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
     \[\begin{bmatrix}Ux\\ U_cx\end{bmatrix} = \begin{bmatrix}(M:N)f\\(\tilde{M}:\tilde{N})f\end{bmatrix} = \begin{bmatrix}M & N\\
     \tilde{M} & \tilde{N}\end{bmatrix}f = Hf.\]
     By Proposition \ref{prop:unique nonsingular G in semibilinear form}, there exists a unique $2n\times 2n$ nonsingular matrix $J$ such that $\mathcal{S}(f,g) = Hf\cdot Jg$. Let $U^+, U_c^+$ be such that\unsure[inline]{Is the direction correct? e.g., from the existence of $J$, construct $U^+$ and $U_c^+$.}
+	\DAS{I think that's right. Existence of $J$ gives you existence of $U^+$ and $U_c^+$.}
     \[Jg = \begin{bmatrix}U_c^+ y\\ U^+y\end{bmatrix},\]
     then \eqref{eq:boundary form formula} holds since
     \[[xy](b)-[xy](a)=\mathcal{S}(f,g) = Hf\cdot Jg = \begin{bmatrix}Ux\\ U_cx\end{bmatrix}\cdot\begin{bmatrix}U_c^+ y \\ U^+y\end{bmatrix} = Ux\cdot U_c^+y + U_cx\cdot U^+y.\]
     }
     The second statement in the theorem follows from Proposition \ref{prop:last k-j components linear combination} with $Hf$ and $Jg$ corresponding to $f$ and $g$\unsure[inline]{Proposition \ref{prop:last k-j components linear combination} poses condition on $F$ and invokes the existence of $G$; what are the objects corresponding to $F$ and $G$ here?}.
+	\DAS{Not sure. It seems to me that unicity of $J$ is only once $H$ has been chosen, so a different $H$ (ie different complementary boundary form) will give you a different $J$, hence different adjoint boundary form and different complementary adjoint boundary form. So the task is to understand how the chain of changes new complementary boundary form $\to$ new $H$ $\to$ new $J$ $\to$ new adjoint boundary forms provides this linearity result. I guess Proposition~\ref{prop:last k-j components linear combination} must help with this in some way.}
 \end{proof}
 
 
@@ -617,6 +625,7 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
 }
 \begin{rmk}
     Let $D, D^+$ be the set of functions $u\in C^n$ satisfying \eqref{eq:homogeneous boundary condition} and \eqref{eq:adjoint boundary condition}, respectively. Then Theorem \ref{thm:boundary form formula} shows that $D^+$ is uniquely determined by $U$, although $U^+$ is not {\color{blue}(because $U^+$ is uniquely determined by $U$ and $U_c$?)}.\unsure[inline]{$U^+$ is not uniquely determined by $U$ but by $U$ and $U_c$. But $D^+$ is the set of functions $x$ satisfying $U^+x=0$; if $U^+$ is not uniquely determined by $U$, how can $D^+$ be?}
+	\DAS{Apply the unnumbered equation after~\eqref{eq:boundary form formula} to equation~\eqref{eq:adjoint boundary condition}. Because the RHS of equation~\qref{eq:adjoint boundary condition} is $0$ and $C^\star$ is linear, we still get $0$.}
 \end{rmk}
 
 {\color{blue}
@@ -775,7 +784,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \[\pi_m:\,Lx=0\quad Ux=0\]
     on $[a,b]$ is a \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{homogeneous boundary-value problem of rank $m$}}. The problem
     \[\pi_{2n-m}^+:\,L^+x=0\quad U^+x=0\]
-    on $[a,b]$ is the \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint boundary-value problem to $\pi_m$}}.\unsure[inline]{Given that $U^+$ is not uniquely determined by $U$, is the adjoint problem unique?} In fact, $\pi_m$ and $\pi_{2n-m}^+$ are adjoint problems to each other. The zero function on $[a,b]$ is a solution to both $\pi_m$ and $\pi_{2n-m}^+$, known as the \textbf{trivial solution}.
+    on $[a,b]$ is the \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint boundary-value problem to $\pi_m$}}.\unsure[inline]{Given that $U^+$ is not uniquely determined by $U$, is the adjoint problem unique?} \DAS{That depends on what you mean by ``problem''. If you think of the problem as the pair $(L^+,U^+)$, then no it is not unique. But if you think of the problem as being ``the set of all functions $x$ in an appropriate space satisfying $L^+x=0$ and $U^+x=0$, then yes the adjoint problem is unique. This is effectively the same statement as my comment on the non-unicity of $U^+$ above.} In fact, $\pi_m$ and $\pi_{2n-m}^+$ are adjoint problems to each other. The zero function on $[a,b]$ is a solution to both $\pi_m$ and $\pi_{2n-m}^+$, known as the \textbf{trivial solution}.
 \end{defn}
 
 \begin{thm}\label{thm:self-adjoint boundary condition}
@@ -980,13 +989,14 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
 \end{proof}
 
 \begin{cor}
-    $\pi_n$ and $\pi^+n$ have the same number of independent solutions.
+    $\pi_n$ and $\pi^+n$ have the same number of independent solutions. \DAS{typo}
 \end{cor}
 {\color{blue}
 \begin{proof}
     Apply Theorem \ref{thm:exactly k l.i.d solutions implies exactly k+m-n l.i.d solutions} on $m=n$.
 \end{proof}
 }
+\DAS{Coddington \& Levinson go to a lot of trouble here to count the dimension of the solution space of problems in general. In practice, we will be working in problems in which the rank of $(M:N)$ is equal to the order of $L$, so this can be greatly simplified. If you like, one later direction of the capstone would be to understand how this kind of stuff works in some more general setting, but my feeling is that is not the most need. Maybe don't spend too much time on this for now.}
 
 \subsubsection{Nonhomogeneous Boundary-value Problems and Green's Function}
 \begin{defn}
@@ -1102,7 +1112,10 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     Let $\varphi$, $\bar{\varphi}$ be two solutions of \ref{eq:nonhomogeneous boundary-value problem}. Then $\varphi-\bar{\varphi}$ is a solution of $\pi_n$. By the hypothesis, $\varphi-\bar{\varphi}=0$. Thus, \ref{eq:nonhomogeneous boundary-value problem} has a unique solution $\varphi$.
     }
     \unsure[inline]{This is different from \href[page=307]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{the proof in the book}. Actually in the corollary statement, is the sentence after ``and'' part of the conclusion or condition?}
+	\DAS{It is part of the condition. Your proof is good.}
 \end{proof}
+
+\DAS{I suggest we come back to Green's functions, and inhomogeneous BVP if and only if we decide to go in that direction. For now, the below is great progress.}
 
 {\color{blue}
 \begin{defn}
