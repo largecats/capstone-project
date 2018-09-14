@@ -1347,29 +1347,35 @@ So we have
 N = \begin{bmatrix} 0 & 0\\ 0 & 1\end{bmatrix} \quad
 P = \begin{bmatrix} 1 & 0\\0 & 0 \end{bmatrix} \quad 
 Q = \begin{bmatrix} 0 & 0\\ 0 & 1\end{bmatrix}.\]
-The matrix $B(t)$ in this case would be the $2\times 2$ matrix associated with $[xy](t)$, which, by Theorem \ref{thm:green's formula}, is given by
+The matrix $B(t)$ in this case would be the $2\times 2$ matrix associated with $[xy](t)$. Recall that 
+\[Lx = -\epsilon x'' + x'= p_0x^{(2)} + p_1x^{(1)}.\]
+So $p_0=-\epsilon$, $p_1=1$ are constant functions.
+By Theorem \ref{thm:green's formula}, $[xy](t)$ is given by
 \begin{align*}
-    [xy](t) &= \sum_{m=1}^2\sum_{j+k=m-1}(-1)^j x^{(k)}(t)\bar{y}^{(j)}(t)\\
-    &= (-1)^0x(t)\bar{y}(t) + (-1)^0x^{(1)}(t)\bar{y}(t) + (-1)^1x(t)\bar{y}^{(1)}(t)\\
-    &= x(t)\bar{y}(t) + x'(t)\bar{y}(t) - x(t)\bar{y}'(t)\\
+    [xy](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j x^{(k)}(t)(p_{n-m}\bar{y})^{(j)}(t)\\
+    &= \sum_{m=1}^2\sum_{j+k=m-1}(-1)^j x^{(k)}(t)(p_{2-m}\bar{y})^{(j)}(t)\\
+    &= (-1)^0x(t)(p_1\bar{y})(t) + (-1)^0x^{(1)}(t)(p_0\bar{y})(t) + (-1)^1x(t)(p_0\bar{y})^{(1)}(t)\\
+    &= x(t)p_1(t)\bar{y}(t) + x'(t)p_0(t)\bar{y}(t) - x(t)(p_0'(t)\bar{y}(t) + p_0(t)\bar{y}'(t))\\
+    &= x(t)\bar{y}(t) + x'(t)(-\epsilon)\bar{y}(t) - x(t)(-\epsilon)\bar{y}'(t)\\
+    &= x(t)\bar{y}(t) - \epsilon x'(t)\bar{y}(t) + \epsilon x(t)\bar{y}'(t)\\
     &= B_{11}(t)x(t)\bar{y}(t) + B_{12}(t)x'(t)\bar{y}(t) + B_{21}(t)x(t)\bar{y}'(t) + B_{22}(t)x'(t)\bar{y}'(t).
 \end{align*}
 Thus,
 \[
 B(t) = \begin{bmatrix}
-1 & 1\\
--1 & 0
+1 & -\epsilon\\
+\epsilon & 0
 \end{bmatrix}.
 \]
-In this case, since all $p_k=1$, $B(0)=B(1)$.
+Since $p_0$, $p_1$ are constant functions, $B(0)=B(1)$.
 We verify that
 \begin{align*}
     MB^{-1}(0)P &= \begin{bmatrix} 1 & 0\\0 & 0 \end{bmatrix} 
-    \begin{bmatrix} 0 & -1\\1 & 1 \end{bmatrix} 
+    \left(\frac{1}{1+\epsilon^2}\begin{bmatrix} 0 & \epsilon\\-\epsilon & 1 \end{bmatrix} \right)
     \begin{bmatrix} 1 & 0\\0 & 0 \end{bmatrix}\\
         &= N B^{-1}(1) Q.
 \end{align*}
-So $U^+x=0$ is indeed adjoint to $Ux=0$. 
+% So $U^+x=0$ is indeed adjoint to $Ux=0$. 
 
 \subsection{\href[page=2]{./literature/Constructing adjoint boundary conditions/AIAA-97-1850.pdf}{A paper} that mentions construction}
 \todo[inline]{TBC. The paper still discusses a lot about existence; but perhaps can help narrowing down the search.}
