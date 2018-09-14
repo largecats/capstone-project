@@ -28,8 +28,8 @@ This document contains all notes taken while reading materials (e.g., textbooks,
 \tableofcontents
 \listoftodos
 
-\DAS{This is great progress, Linda. Is there a theorem in here that allows us to explicitly construct (a valid example of the nonunique) $U^+$ from $U$?}
-{\todo[inline]{Look at Theorem \ref{thm:condition iff adjoint}}}
+% \DAS{This is great progress, Linda. Is there a theorem in here that allows us to explicitly construct (a valid example of the nonunique) $U^+$ from $U$?}
+% {\todo[inline]{Look at Theorem \ref{thm:condition iff adjoint}}}
 
 \newpage
 \section{\href{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Theory of Ordinary Differential Equations (Coddington Levinson)}}
@@ -1282,14 +1282,14 @@ on $[a,b]$ {(\color{blue}where $L=L^+$ and $U=U^+$)}. Then there exists a comple
 \section{Finding ways to explicitly construct (a non-unique) $U^+$ given $U$}
 We focus on the case where $m=n$. That is, $M$ and $N$ are $n\times n$ square matrices.
 
-Recall from Theorem \ref{thm:condition iff adjoint} that, given a boundary condition $Ux=0$ where
-\[Ux = M\xi(a) + N\xi(b)\] with $\rank(M:N)=n$, a boundary condition $U^+x=0$ where
-\[U^+x = P^*\xi(a) + N^*\xi(b)\] with $\rank(P^*:Q^*)=n$ is adjoint to $Ux=0$ if and only if
-\[MB^{-1}(a)P = NB^{-1}(b)Q\]
-where $B(t)$ is the $n\times n$ matrix associated with the form $[xy](t)$ (\ref{eq:[uv](t) in B matrix}). Note that $M, N, P, Q$ are not necessarily nonsingular (there is no restriction on their rank, and if they are not full rank, since they are square matrices, they are singular).
+% Recall from Theorem \ref{thm:condition iff adjoint} that, given a boundary condition $Ux=0$ where
+% \[Ux = M\xi(a) + N\xi(b)\] with $\rank(M:N)=n$, a boundary condition $U^+x=0$ where
+% \[U^+x = P^*\xi(a) + N^*\xi(b)\] with $\rank(P^*:Q^*)=n$ is adjoint to $Ux=0$ if and only if
+% \[MB^{-1}(a)P = NB^{-1}(b)Q\]
+% where $B(t)$ is the $n\times n$ matrix associated with the form $[xy](t)$ (\ref{eq:[uv](t) in B matrix}). Note that $M, N, P, Q$ are not necessarily nonsingular (there is no restriction on their rank, and if they are not full rank, since they are square matrices, they are singular).
 
 \subsection{A simple example of the hard way}
-\href[page=11]{./literature/Constructing adjoint boundary conditions/Giles-Pierce2000_Article_AnIntroductionToTheAdjointAppr.pdf}{For $L$ with lower orders, the adjoint boundary condition can be found using integration by parts.}
+\href[page=11]{./literature/Constructing adjoint boundary conditions/Giles-Pierce2000_Article_AnIntroductionToTheAdjointAppr.pdf}{For $L$ with lower orders, the adjoint boundary condition can be (practically) found using integration by parts.}
 
 Consider $Lx=x^{(1)} - \epsilon x^{(2)}$ on $[0,1]$ with boundary conditions $x(0)=x(1)=0$, or
 \[Ux=0\]
@@ -1332,7 +1332,7 @@ Using integration by parts,
     &= \int_0^1 x\left(-\frac{dy}{dt} - \epsilon\frac{d^2 y}{dt^2}\right)\,dt + \left[-\epsilon y\frac{dx}{dt}\right]_0^1.
 \end{align*}
 For the above to equal
-\[(L^+y, x) + ,\]
+\[(L^+y, x),\]
 we ought to define
 \[
     L^+y := -y' - \epsilon y''  
@@ -1375,9 +1375,19 @@ We verify that
     \begin{bmatrix} 1 & 0\\0 & 0 \end{bmatrix}\\
         &= N B^{-1}(1) Q.
 \end{align*}
-% So $U^+x=0$ is indeed adjoint to $Ux=0$. 
+So $U^+x=0$ is indeed adjoint to $Ux=0$ by Theorem \ref{thm:condition iff adjoint}. 
 
-\subsection{\href[page=2]{./literature/Constructing adjoint boundary conditions/AIAA-97-1850.pdf}{A paper} that mentions construction}
-\todo[inline]{TBC. The paper still discusses a lot about existence; but perhaps can help narrowing down the search.}
+\subsection{Construction from existence theorem}
+Given 
+\[Lx = 0 \quad Ux=0\]
+on $[a,b]$ where $\rank(U)=m=n$, we use Theorem \ref{thm:boundary form formula} to construct $U^+$ as follows.
+
+Let $\mathcal{V}$ denote the vector space of boundary operators over $\C$ with dimension $2n$.\unsure[inline]{Is this how $\mathcal{V}$ should be characterized?} Then $U=(U_1,\ldots,U_n)$ is a linearly independent vector of length $n$ in $\mathcal{V}$. Find a basis for $\mathcal{V}$ by building a maximally linearly independent set adding one vector at a time.\unsure[inline]{Is this a suitable way to find a basis?} By \href[page=41]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{a result from linear algebra}, $U$ can be extended to $(U_1,\ldots,U_{2n})$, a basis of $\mathcal{V}$. Thus, we have found $U_c=(U_{n+1},\ldots,U_{2n})$.
+
+Let $M, N, \tilde{M}, \tilde{N}$ be such that
+\[Ux = M\xi(a) + N\xi(b);\quad U_cx = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
+We have found
+\[H = \begin{bmatrix} M & N\\\tilde{M} & \tilde{N}\end{bmatrix}.\]
+By Proposition \ref{prop:existence of G}, there exists unique $2n\times 2n$ nonsingular $J=(\hat{B}H^{-1})^*$ such that $\mathcal{S}(f,g) = \hat{B}f\cdot g = Hf\cdot Jg$. Take $U^+y$ to be the last $n$ rows of $Jg$. We have found $U^+$.
 \end{document}
 
