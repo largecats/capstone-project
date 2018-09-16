@@ -1467,7 +1467,10 @@ A_{11} & A_{12}\\
 A_{21} & A_{22}\\\end{bmatrix}\]
 into the $2n\times 2n$ matrix with rank $2n$
 \[\begin{bmatrix}M&N\\ A_{11}' & A_{12}'\end{bmatrix}.\]
-Since $\rank(A)=2n$, $(M:N):A$ has at least $2n$ linearly independent rows, namely its row $n$ to row $3n$ which come from $A$. But row rank is equal to column rank and $(M:N):A$ only has $2n$ columns. So $\rank((M:N):A)=2n$. Thus, if we reduce $(M:N):A$ to its row echelon form, we would have exactly $n$ all-zero rows. Remove the corresponding rows in $(M:N):A$, we would get the desired $2n\times 2n$ matrix.\unsure[inline]{Is this reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} We then identify it with
+Since $\rank(A)=2n$, $(M:N):A$ has at least $2n$ linearly independent rows, namely its row $n$ to row $3n$ which come from $A$. But row rank is equal to column rank and $(M:N):A$ only has $2n$ columns. So $\rank((M:N):A)=2n$. Thus, if we reduce $(M:N):A$ to its row echelon form, we would have exactly $n$ all-zero rows. Remove the corresponding rows in $(M:N):A$, we would get the desired $2n\times 2n$ matrix. 
+\unsure[inline]{Since elementary operations can interchange rows, do the positions of the all-zero rows in the row echelon form correspond to the positions of the linearly dependent rows in the original matrix? If not, what ensures that none of the rows from $(M:N)$ would be removed?}
+% \unsure[inline]{However, if the second answer \href{https://math.stackexchange.com/questions/1624238/reduced-row-echelon-form-and-linear-independence}{here} is true in general (leading coefficient shows which columns in the original matrix are independent), perhaps we could work with $[(M:N):A]^{T}$ instead? I.e., on the row echelon form of $[(M:N):A]^{T}$, get the linearly independent columns, which are the linearly independent rows in $(M:N):A$.}
+\unsure[inline]{Is this whole argument reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} We then identify it with
 \[\begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
 and define
 \[U_c x = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]

@@ -12,3 +12,5 @@ print(rank(A))
 
 combined = vcat(M_N, A)
 print(rank(combined))
+
+print(rank([1 3 -1 0; 4 1 7 11]))
