@@ -1289,7 +1289,7 @@ We focus on the case where $m=n$. That is, $M$ and $N$ are $n\times n$ square ma
 % where $B(t)$ is the $n\times n$ matrix associated with the form $[xy](t)$ (\ref{eq:[uv](t) in B matrix}). Note that $M, N, P, Q$ are not necessarily nonsingular (there is no restriction on their rank, and if they are not full rank, since they are square matrices, they are singular).
 
 \subsection{A simple example of the hard way}
-\href[page=11]{./literature/Constructing adjoint boundary conditions/Giles-Pierce2000_Article_AnIntroductionToTheAdjointAppr.pdf}{For $L$ with lower orders, the adjoint boundary condition can be (practically) found using integration by parts.}
+\href[page=11]{./literature/Constructing adjoint boundary conditions/Giles-Pierce2000_Article_AnIntroductionToTheAdjointAppr.pdf}{For $L$ with lower orders, the adjoint boundary condition can be (feasibly) found using integration by parts.}
 
 Consider $Lx=x^{(1)} - \epsilon x^{(2)}$ on $[0,1]$ with boundary conditions $x(0)=x(1)=0$, or
 \[Ux=0\]
@@ -1382,17 +1382,82 @@ Given
 \[Lx = 0 \quad Ux=0\]
 on $[a,b]$ where $\rank(U)=m=n$, we use Theorem \ref{thm:boundary form formula} to construct $U^+$ as follows.
 
-Let $\mathcal{V}$ denote the vector space of boundary operators over $\C$ with dimension $2n$.\unsure[inline]{Is this how $\mathcal{V}$ should be characterized? Should I prove that it's a vector space?} Then $U=(U_1,\ldots,U_n)$ is a list of $n$ linearly independent vectors in $\mathcal{V}$. Find a basis for $\mathcal{V}$ by building a maximally linearly independent set adding one vector at a time.\unsure[inline]{Is this a (computationally) suitable way to find a basis?} By \href[page=58]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{a result from linear algebra}, using this basis, $U_1,\ldots,U_n$ can be extended to $U_1,\ldots,U_{2n}$, a basis of $\mathcal{V}$. Thus, we have found $U_c=(U_{n+1},\ldots,U_{2n})$.
+\subsubsection{Working with $U_i$ in a vector space}
+Let $\mathcal{V}$ denote the vector space of boundary operators over $\C$ with dimension $2n$.\unsure[inline]{Is this how $\mathcal{V}$ should be characterized? I.e., $\mathcal{V}$ is a space of operators that map functions $x\in C^{n-1}_{[a,b]}$ to $\R$? Should I prove that it's a vector space? Or should I work with the matrices $M$, $N$ instead (see the next section)?} 
+
+Then $U=(U_1,\ldots,U_n)$ is a list of $n$ linearly independent vectors in $\mathcal{V}$. 
+
+\begin{algorithm}[H]
+    \caption{Checking linear independence.}\label{algo:checking linear independence}
+    \KwData{A list of boundary operators $U_1,\ldots, U_n$}
+    \KwResult{Whether they are linearly independent}
+    \unsure[inline]{The criterion for linear independence of the $U_i$ is $\sum_{i=1}^n c_i U_i x=0$ implies $c_i=0$ for all $x\in C^{n-1}_{[a,b]}$. How should I check this (since $C^{n-1}_{[a,b]}$ is infinite)? In general, it seems that I have to deal with criteria like this in the following algorithms working with $U_i$ and their spans.}
+\end{algorithm}
+
+Find a basis for $\mathcal{V}$ by building a maximally linearly independent set adding one vector at a time. 
+
+\begin{algorithm}[H]
+    \caption{Finding a basis.}\label{algo:finding a basis}
+    \KwData{An arbitrary $v_1\in\mathcal{V}$}
+    \KwResult{A list $v_1,\ldots,v_{2n}$ of linearly independent vectors in $\mathcal{V}$}
+    \Begin{
+        $l \longleftarrow [v_1]$\;
+        \While{$\len(l)< 2n$} {
+            Pick any $v\in\mathcal{V} - \Span(l)$\;
+            $l \longleftarrow l + v$
+        }
+        \Return{$l$}
+    }
+\end{algorithm}
+
+By \href[page=58]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{a result from linear algebra}, using this basis, $U_1,\ldots,U_n$ can be extended to $U_1,\ldots,U_{2n}$, a basis of $\mathcal{V}$. Thus, we have found $U_c=(U_{n+1},\ldots,U_{2n})$.
+
+\begin{algorithm}[H]
+    \caption{Extending to a basis.}\label{algo:extending to a basis}
+    \KwData{$U_1,\ldots,U_n$ and basis $v_1,\ldots,v_{2n}$}
+    \KwResult{A basis $U_1,\ldots,U_{2n}$ of $\mathcal{V}$}
+    \Begin{
+        $l \longleftarrow [U_1,\ldots,U_n, v_1,\ldots, v_{2n}]$\;
+        $i \longleftarrow 1$\;
+        \While{$\len(l)> 2n$}{
+            \If{$i=1$}{
+                \If{$v_i\in \Span(U_1,\ldots,U_n)$}{
+                    $l \longleftarrow [U_1,\ldots,U_n, v_{i+1},\ldots,v_{2n}]$
+                }
+            }
+            \Else{
+                \If{$v_i\in\Span(U_1,\ldots,U_n,\ldots,v_{i-1})$}{
+                    $l \longleftarrow [U_1,\ldots,U_n, v_{i+1},\ldots,v_{2n}]$
+                    }
+            }
+        }
+        \Return{$l$}
+    }
+\end{algorithm}
 
 Let $M, N, \tilde{M}, \tilde{N}$ be such that
 \[Ux = M\xi(a) + N\xi(b);\quad U_cx = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
 Then we have found
 \[H = \begin{bmatrix} M & N\\\tilde{M} & \tilde{N}\end{bmatrix}.\]
-By Proposition \ref{prop:existence of G}, there exists unique $2n\times 2n$ nonsingular $J=(\hat{B}H^{-1})^*$ such that $\mathcal{S}(f,g) = \hat{B}f\cdot g = Hf\cdot Jg$. Take $U^+y$ to be the last $n$ rows of $Jg$. Then we have found $U^+$.
+Let $\hat{B}$ be as in \ref{eq:[uv](t) in B matrix} which depends on $L$. By Proposition \ref{prop:unique nonsingular G in semibilinear form}, $J=(\hat{B}H^{-1})^*$ is a nonsingular $2n\times 2n$ matrix such that $\mathcal{S}(f,g) = \hat{B}f\cdot g = Hf\cdot Jg$. Take $U^+y$ to be the last $n$ rows of $Jg$. Then we have found $U^+$.
 
-% \subsubsection{Algorithm}
-% \begin{algorithm}
-%     \caption{Euclid’s algorithm}\label{euclid}
-% \end{algorithm}
+\subsubsection{Working with matrices $M$, $N$}
+For $U=(U_1,\ldots, U_n)$, write
+\[Ux = M\xi(a) + N\xi(b).\]
+Then \href[page = 298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{$U_1,\ldots, U_n$ are linearly independent if and only if $\rank(M:N)=n$}. Thus, Algorithm \ref{algo:checking linear independence} can be replaced by the following.
+
+\begin{algorithm}[H]
+    \caption{Checking linear independence by checking $\rank(M:N)$.}\label{algo:checking linear independence by checking rank(M:N)}
+    \KwData{A list of boundary operators $U_1,\ldots, U_n$}
+    \KwResult{Whether they are linearly independent}
+    \Begin{
+        $M, N \longleftarrow$ $n\times n$ matrices associated with $U=(U_1,\ldots,U_n)$ defined in Remark \ref{rmk:writing Ux in M, N (M:N)}\;
+        $(M:N) \longleftarrow$ $n\times 2n$ matrix defined in Remark \ref{rmk:writing Ux in M, N (M:N)}\
+
+        \Return{$\rank(M:N)==n$}
+    }
+\end{algorithm}
+
+\unsure[inline]{Extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix. Is there a better way than search-and-check?}
 \end{document}
 
