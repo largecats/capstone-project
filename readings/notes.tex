@@ -1383,6 +1383,8 @@ Given
 on $[a,b]$ where $\rank(U)=m=n$, we use Theorem \ref{thm:boundary form formula} to construct $U^+$ as follows.
 
 \subsubsection{Working with $U_i$ in a vector space}
+\LIN{This section is more like my conceptual explorations. I think the next section is far more workable in terms of implementation.}
+
 Let $\mathcal{V}$ denote the vector space of boundary operators over $\C$ with dimension $2n$.\unsure[inline]{Is this how $\mathcal{V}$ should be characterized? I.e., $\mathcal{V}$ is a space of operators that map functions $x\in C^{n-1}_{[a,b]}$ to $\R$? Should I prove that it's a vector space? Or should I work with the matrices $M$, $N$ instead (see the next section)?} 
 
 Then $U=(U_1,\ldots,U_n)$ is a list of $n$ linearly independent vectors in $\mathcal{V}$. 
@@ -1394,17 +1396,17 @@ Then $U=(U_1,\ldots,U_n)$ is a list of $n$ linearly independent vectors in $\mat
     \unsure[inline]{The criterion for linear independence of the $U_i$ is $\sum_{i=1}^n c_i U_i x=0$ implies $c_i=0$ for all $x\in C^{n-1}_{[a,b]}$. How should I check this (since $C^{n-1}_{[a,b]}$ is infinite)? In general, it seems that I have to deal with criteria like this in the following algorithms working with $U_i$ and their spans.}
 \end{algorithm}
 
-Find a basis for $\mathcal{V}$ by building a maximally linearly independent set adding one vector at a time. 
+Find a basis for $\mathcal{V}$ by building a maximally linearly independent set adding one vector at a time until the set spans $V$, \href[page=62]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{or equivalently, contains $2n$ linearly independent vectors}. 
 
 \begin{algorithm}[H]
     \caption{Finding a basis.}\label{algo:finding a basis}
-    \KwData{An arbitrary $v_1\in\mathcal{V}$}
-    \KwResult{A list $v_1,\ldots,v_{2n}$ of linearly independent vectors in $\mathcal{V}$}
+    \KwData{An arbitrary nonzero $V_1\in\mathcal{V}$}
+    \KwResult{A list $V_1,\ldots,V_{2n}$ of linearly independent vectors in $\mathcal{V}$}
     \Begin{
-        $l \longleftarrow [v_1]$\;
-        \While{$\len(l)< 2n$} {
-            Pick any $v\in\mathcal{V} - \Span(l)$\;
-            $l \longleftarrow l + v$
+        $l \longleftarrow [V_1]$\;
+        \While{$\len(l)<2n$} {
+            Pick any $V\in\mathcal{V} - \Span(l)$\;
+            $l \longleftarrow l + V$
         }
         \Return{$l$}
     }
@@ -1414,20 +1416,20 @@ By \href[page=58]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{a result fro
 
 \begin{algorithm}[H]
     \caption{Extending to a basis.}\label{algo:extending to a basis}
-    \KwData{$U_1,\ldots,U_n$ and basis $v_1,\ldots,v_{2n}$}
+    \KwData{$U_1,\ldots,U_n$ and basis $V_1,\ldots,V_{2n}$}
     \KwResult{A basis $U_1,\ldots,U_{2n}$ of $\mathcal{V}$}
     \Begin{
-        $l \longleftarrow [U_1,\ldots,U_n, v_1,\ldots, v_{2n}]$\;
+        $l \longleftarrow [U_1,\ldots,U_n, V_1,\ldots, V_{2n}]$\;
         $i \longleftarrow 1$\;
         \While{$\len(l)> 2n$}{
             \If{$i=1$}{
-                \If{$v_i\in \Span(U_1,\ldots,U_n)$}{
-                    $l \longleftarrow [U_1,\ldots,U_n, v_{i+1},\ldots,v_{2n}]$
+                \If{$V_i\in \Span(U_1,\ldots,U_n)$}{
+                    $l \longleftarrow [U_1,\ldots,U_n, V_{i+1},\ldots,V_{2n}]$
                 }
             }
             \Else{
-                \If{$v_i\in\Span(U_1,\ldots,U_n,\ldots,v_{i-1})$}{
-                    $l \longleftarrow [U_1,\ldots,U_n, v_{i+1},\ldots,v_{2n}]$
+                \If{$V_i\in\Span(U_1,\ldots,U_n,\ldots,V_{i-1})$}{
+                    $l \longleftarrow [U_1,\ldots,U_n, V_{i+1},\ldots,V_{2n}]$
                     }
             }
         }
@@ -1458,6 +1460,17 @@ Then \href[page = 298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of
     }
 \end{algorithm}
 
-\unsure[inline]{Extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix. Is there a better way than search-and-check?}
+Extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix. Mirroring the approach in the previous section, we may start with any $2n\times 2n$ nonsingular matrix $A$ which corresponds to a list of linearly independent boundary forms $V_1,\ldots, V_{2n}$ (\href[page=62]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{which is a basis for $\mathcal{V}$}), and then reduce some ``combination'' of $(M:N)$ and $A$ to a $2n\times 2n$ nonsingular matrix containing $(M:N)$. That is, writing
+\[A=\begin{bmatrix}A_{11} & A_{12}\\ A_{21} & A_{22}\end{bmatrix}\] where all the blocks are $n\times n$ matrices, we seek to turn the $3n\times 2n$ matrix
+\[(M:N):A := \begin{bmatrix}M & N\\
+A_{11} & A_{12}\\
+A_{21} & A_{22}\\\end{bmatrix}\]
+into the $2n\times 2n$ matrix with rank $2n$
+\[\begin{bmatrix}M&N\\ A_{11}' & A_{12}'\end{bmatrix}.\]
+Since $\rank(A)=2n$, $(M:N):A$ has at least $2n$ linearly independent rows, namely its row $n$ to row $3n$ which come from $A$. But row rank is equal to column rank and $(M:N):A$ only has $2n$ columns. So $\rank((M:N):A)=2n$. Thus, if we reduce $(M:N):A$ to its row echelon form, we would have exactly $n$ all-zero rows. Remove the corresponding rows in $(M:N):A$, we would get the desired $2n\times 2n$ matrix.\unsure[inline]{Is this reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} We then identify it with
+\[\begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
+and define
+\[U_c = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
+Following the steps in the previous section gives $U^+$.
 \end{document}
 
