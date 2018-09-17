@@ -13,4 +13,13 @@ print(rank(A))
 combined = vcat(M_N, A)
 print(rank(combined))
 
-print(rank([1 3 -1 0; 4 1 7 11]))
+print(rank(M_N))
+print(rank(vcat(M_N, A[1:1,:])))
+print(rank(vcat(M_N, A[1:2,:])))
+print(rank(vcat(M_N, A[1:3,:])))
+print(rank(vcat(M_N, A[1:2,:], A[4:4,:])))
+
+using RowEchelon
+rref(A)
+rref(M_N)
+rref(combined')

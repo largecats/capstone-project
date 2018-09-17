@@ -1454,9 +1454,9 @@ Then \href[page = 298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of
     \KwResult{Whether they are linearly independent}
     \Begin{
         $M, N \longleftarrow$ $n\times n$ matrices associated with $U=(U_1,\ldots,U_n)$ defined in Remark \ref{rmk:writing Ux in M, N (M:N)}\;
-        $(M:N) \longleftarrow$ $n\times 2n$ matrix defined in Remark \ref{rmk:writing Ux in M, N (M:N)}\
+        Mat $ \longleftarrow (M:N)$\
 
-        \Return{$\rank(M:N)==n$}
+        \Return{$\rank(\text{Mat})==n$}
     }
 \end{algorithm}
 
@@ -1467,10 +1467,54 @@ A_{11} & A_{12}\\
 A_{21} & A_{22}\\\end{bmatrix}\]
 into the $2n\times 2n$ matrix with rank $2n$
 \[\begin{bmatrix}M&N\\ A_{11}' & A_{12}'\end{bmatrix}.\]
-Since $\rank(A)=2n$, $(M:N):A$ has at least $2n$ linearly independent rows, namely its row $n$ to row $3n$ which come from $A$. But row rank is equal to column rank and $(M:N):A$ only has $2n$ columns. So $\rank((M:N):A)=2n$. Thus, if we reduce $(M:N):A$ to its row echelon form, we would have exactly $n$ all-zero rows. Remove the corresponding rows in $(M:N):A$, we would get the desired $2n\times 2n$ matrix. 
-\unsure[inline]{Since elementary operations can interchange rows, do the positions of the all-zero rows in the row echelon form correspond to the positions of the linearly dependent rows in the original matrix? If not, what ensures that none of the rows from $(M:N)$ would be removed?}
+Since $\rank(A)=2n$, $(M:N):A$ has at least $2n$ linearly independent rows, namely its row $n$ to row $3n$ which come from $A$. But row rank is equal to column rank and $(M:N):A$ only has $2n$ columns. So $\rank((M:N):A)=2n$. This means that we can remove $n$ rows from $(M:N):A$ without changing its rank, thus obtaining the desired $2n\times 2n$ matrix. 
+
+Recall that row elementary operations preserve the linear dependence relation among columns but not among rows (i.e., when rows are interchanged). And columns with pivot in them are linearly independent. So to find which rows to remove in $(M:N):A$, we could first reduce $[(M:N):A]^T$ to its row echelon form; then the columns without pivot in $[(M:N):A]^T$ are rows to be removed in $(M:N):A$. No rows from $(M:N)$ would be removed because the pivots are the left-most non-zero entries in their respective rows in $[(M:N):A]^T$. This means that all non-pivot columns in $[(M:N):A]^T$ would be at the right, i.e., all rows to be removed in $(M:N):A$ would be at the bottom. 
+
+\begin{algorithm}[H]
+    \caption{Removing rows from $(M:N):A$ without changing rank: Elementary operations.}\label{algo:removing rows from (M:N):A without changing rank: elementary operations.}
+    \KwData{$(M:N):A_{3n\times 2n}$ with rank $2n$}
+    \KwResult{A $2n\times 2n$ matrix with rank $2n$ where the first $n$ rows are $(M:N)$}
+    \Begin{
+        Mat $\longleftarrow$ $(M:N):A$\;
+        MatT $\longleftarrow$ transpose(Mat)\;
+        MatTRref $\longleftarrow$ rref(MatT); \Comment*[r]{rref := reduced row echelon form}\
+        \For{i in range(ncol(MatTRref))}{
+            \If{MatTRef[,i] contains no pivot}{
+                Mat $\longleftarrow$ Mat[-i,]
+            }
+        }
+        \Return{Mat}
+    }
+\end{algorithm}
+
+Alternatively, we can append the rows of $A$ one by one to $(M:N)$ and discard any row that do not make the rank of the resulting matrix increase.
+
+\begin{algorithm}[H]
+    \caption{Removing rows from $(M:N):A$ without changing rank: Append and check rank.}\label{algo:removing rows from (M:N):A without changing rank by checking rank: apppend and check rank.}
+    \KwData{$(M:N)_{n\times 2n}$ with rank $n$, $A_{2n\times 2n}$ with rank $2n$}
+    \KwResult{A $2n\times 2n$ matrix with rank $2n$ where the first $n$ rows are $(M:N)$}
+    \Begin{
+        Mat $\longleftarrow$ $(M:N)$\;
+        \For{i in range(nrow(A))}{
+            Mat1 $\longleftarrow$ vcat(Mat, A[i,]) \Comment*[r]{vcat := vertical concatenation}\
+            \If{rank(Mat1) == rank(Mat)+1}{
+                Mat $\longleftarrow$ Mat1
+            }
+            \Else{
+                A $\longleftarrow$ A[-i,]
+            }
+        }
+        \Return{vcat(Mat, A)}
+    }
+\end{algorithm}
+
+% Thus, if we reduce $(M:N):A$ to its row echelon form, we would have exactly $n$ all-zero rows. Remove the corresponding rows in $(M:N):A$, we would get the desired $2n\times 2n$ matrix. 
+% \unsure[inline]{Since elementary operations can interchange rows, do the positions of the all-zero rows in the row echelon form correspond to the positions of the linearly dependent rows in the original matrix? If not, what ensures that none of the rows from $(M:N)$ would be removed?}
 % \unsure[inline]{However, if the second answer \href{https://math.stackexchange.com/questions/1624238/reduced-row-echelon-form-and-linear-independence}{here} is true in general (leading coefficient shows which columns in the original matrix are independent), perhaps we could work with $[(M:N):A]^{T}$ instead? I.e., on the row echelon form of $[(M:N):A]^{T}$, get the linearly independent columns, which are the linearly independent rows in $(M:N):A$.}
-\unsure[inline]{Is this whole argument reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} We then identify it with
+\unsure[inline]{Is this whole argument reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} 
+
+We then identify it with
 \[\begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
 and define
 \[U_c x = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
