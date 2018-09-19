@@ -76,11 +76,16 @@ where $M_{jk}, N_{jk}$ are complex constants.
     \end{equation}
 \end{thm}
 \begin{rmk}
-    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as \LIN{(checked for $n=2$)}
+    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as \todo[inline]{Find out an explicit way to write $B_{jk}$ in terms of $p_{n-m}$. I'm thinking of deducing a formula for $B_{jk}$ by checking $n=2, 3, 4$, or implementing the Polish notation in Julia to figure out the expression for $B_{jk}$.}
     \begin{equation}\label{eq:[uv](t) in B matrix}
-        [uv](t)=\sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t) 
+        \begin{split}
+            [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
+            % &= \sum_{j+k=0}^{n-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
+            % &= \sum_{j,k=1}^n (-1)^{j-1}u^{(k-1)}(t)(p_{n-m}\bar{v})^{(j-1)}(t)\\
+            &= \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)
+        \end{split}
     \end{equation}
-        where $B_{jk}$ are the $j, k$-entry of the $n\times n$ matrix
+        where $B_{jk}$ may form the $j, k$-entry of the $n\times n$ matrix
     \begin{equation}\label{B(t)}
         B(t)=\begin{bmatrix}
             B_{11} & B_{12} & \cdots & \cdots & p_0(t)\\
@@ -1454,13 +1459,13 @@ Then \href[page = 298]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of
     \KwResult{Whether they are linearly independent}
     \Begin{
         $M, N \longleftarrow$ $n\times n$ matrices associated with $U=(U_1,\ldots,U_n)$ defined in Remark \ref{rmk:writing Ux in M, N (M:N)}\;
-        Mat $ \longleftarrow (M:N)$\
+        mat $ \longleftarrow (M:N)$\
 
-        \Return{$\rank(\text{Mat})==n$}
+        \Return{$\rank(\text{mat})==n$}
     }
 \end{algorithm}
 
-Extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix. Mirroring the approach in the previous section, we may start with any $2n\times 2n$ nonsingular matrix $A$ which corresponds to a list of linearly independent boundary forms $V_1,\ldots, V_{2n}$ (\href[page=62]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{which is a basis for $\mathcal{V}$}), and then reduce some ``combination'' of $(M:N)$ and $A$ to a $2n\times 2n$ nonsingular matrix containing $(M:N)$. That is, writing
+Extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix. Mirroring the approach in the previous section, we may start with any $2n\times 2n$ nonsingular matrix $A$ (for convenience we pick $A=E_{2n}$, the identity matrix) which corresponds to a list of linearly independent boundary forms $V_1,\ldots, V_{2n}$ (\href[page=62]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{which is a basis for $\mathcal{V}$}), and then reduce some ``combination'' of $(M:N)$ and $A$ to a $2n\times 2n$ nonsingular matrix containing $(M:N)$. That is, writing
 \[A=\begin{bmatrix}A_{11} & A_{12}\\ A_{21} & A_{22}\end{bmatrix}\] where all the blocks are $n\times n$ matrices, we seek to turn the $3n\times 2n$ matrix
 \[(M:N):A := \begin{bmatrix}M & N\\
 A_{11} & A_{12}\\
@@ -1469,24 +1474,26 @@ into the $2n\times 2n$ matrix with rank $2n$
 \[\begin{bmatrix}M&N\\ A_{11}' & A_{12}'\end{bmatrix}.\]
 Since $\rank(A)=2n$, $(M:N):A$ has at least $2n$ linearly independent rows, namely its row $n$ to row $3n$ which come from $A$. But row rank is equal to column rank and $(M:N):A$ only has $2n$ columns. So $\rank((M:N):A)=2n$. This means that we can remove $n$ rows from $(M:N):A$ without changing its rank, thus obtaining the desired $2n\times 2n$ matrix. 
 
-Recall that row elementary operations preserve the linear dependence relation among columns but not among rows (i.e., when rows are interchanged). And columns with pivot in them are linearly independent. So to find which rows to remove in $(M:N):A$, we could first reduce $[(M:N):A]^T$ to its row echelon form; then the columns without pivot in $[(M:N):A]^T$ are rows to be removed in $(M:N):A$. No rows from $(M:N)$ would be removed because the pivots are the left-most non-zero entries in their respective rows in $[(M:N):A]^T$. This means that all non-pivot columns in $[(M:N):A]^T$ would be at the right, i.e., all rows to be removed in $(M:N):A$ would be at the bottom. 
+To find which rows to remove in $(M:N):A$, we could customize the row echelon form algorithm so that the row operations do not overwrite the first $n$ rows.
 
-\begin{algorithm}[H]
-    \caption{Removing rows from $(M:N):A$ without changing rank: Elementary operations.}\label{algo:removing rows from (M:N):A without changing rank: elementary operations.}
-    \KwData{$(M:N):A_{3n\times 2n}$ with rank $2n$}
-    \KwResult{A $2n\times 2n$ matrix with rank $2n$ where the first $n$ rows are $(M:N)$}
-    \Begin{
-        Mat $\longleftarrow$ $(M:N):A$\;
-        MatT $\longleftarrow$ transpose(Mat)\;
-        MatTRref $\longleftarrow$ rref(MatT); \Comment*[r]{rref := reduced row echelon form}\
-        \For{i in range(ncol(MatTRref))}{
-            \If{MatTRef[,i] contains no pivot}{
-                Mat $\longleftarrow$ Mat[-i,]
-            }
-        }
-        \Return{Mat}
-    }
-\end{algorithm}
+% Recall that row elementary operations preserve the linear dependence relation among columns but not among rows (i.e., when rows are interchanged). And columns with pivot in them are linearly independent. So to find which rows to remove in $(M:N):A$, we could first reduce $[(M:N):A]^T$ to its row echelon form; then the columns without pivot in $[(M:N):A]^T$ are rows to be removed in $(M:N):A$. No rows from $(M:N)$ would be removed because the pivots are the left-most non-zero entries in their respective rows in $[(M:N):A]^T$. This means that all non-pivot columns in $[(M:N):A]^T$ would be at the right, i.e., all rows to be removed in $(M:N):A$ would be at the bottom. 
+
+% \begin{algorithm}[H]
+%     \caption{Removing rows from $(M:N):A$ without changing rank: Elementary operations.}\label{algo:removing rows from (M:N):A without changing rank: elementary operations.}
+%     \KwData{$(M:N):A_{3n\times 2n}$ with rank $2n$}
+%     \KwResult{A $2n\times 2n$ matrix with rank $2n$ where the first $n$ rows are $(M:N)$}
+%     \Begin{
+%         mat $\longleftarrow$ $(M:N):A$\;
+%         matT $\longleftarrow$ transpose(mat)\;
+%         matTRref $\longleftarrow$ rref(matT); \Comment*[r]{rref := reduced row echelon form}\
+%         \For{i in range(ncol(matTRref))}{
+%             \If{matTRef[,i] contains no pivot}{
+%                 mat $\longleftarrow$ mat[-i,]
+%             }
+%         }
+%         \Return{mat}
+%     }
+% \end{algorithm}
 
 Alternatively, we can append the rows of $A$ one by one to $(M:N)$ and discard any row that do not make the rank of the resulting matrix increase.
 
@@ -1495,27 +1502,27 @@ Alternatively, we can append the rows of $A$ one by one to $(M:N)$ and discard a
     \KwData{$(M:N)_{n\times 2n}$ with rank $n$, $A_{2n\times 2n}$ with rank $2n$}
     \KwResult{A $2n\times 2n$ matrix with rank $2n$ where the first $n$ rows are $(M:N)$}
     \Begin{
-        Mat $\longleftarrow$ $(M:N)$\;
+        mat $\longleftarrow$ $(M:N)$\;
         \For{i in range(nrow(A))}{
-            Mat1 $\longleftarrow$ vcat(Mat, A[i,]) \Comment*[r]{vcat := vertical concatenation}\
-            \If{rank(Mat1) == rank(Mat)+1}{
-                Mat $\longleftarrow$ Mat1
+            mat1 $\longleftarrow$ vcat(mat, A[i,]) \Comment*[r]{vcat := vertical concatenation}\
+            \If{rank(mat1) == rank(mat)+1}{
+                mat $\longleftarrow$ mat1
             }
             \Else{
                 A $\longleftarrow$ A[-i,]
             }
         }
-        \Return{vcat(Mat, A)}
+        \Return{vcat(mat, A)}
     }
 \end{algorithm}
 
 % Thus, if we reduce $(M:N):A$ to its row echelon form, we would have exactly $n$ all-zero rows. Remove the corresponding rows in $(M:N):A$, we would get the desired $2n\times 2n$ matrix. 
 % \unsure[inline]{Since elementary operations can interchange rows, do the positions of the all-zero rows in the row echelon form correspond to the positions of the linearly dependent rows in the original matrix? If not, what ensures that none of the rows from $(M:N)$ would be removed?}
 % \unsure[inline]{However, if the second answer \href{https://math.stackexchange.com/questions/1624238/reduced-row-echelon-form-and-linear-independence}{here} is true in general (leading coefficient shows which columns in the original matrix are independent), perhaps we could work with $[(M:N):A]^{T}$ instead? I.e., on the row echelon form of $[(M:N):A]^{T}$, get the linearly independent columns, which are the linearly independent rows in $(M:N):A$.}
-\unsure[inline]{Is this whole argument reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} 
+% \unsure[inline]{Is this whole argument reasonable? If so, does the same argument apply when $M$, $N$ have complex entries?} 
 
 We then identify it with
-\[\begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
+\[H = \begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
 and define
 \[U_c x = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
 Following the steps in the previous section gives $U^+$.
