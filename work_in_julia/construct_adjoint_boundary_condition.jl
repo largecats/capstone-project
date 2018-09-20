@@ -283,7 +283,6 @@ function get_B_hat(L::LinearDifferentialOperator, bMatrix::Array{SymPy.Sym}, t::
     return bHat
 end
 
-
 =============================================================================
 # Tests
 =============================================================================
