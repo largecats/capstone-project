@@ -35,7 +35,10 @@ x = symbols("x")
 y = SymFunction("y")(x)
 expr = 3 + x + x^2 + diff(y,x)*x*2, x
 expr = 3 + x + x^2 + Derivative(y,x)*x*2, x
+<<<<<<< HEAD
 expr = 3 + x + x^2
+=======
+>>>>>>> master
 subs(expr, diff(y,x),x)
 subs(expr, Derivative(y,x), x)
 coeff(expr,x)
