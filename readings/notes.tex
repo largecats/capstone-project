@@ -76,12 +76,12 @@ where $M_{jk}, N_{jk}$ are complex constants.
     \end{equation}
 \end{thm}
 \begin{rmk}
-    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as \todo[inline]{Find out an explicit way to write $B_{jk}$ in terms of $p_{n-m}$. I'm thinking of deducing a formula for $B_{jk}$ by checking $n=2, 3, 4$, or implementing the Polish notation in Julia to figure out the expression for $B_{jk}$.}
+    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as \todo[inline]{Find out an explicit way to write $B_{jk}$ in terms of $p_{n-m}$. I'm thinking of deducing a formula for $B_{jk}$ by checking $n=2, 3, 4$, or implementing a program in Julia to figure out the expression for $B_{jk}$.}
     \begin{equation}\label{eq:[uv](t) in B matrix}
         \begin{split}
             [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
-            % &= \sum_{j+k=0}^{n-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
-            % &= \sum_{j,k=1}^n (-1)^{j-1}u^{(k-1)}(t)(p_{n-m}\bar{v})^{(j-1)}(t)\\
+            &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)\left(\sum_{l=0}^j\binom{j}{l}p_{n-m}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)\\
+            &= \cdots ?\\
             &= \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)
         \end{split}
     \end{equation}
@@ -1388,10 +1388,12 @@ Given
 on $[a,b]$ where $\rank(U)=m=n$, we use Theorem \ref{thm:boundary form formula} to construct $U^+$ as follows.
 
 \subsubsection{Working with $U_i$ in a vector space}
-\LIN{This section is more like my conceptual explorations. I think the next section is far more workable in terms of implementation.}
+% \LIN{This section is more like my conceptual explorations. I think the next section is far more workable in terms of implementation.}
 
-Let $\mathcal{V}$ denote the vector space of boundary operators over $\C$ with dimension $2n$.\unsure[inline]{Is this how $\mathcal{V}$ should be characterized? I.e., $\mathcal{V}$ is a space of operators that map functions $x\in C^{n-1}_{[a,b]}$ to $\R$? Should I prove that it's a vector space? Or should I work with the matrices $M$, $N$ instead (see the next section)?} 
+Recall from Linear algebra that \href[page=117]{./textbooks/Linear Algebra Done Right 3rd ed.pdf}{the dual space of a vector space $V$ is the vector space of all linear functionals on $V$, i.e., $\mathcal{L}(V,\mathcal{F})$}. Consider the vector space $C^{n-1}_{[a,b]}$. The dual space of $C^{n-1}_{[a,b]}$ is very large, but the subspace spanned by the boundary forms (recall that boundary forms map functions in $C^{n-1}_{[a,b]}$ to the field $\C$) is finite dimensional and has a basis of the $2n$ boundary forms $x \mapsto x^{(j)}(a)$ and $x \mapsto x^{(j)}(b)$ for $j=0,1,\cdots,n-1$ and $x\in C^{n-1}_{[a,b]}$ (it is clear that all boundary forms are linear combinations of them).
 
+Let $\mathcal{V}$ denote the subspace with dimension $2n$ spanned by the boundary forms.
+% \unsure[inline]{Is this how $\mathcal{V}$ should be characterized? I.e., $\mathcal{V}$ is a space of operators that map functions $x\in C^{n-1}_{[a,b]}$ to $\R$? Should I prove that it's a vector space? Or should I work with the matrices $M$, $N$ instead (see the next section)?} 
 Then $U=(U_1,\ldots,U_n)$ is a list of $n$ linearly independent vectors in $\mathcal{V}$. 
 
 \begin{algorithm}[H]
