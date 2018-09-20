@@ -122,38 +122,24 @@ function partition(n::Int)
     output = []
     for i = 0:n
         j = n - i
-<<<<<<< HEAD
         push!(output, (i,j))
-=======
-        push!(output, (i, j))
->>>>>>> master
     end
     return output
 end
 
-<<<<<<< HEAD
 # Construct the symbol (a SymPy.Sym object) for the kth derivative of u with respect to t
 function deriv(u::SymPy.Sym, t::SymPy.Sym, k::Int)
-=======
-# Get the symbol (a SymPy.Sym object) for the kth derivative of u with respect to t
-function deriv(u::SymPy.Sym, t::Symbol, k::Int)
->>>>>>> master
     if k < 0
         error("Only nonnegative degrees are allowed")
     end
     y = u
     for i = 1:k
         newY = diff(y, t)
-<<<<<<< HEAD
-=======
-        # newY = Derivative(y, t)
->>>>>>> master
         y = newY
     end
     return y
 end
 
-<<<<<<< HEAD
 # Construct a matrix whose ij-entry is a string "pij" which denotes the jth derivative of p_i
 function get_pString_matrix(L::LinearDifferentialOperator)
     pFunctions, (a,b) = L.pFunctions, L.interval
@@ -297,52 +283,6 @@ function get_B_hat(L::LinearDifferentialOperator, bMatrix::Array{SymPy.Sym}, t::
     return bHat
 end
 
-=======
-function create_p_matrix(L::LinearDifferentialOperator)
-    pFunctions, (a, b) = L.pFunctions, L.interval
-    n = length(pFunctions)
-
-    mat = Array{String}(n,n)
-    for i in 0:(n-1)
-        for j in 0:(n-1)
-            mat[i+1,j+1] = string("p", i, j)
-        end
-    end
-    return mat
-end
-
-function get_uv_form(L::LinearDifferentialOperator)
-    pFunctions, (a, b) = L.pFunctions, L.interval
-    n = length(pFunctions)
-
-    t = Symbol("t")
-    u, v = SymFunction("u")(t), SymFunction("v")(t)
-    pFunctionSymbols = [SymFunction(string("p", i))(t) for i in 0:(n-1)]
-    sum = 0
-    for m = 1:n
-        for (j,k) in partition(m-1)
-            summand = (-1)^j * deriv(u, t, k) * deriv(pFunctionSymbols[n-m+1] * conj(v), t, j)
-            sum += summand
-        end
-    end
-    println(sum)
-    sum = expand(sum)
-    println(sum)
-    pFunctionsStrings = []
-    pMatrix = create_p_matrix(L)
-    for i = 0:(n-1) # index
-        for d = reverse(0:(n-1)) # degree
-            pTerm = deriv(pFunctionSymbols[i+1], t, d)
-            println(pTerm)
-            pString = pMatrix[i+1,d+1]
-            println(pString)
-            sum = subs(sum, pTerm, Symbol(pString))
-        end
-    end
-    return sum
-end
-
->>>>>>> master
 =============================================================================
 # Tests
 =============================================================================
@@ -361,7 +301,6 @@ L = LinearDifferentialOperator([p,p], (0, 1))
 function w(x)
     return x + 1
 end
-<<<<<<< HEAD
 LinearDifferentialOperator([w,w], (0, 1))
 
 u, v = SymFunction("u")(t), SymFunction("v")(t)
@@ -381,17 +320,3 @@ bMatrix = get_B_matrix(L, uvForm, t, u, v, pStringMatrix, pFuncMatrix, coeffMatr
 evaluate_matrix(bMatrix, t, 0)
 bHatEval = get_B_hat(L, bMatrix, t)
 
-=======
-L = LinearDifferentialOperator([p,p], (0, 1))
-create_p_matrix(L)
-sum = get_uv_form(L)
-sum = subs(sum, deriv(pFunctionSymbols[1], t, 0), Symbol("p00"))
-subs(sum, deriv(pFunctionSymbols[1], t, 1), Symbol("p00"))
-uvForm = get_uv_form(L)
-print(args(uvForm))
-coeff(uvForm, deriv(u, t, 0)*deriv(conj(v), t, 0))
-
-for i in reverse(1:5)
-    println(i)
-end
->>>>>>> master
