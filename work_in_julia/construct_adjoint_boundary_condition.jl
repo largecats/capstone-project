@@ -5,11 +5,15 @@
 # Description: Algorithm to construct a valid adjoint boundary condition from a given boundary condition.
 # Based on: Chapter 11, Theory of Ordinary Differential Equations (Coddington & Levinson)
 =============================================================================
+# Importing packages
+=============================================================================
+using SymPy
+=============================================================================
 # Defining types and functions
 =============================================================================
 # A linear differential operator of order n is encoded by an n x 1 array of functions and an interval [a,b]
 struct LinearDifferentialOperator
-    pFunctions::Array
+    pFunctions::Array{}
     interval::Tuple
 
     LinearDifferentialOperator(pFunctions::Array, interval::Tuple) =
@@ -105,37 +109,81 @@ function construct_H(U::VectorBoundaryForm, Uc::VectorBoundaryForm)
     return H
 end
 
-# The kth derivative of a function u is encoded by the ordered pair (u, k)
-struct Derivative
-    u::Function
-    k::Int
-
-    Derivative(u::Function, k::Int) =
-    try
-        uDev = new(u, k)
-        check_derivative_input(uDev)
-        return uDev
-    catch err
-        return err
-    end
+# Using expressions
+# Assigns string as variable name
+function assign(s::AbstractString,v::Any)
+    s=Symbol(s)
+    @eval (($s) = ($v))
 end
 
-# Checks whether the input degree k is valid
-function check_derivative_input(uDev::Derivative)
-    u, k = uDev.u, uDev.k
+# Two-integer partitions of n
+function partition(n::Int)
+    output = []
+    for i = 0:n
+        j = n - i
+        push!(output, (i, j))
+    end
+    return output
+end
+
+# Get the symbol (a SymPy.Sym object) for the kth derivative of u with respect to t
+function deriv(u::SymPy.Sym, t::Symbol, k::Int)
     if k < 0
-        error("Degree of derivative must be >= 0")
-    else
-        return true
+        error("Only nonnegative degrees are allowed")
     end
+    y = u
+    for i = 1:k
+        newY = diff(y, t)
+        # newY = Derivative(y, t)
+        y = newY
+    end
+    return y
 end
 
-# Need to find a way to encode Bjk in terms of the p functions so that the matrix B can be evaluated at a and b.
-# I'm thinking of either deducing a formula for Bjk by checking n = 2, 3, 4, or implementing the Polish notation to figure out what Bjk are.
-# Product rule of derivatives
-function product_derivative(uDev::Derivative, vDev::Derivative, k)
+function create_p_matrix(L::LinearDifferentialOperator)
+    pFunctions, (a, b) = L.pFunctions, L.interval
+    n = length(pFunctions)
 
+    mat = Array{String}(n,n)
+    for i in 0:(n-1)
+        for j in 0:(n-1)
+            mat[i+1,j+1] = string("p", i, j)
+        end
+    end
+    return mat
 end
+
+function get_uv_form(L::LinearDifferentialOperator)
+    pFunctions, (a, b) = L.pFunctions, L.interval
+    n = length(pFunctions)
+
+    t = Symbol("t")
+    u, v = SymFunction("u")(t), SymFunction("v")(t)
+    pFunctionSymbols = [SymFunction(string("p", i))(t) for i in 0:(n-1)]
+    sum = 0
+    for m = 1:n
+        for (j,k) in partition(m-1)
+            summand = (-1)^j * deriv(u, t, k) * deriv(pFunctionSymbols[n-m+1] * conj(v), t, j)
+            sum += summand
+        end
+    end
+    println(sum)
+    sum = expand(sum)
+    println(sum)
+    pFunctionsStrings = []
+    pMatrix = create_p_matrix(L)
+    for i = 0:(n-1) # index
+        for d = reverse(0:(n-1)) # degree
+            pTerm = deriv(pFunctionSymbols[i+1], t, d)
+            println(pTerm)
+            pString = pMatrix[i+1,d+1]
+            println(pString)
+            sum = subs(sum, pTerm, Symbol(pString))
+        end
+    end
+    return sum
+end
+
 =============================================================================
 # Tests
 =============================================================================
@@ -148,10 +196,15 @@ H = construct_H(U, Uc)
 function p(t)
     return t + 1
 end
-L = LinearDifferentialOperator([p], (-1, 1))
+L = LinearDifferentialOperator([p,p], (0, 1))
+create_p_matrix(L)
+sum = get_uv_form(L)
+sum = subs(sum, deriv(pFunctionSymbols[1], t, 0), Symbol("p00"))
+subs(sum, deriv(pFunctionSymbols[1], t, 1), Symbol("p00"))
+uvForm = get_uv_form(L)
+print(args(uvForm))
+coeff(uvForm, deriv(u, t, 0)*deriv(conj(v), t, 0))
 
-function u(x)
-    x
+for i in reverse(1:5)
+    println(i)
 end
-Derivative(u, 1)
-Derivative(u, -1)
