@@ -2,7 +2,7 @@
 # Course: YSC4103 MCS Capstone
 # Date created: 2018/09/19
 # Name: Linfan XIAO
-# Description: Algorithm to construct a valid adjoint boundary condition from a given boundary condition.
+# Description: Algorithm to construct a valid adjoint boundary condition from a given boundary condition based on SymPy objects (symbolic math).
 # Based on: Chapter 11, Theory of Ordinary Differential Equations (Coddington & Levinson)
 #############################################################################
 # Importing packages
@@ -313,7 +313,7 @@ function get_xi(L::LinearDifferentialOperator, x::SymPy.Sym)
     return xi
 end
 
-# Evaluate \xi at a
+# Evaluate \xi at a and b
 function evaluate_xi(L::LinearDifferentialOperator, xi::Array{SymPy.Sym})
     pFunctions, (a,b), t = L.pFunctions, L.interval, L.t
     n = length(pFunctions)-1
@@ -371,3 +371,31 @@ adjointU = get_adjoint(J)
 P, Q = (adjointU.M)', (adjointU.N)'
 
 check_adjoint(L, U, adjointU, B)
+
+#############################################################################
+# Finding patterns
+#############################################################################
+p = SymFunction("p")(t)
+L = LinearDifferentialOperator([p, p, p, p, p, p], (0, 1), t)
+pStringMatrix = pString_matrix(L)
+pFuncMatrix = pFunc_matrix(L, pStringMatrix)
+uvForm = uv_form(L, u, v)
+coeffMatrix = coefficient_matrix(L, uvForm, u, v)
+
+# Finding an explicit formula for B_{jk}
+function find_Bjk(L::LinearDifferentialOperator, j::Int, k::Int, pStringMatrix::Array{String})
+    n = length(L.pFunctions)-1
+    sum = 0
+    for l = (j-1):(n-k)
+        summand = binomial(l, j-1) * symbols(pStringMatrix[n-k-l+1, l-j+1+1]) * (-1)^l
+        sum += summand
+    end
+    return sum
+end
+
+n = length(L.pFunctions)-1
+for j = 1:n
+    for k = 1:n
+        println(find_Bjk(L, j, k, pStringMatrix) == coeffMatrix[j, k])
+    end
+end

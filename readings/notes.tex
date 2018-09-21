@@ -81,7 +81,7 @@ where $M_{jk}, N_{jk}$ are complex constants.
         \begin{split}
             [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
             &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)\left(\sum_{l=0}^j\binom{j}{l}p_{n-m}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)\\
-            &= \cdots ?\\
+            &= \sum_{j,k=1}^n \left(\sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(-1)^l\right)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)\\
             &= \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)
         \end{split}
     \end{equation}
