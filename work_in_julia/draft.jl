@@ -1,3 +1,42 @@
+xiX = get_xi(L, x)
+get_boundary_condition(L, U, xiX)
+xiY = get_xi(L, y)
+get_boundary_condition(L, U, xiY)
+
+U = VectorBoundaryForm([1 2+im; 2 1+3im], [2+1im 3; 3 2])
+U = VectorBoundaryForm([1 2; 2 4], [1 3; 2 6])
+U = VectorBoundaryForm([1 2; 2 1], [2 3; 3 2])
+Uc = find_Uc(U)
+H = construct_H(U, Uc)
+
+# function p(t)
+#     return t + 1
+# end
+t = symbols("t")
+p = t + 1
+L = LinearDifferentialOperator([p,p], (0, 1))
+function w(x)
+    return x + 1
+end
+LinearDifferentialOperator([w,w], (0, 1))
+
+u, v = SymFunction("u")(t), SymFunction("v")(t)
+pStringMatrix = get_pString_matrix(L)
+lambdify(deriv(p, t, 1))(1)
+subs(deriv(p, t, 1), t, 3)
+# Lambda(t, deriv(p, t, 1))
+pFuncMatrix = get_pFunc_matrix(L, pStringMatrix, t)
+subs(pFuncMatrix[1,2], t, 2)
+
+uvForm = get_uv_form(L, t, u, v)
+coeff1 = coeff(uvForm, deriv(u, t, 0)*deriv(conj(v), t, 0))
+args(coeff1)
+coeffMatrix = get_coefficient_matrix(L, uvForm, t, u, v)
+
+bMatrix = get_B_matrix(L, uvForm, t, u, v, pStringMatrix, pFuncMatrix, coeffMatrix)
+evaluate_matrix(bMatrix, t, 0)
+bHatMatrix = get_B_hat(L, bMatrix, t)
+
 # The kth derivative of a function u is encoded by the ordered pair (u, k)
 struct Derivative
     u::Function

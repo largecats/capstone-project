@@ -1296,18 +1296,18 @@ We focus on the case where $m=n$. That is, $M$ and $N$ are $n\times n$ square ma
 \subsection{A simple example of the hard way}
 \href[page=11]{./literature/Constructing adjoint boundary conditions/Giles-Pierce2000_Article_AnIntroductionToTheAdjointAppr.pdf}{For $L$ with lower orders, the adjoint boundary condition can be (feasibly) found using integration by parts.}
 
-Consider $Lx=x^{(1)} - \epsilon x^{(2)}$ on $[0,1]$ with boundary conditions $x(0)=x(1)=0$, or
+Consider $Lx=x^{(1)} - \epsilon x^{(2)}$ on $[0,1]$ with boundary conditions $x(0)=x(1)=0$. Then
+\[Lx = (-\epsilon) x^{(2)} + 1x^{(1)} + 0x^{(0)}\]
+with $p_0 = -\epsilon$, $p_1 = 1$, and $p_2 = 0$. And
 \[Ux=0\]
 where
-\[Ux = 
-\begin{bmatrix}
-    U_1x\\
-    U_2x
-\end{bmatrix} =
-\begin{bmatrix}
-    1\cdot x(0) + 0\cdot x(1)\\
-    0\cdot x(0) + 1\cdot x(1)
-\end{bmatrix} =
+\begin{align*}
+    Ux &= \begin{bmatrix} U_1x\\ U_2x \end{bmatrix}\\
+    &= \begin{bmatrix} x(0)\\ x(1)\end{bmatrix} \\
+        &= \begin{bmatrix}
+    (1\cdot x^{(0)}(0) + 0\cdot x^{(0)}(1)) + (0\cdot x^{(1)}(0) + 0\cdot x^{(1)}(1))\\
+    (0\cdot x^{(0)}(0) + 1\cdot x^{(0)}(1)) + (0\cdot x^{(1)}(0) + 0\cdot x^{(1)}(1)) \end{bmatrix}\\
+    &=
 \begin{bmatrix}
     1 & 0\\
     0 & 0
@@ -1325,7 +1325,8 @@ where
     x'(1)
 \end{bmatrix} =
 M\xi(0) + N\xi(1)
-= \vec{0}.\]
+= \vec{0}.
+\end{align*}
 Using integration by parts,
 \begin{align*}
     (y, Lx) &= \int_0^1 y (\overline{Lx})\,dt\\
@@ -1344,7 +1345,7 @@ we ought to define
 \]
 with $y(0)=y(1)=0$ for the boundary terms to vanish. Thus, the adjoint boundary condition is
 \[U^+y=0\] with
-\[U^+ = P^*\eta(0) + N^*\eta(1)\] where 
+\[U^+y = P^*\eta(0) + Q^*\eta(1)\] where 
 \[P^* = \begin{bmatrix} 1 & 0\\0 & 0 \end{bmatrix};\quad 
 Q^* = \begin{bmatrix} 0 & 0\\ 0 & 1\end{bmatrix}.\]
 So we have
