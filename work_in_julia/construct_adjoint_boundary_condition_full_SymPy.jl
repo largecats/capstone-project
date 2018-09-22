@@ -28,9 +28,11 @@ end
 
 function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     pFunctions, (a,b), t = L.pFunctions, L.interval, L.t
+    p0 = pFunctions[1]
+    zeroP0 = real_roots(p0)
     if any(x -> (typeof(x) != SymPy.Sym), pFunctions)
         error("SymPy.Sym type required")
-    elseif subs(pFunctions[1], t, a) == 0
+    elseif length(find(x -> x == t, free_symbols(p0))) != 0 && length(zeroP0) != 0 && zeroP0[1,1] >= a && zeroP0[1,1] <= b
         error("p0 vanishes on [a,b]")
     else
         return true
@@ -375,7 +377,8 @@ check_adjoint(L, U, adjointU, B)
 #############################################################################
 # Finding patterns
 #############################################################################
-p = SymFunction("p")(t)
+# p = SymFunction("p")(t)
+p = 1 + t
 L = LinearDifferentialOperator([p, p, p, p, p, p], (0, 1), t)
 pStringMatrix = pString_matrix(L)
 pFuncMatrix = pFunc_matrix(L, pStringMatrix)
@@ -393,9 +396,16 @@ function find_Bjk(L::LinearDifferentialOperator, j::Int, k::Int, pStringMatrix::
     return sum
 end
 
-n = length(L.pFunctions)-1
-for j = 1:n
-    for k = 1:n
-        println(find_Bjk(L, j, k, pStringMatrix) == coeffMatrix[j, k])
+for counter = 2:11
+    println(counter)
+    L = LinearDifferentialOperator(repmat([p],counter), (0, 1), t)
+    uvForm = uv_form(L, u, v)
+    pStringMatrix = pString_matrix(L)
+    coeffMatrix = coefficient_matrix(L, uvForm, u, v)
+    n = length(L.pFunctions)-1
+    for j = 1:n
+        for k = 1:n
+            println(find_Bjk(L, j, k, pStringMatrix) == coeffMatrix[j, k])
+        end
     end
 end
