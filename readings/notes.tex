@@ -76,7 +76,9 @@ where $M_{jk}, N_{jk}$ are complex constants.
     \end{equation}
 \end{thm}
 \begin{rmk}
-    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as \todo[inline]{Find out an explicit way to write $B_{jk}$ in terms of $p_{n-m}$. I'm thinking of deducing a formula for $B_{jk}$ by checking $n=2, 3, 4$, or implementing a program in Julia to figure out the expression for $B_{jk}$.}
+    \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as 
+    %\todo[inline]{Find an explicit way to write $B_{jk}$ in terms of $p_{n-m}$. I'm thinking of deducing a formula for $B_{jk}$ by checking $n=2, 3, 4$, or implementing a program in Julia to figure out the expression for $B_{jk}$.}
+    \todo[inline]{Prove this formula (by induction?)}
     \begin{equation}\label{eq:[uv](t) in B matrix}
         \begin{split}
             [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\

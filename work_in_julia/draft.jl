@@ -1,3 +1,55 @@
+t = symbols("t")
+p = SymFunction("p")(t)
+for counter = 2:6
+    symL = SymLinearDifferentialOperator(repeat([p],outer=(1,counter)), (0, 1), t)
+    u, v = SymFunction("u")(t), SymFunction("v")(t)
+    symUvForm = symUv_form(symL, u, v)
+    pStringMatrix = pString_matrix(symL)
+    coeffMatrix = sym_coefficient_matrix(symL, symUvForm, u, v)
+    Base.showarray(STDOUT, coeffMatrix, false)
+end
+
+t = symbols("t")
+p = t + 1
+symL = SymLinearDifferentialOperator([p p p], (0, 1), t)
+pStringMatrix = pString_matrix(symL)
+pSymDerivMatrix = pSymDeriv_matrix(symL)
+u, v = SymFunction("u")(t), SymFunction("v")(t)
+symUvForm = sym_uv_form(symL, u, v)
+symCoeffMatrix = sym_coefficient_matrix(symL, symUvForm, u, v)
+
+U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0])
+rank_of_U(U)
+Uc = get_Uc(U)
+H = get_H(U, Uc)
+
+function f0(x)
+    return x+1
+end
+
+function f1(x)
+    return 1
+end
+L = LinearDifferentialOperator([f0 f0 f0], (0,1))
+pDerivMatrix = [f0 f1; f0 f1]
+B = get_B(L, pStringMatrix, pDerivMatrix, symCoeffMatrix)
+bHat = B_hat(L, B)
+J = get_J(bHat, H)
+adjointU = get_adjoint(J)
+
+# x = t; xi = [x(t); x'(t); x(t); x'(t)]
+function x0(t)
+    return t + 2
+end
+function x1(t)
+    return 1
+end
+xi = [x0; x1]
+xiEval = evaluate_xi(L, xi)
+get_boundary_condition(L, U, xi)
+
+check_adjoint(L, U, adjointU, B)
+
 xiX = get_xi(L, x)
 get_boundary_condition(L, U, xiX)
 xiY = get_xi(L, y)
