@@ -78,16 +78,37 @@ where $M_{jk}, N_{jk}$ are complex constants.
 \begin{rmk}
     \href[page=297]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{Alternatively}, $[uv](t)$ can be written as 
     %\todo[inline]{Find an explicit way to write $B_{jk}$ in terms of $p_{n-m}$. I'm thinking of deducing a formula for $B_{jk}$ by checking $n=2, 3, 4$, or implementing a program in Julia to figure out the expression for $B_{jk}$.}
-    \todo[inline]{Prove this formula (by induction?)}
+    % \todo[inline]{Prove this formula}
+    \LIN{
     \begin{equation}\label{eq:[uv](t) in B matrix}
         \begin{split}
             [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
             &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)\left(\sum_{l=0}^j\binom{j}{l}p_{n-m}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)\\
-            &= \sum_{j,k=1}^n \left(\sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(-1)^l\right)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)\\
+            &= \sum_{m=1}^n\sum_{k=0}^{m-1}(-1)^{m-1-k} u^{(k)}(t)\left(\sum_{l=0}^{m-1-k}\binom{m-1-k}{l}p_{n-m}^{(m-1-k-l)}(t)\bar{v}^{(l)}(t)\right)\\
+            &= \sum_{m=1}^n\sum_{k=1}^{m}(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
+            % &= \sum_{j+k=1}^n\sum_{k=1}^{j+k}(-1)^{j+k-k}\left(\sum_{l=0}^{j+k-k}\binom{j+k-k}{l}p_{n-j-k}^{(j+k-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
+            % &= \sum_{j+k=1}^n\sum_{k=1}^{j+k}(-1)^{j}\left(\sum_{l=0}^{j}\binom{j}{l}p_{n-j-k}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
+            % &= \sum_{j=0}^{n-1}\sum_{k=1}^{n}\\
             &= \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)
         \end{split}
     \end{equation}
-        where $B_{jk}$ may form the $j, k$-entry of the $n\times n$ matrix
+    for some $B_{jk}$ to be found later.
+
+    To find $B_{jk}$, we want to pull out the coefficients of $u^{(k-1)}\bar{v}^{(j-1)}$. Fixing $m$ and $k$, we note that when $l=j-1$, the coefficient of $\bar{v}^{(j-1)}(t)$ is
+    \begin{align*}
+        \binom{m-k}{j-1}p_{n-m}^{(m-k-j+1)}(t).
+    \end{align*}
+    Now we collect the above coefficient across all values of $m$ and $k$. Since $m$ goes up to $n$, $m-k$ goes up to $n-k$. But $\binom{x}{j-1}=0$ for $x<j-1$, so $m-k$ effectively ranges from $j-1$ to $n-k$. Let $l':=m-k$, then $m=k+l'$, and the above equation becomes
+    \begin{align*}
+        [uv](t) &= \sum_{m=1}^n\sum_{k=1}^{m}(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
+        &= \sum_{k=1}^n\sum_{j=1}^n (-1)^{l'}\left(\sum_{l'=j-1}^{n-k}\binom{l'}{j-1}p_{n-(k+l')}^{(l'-(j-1))}\right)\bar{v}^{(j-1)}(t)u^{(k-1)}(t)\\
+        &= \sum_{j,k=1}^n \left(\sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(-1)^l\right)u^{(k-1)}(t)\bar{v}^{(j-1)}(t).
+    \end{align*}
+    Thus,
+    \[B_{jk} = \sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(-1)^l.\]
+    }
+    \unsure[inline]{Does this argument make sense?}
+    Define $B(t)$ to be the $n\times n$ matrix whose entry is $B_{jk}$:
     \begin{equation}\label{B(t)}
         B(t)=\begin{bmatrix}
             B_{11} & B_{12} & \cdots & \cdots & p_0(t)\\

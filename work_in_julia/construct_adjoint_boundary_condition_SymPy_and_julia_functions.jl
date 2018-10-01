@@ -31,7 +31,7 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     pFunctions, (a,b) = L.pFunctions, L.interval
     p0 = pFunctions[1]
     if (isa(p0, Function) && length(find_zeros(p0, a, b)) != 0) || p0 == 0
-        error("p0 vanishes on [a,b]")
+        error("p0 vanishes on [a,b]") # find_zeros is computationally expensive and makes defining the LinearDifferentialOperator type slow
     else
         return true
     end
@@ -93,6 +93,7 @@ function check_vectorBoundaryForm_input(U::VectorBoundaryForm)
         return true
     end
 end
+
 #############################################################################
 # Defining functions
 #############################################################################
@@ -491,6 +492,7 @@ function construct_valid_adjoint(L::LinearDifferentialOperator, U::VectorBoundar
         error("Adjoint found not valid")
     end
 end
+
 #############################################################################
 # Tests
 #############################################################################
@@ -501,7 +503,8 @@ p00, p10 = p0, p1
 p01, p11 = 0, 0
 pDerivMatrix = [p00 p01; p10 p11]
 L = LinearDifferentialOperator([p0 p1 p2], (0,2pi))
-U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0]) # TODO: Need checks that connect L and U? e.g., dimensions should match?
+U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0]) 
+# TODO: 1. Need checks that connect L and U? e.g., dimensions should match? 2. Most boundary conditions give Us like this?
 construct_valid_adjoint(L, U, pDerivMatrix)
 
 # Variable p_k
