@@ -2,7 +2,7 @@
 # Course: YSC4103 MCS Capstone
 # Date created: 2018/09/19
 # Name: Linfan XIAO
-# Description: Algorithm to construct a valid adjoint boundary condition from a given boundary condition based on SymPy objects (symbolic math).
+# Description: Algorithm to construct a valid adjoint boundary condition from a given (homogeneous) boundary condition based on SymPy objects (symbolic math).
 # Based on: Chapter 11, Theory of Ordinary Differential Equations (Coddington & Levinson)
 #############################################################################
 # Importing packages

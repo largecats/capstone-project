@@ -2,17 +2,18 @@
 # Course: YSC4103 MCS Capstone
 # Date created: 2018/09/21
 # Name: Linfan XIAO
-# Description: Algorithm to construct a valid (homogeneous) adjoint boundary condition from a given (homogeneous) boundary condition based on SymPy and julia functions. The symbolic expressions are used to generate the coefficients Bjk.
+# Description: Algorithm to construct a valid adjoint boundary condition from a given (homogeneous) boundary condition based on SymPy and julia functions. The symbolic expressions are used to generate the coefficients Bjk.
 # Based on: Chapter 11, Theory of Ordinary Differential Equations (Coddington & Levinson)
 #############################################################################
 # Importing packages
 #############################################################################
 using SymPy
 using Roots
+using Distributions
 #############################################################################
 # Defining types
 #############################################################################
-# A linear differential operator of order n is encoded by an n x 1 array of functions and an interval [a,b]
+# A linear differential operator of order n is encoded by an 1 x (n+1) array of functions and an interval [a,b]
 struct LinearDifferentialOperator
     pFunctions::Array # Array of julia functions
     interval::Tuple{Number,Number}
@@ -31,13 +32,13 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     pFunctions, (a,b) = L.pFunctions, L.interval
     p0 = pFunctions[1]
     if (isa(p0, Function) && length(find_zeros(p0, a, b)) != 0) || p0 == 0
-        error("p0 vanishes on [a,b]") # find_zeros is computationally expensive and makes defining the LinearDifferentialOperator type slow
+        error("p0 vanishes on [a,b]") # find_zeros() is computationally expensive and makes defining the LinearDifferentialOperator type slow
     else
         return true
     end
 end
 
-# A symbolic linear differential operator of order n is encoded by an n x 1 array of symbolic expressions and an interval [a,b]
+# A symbolic linear differential operator of order n is encoded by an 1 x (n+1) array of symbolic expressions and an interval [a,b]
 struct SymLinearDifferentialOperator
     pFunctions::Array{SymPy.Sym,2}
     interval::Tuple{Number,Number} # Must be numbers for the check function to work
@@ -141,7 +142,7 @@ function get_H(U::VectorBoundaryForm, Uc::VectorBoundaryForm)
 end
 
 # Assign string as variable name
-function assign(s::AbstractString,v::Any)
+function assign(s::AbstractString, v::Any)
     s=Symbol(s)
     @eval (($s) = ($v))
 end
@@ -218,11 +219,11 @@ function symUv_form(symL::SymLinearDifferentialOperator, u::SymPy.Sym, v::SymPy.
     end
     sum = expand(sum)
     pFunctionsStrings = []
-    pMatrix = pString_matrix(symL)
+    pStringMatrix = pString_matrix(symL)
     for i = 0:(n-1) # index
         for d = reverse(0:(n-1)) # degree, must start substitution from the highest degree otherwise replacement would not behave as expected
             pTerm = deriv(pFunctionSymbols[i+1], t, d)
-            pString = pMatrix[i+1,d+1]
+            pString = pStringMatrix[i+1,d+1]
             # Must substitute p_k SymFunction terms with symbols, else cannot collect coefficients of u^{(i)}v^{(j)}
             sum = subs(sum, pTerm, symbols(pString))
         end
@@ -230,7 +231,23 @@ function symUv_form(symL::SymLinearDifferentialOperator, u::SymPy.Sym, v::SymPy.
     return sum
 end
 
-# Construct the B matrix in the general form using undefined SymFunctions
+# Create the symbolic expression for [uv](t) with p_k SymFunction not substituted by symbols
+function symUv_form_original_pk(symL::SymLinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym)
+    t = symL.t
+    n = length(symL.pFunctions)-1
+    pFunctionSymbols = [SymFunction(string("p", i))(t) for i in 0:(n-1)]
+    sum = 0
+    for m = 1:n
+        for (j,k) in partition(m-1)
+            summand = (-1)^j * deriv(u, t, k) * deriv(pFunctionSymbols[n-m+1] * conj(v), t, j)
+            sum += summand
+        end
+    end
+    sum = expand(sum)
+    return sum
+end
+
+# Construct the B matrix in symbolic expressions using undefined SymFunctions
 function get_symB(symL::SymLinearDifferentialOperator, symUvForm::SymPy.Sym, u::SymPy.Sym, v::SymPy.Sym)
     t = symL.t
     n = length(symL.pFunctions)-1
@@ -308,7 +325,7 @@ function get_symB_by_formula(symL::SymLinearDifferentialOperator, pStringMatrix:
     return B
 end
 
-# Construct the B matrix from the coefficients of u^{(i)}v^{(j)} in [uv](t)
+# Construct the B matrix by collecting the coefficients of u^{(i)}v^{(j)} in the symbolic expression of [uv](t)
 function get_B(L::LinearDifferentialOperator, pStringMatrix::Array{String}, pDerivMatrix::Array, symB::Array{SymPy.Sym})
     n = length(L.pFunctions)-1
     B = Array{Any}(n,n)
@@ -356,8 +373,8 @@ function get_Bjk_by_formula(L::LinearDifferentialOperator, j::Int, k::Int, pDeri
     n = length(L.pFunctions)-1
     sum = 0
     for l = (j-1):(n-k)
-        summand = binomial(l, j-1) * pDerivMatrix[n-k-l+1, l-j+1+1] * (-1)^l
-        sum += summand
+        summand = mult_func(binomial(l, j-1) * (-1)^l, pDerivMatrix[n-k-l+1, l-j+1+1])
+        sum = add_func(sum, summand)
     end
     return sum
 end
@@ -374,7 +391,7 @@ function get_B_by_formula(L::LinearDifferentialOperator, pDerivMatrix::Array)
     return B
 end
 
-# Evaluate (the B) matrix at t = a
+# Evaluate (the B) matrix of julia functions at t = a
 function evaluate_matrix(matrix::Array, a::Number)
     n = size(matrix)[1]
     matrixA = Array{Number}(n,n)
@@ -451,12 +468,19 @@ function check_adjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, adj
     P, Q = (adjointU.M)', (adjointU.N)'
     BEvalA = evaluate_matrix(B, a)
     BEvalB = evaluate_matrix(B, b)
-    return M * inv(BEvalA) * P == N * inv(BEvalB) * Q
+    left = M * inv(BEvalA) * P
+    right = N * inv(BEvalB) * Q
+    println("M * inv(BEvalA) * P")
+    println(left)
+    println("N * inv(BEvalB) * Q")
+    println(right)
+    return string(left) == string(right) # Can't use == to deterimine equality because left and right are arrays of floats
 end
 
 #############################################################################
 # Processes
 #############################################################################
+# Construct symL from L
 function get_symL(L::LinearDifferentialOperator)
     pFunctions, (a,b) = L.pFunctions, L.interval
     n = length(pFunctions)-1
@@ -466,8 +490,13 @@ function get_symL(L::LinearDifferentialOperator)
     return symL
 end
 
-function get_symB_from_L(L::LinearDifferentialOperator)
-    symL = get_symL(L)
+# Construct symbolic expression of B from L or symL
+function get_symB_from_L(L::Union{LinearDifferentialOperator, SymLinearDifferentialOperator})
+    if isa(L, SymLinearDifferentialOperator)
+        symL = L
+    else
+        symL = get_symL(L)
+    end
     t = symL.t
     u, v = SymFunction("u")(t), SymFunction("v")(t)
     symUvForm = symUv_form(symL, u, v)
@@ -493,59 +522,112 @@ function construct_valid_adjoint(L::LinearDifferentialOperator, U::VectorBoundar
     end
 end
 
+function construct_valid_adjoint_by_formula(L::LinearDifferentialOperator, U::VectorBoundaryForm, pDerivMatrix::Array)
+    B = get_B_by_formula(L, pDerivMatrix)
+    bHat = B_hat(L, B)
+    Uc = get_Uc(U)
+    H = get_H(U, Uc)
+    J = get_J(bHat, H)
+    adjointU = get_adjoint(J)
+    if check_adjoint(L, U, adjointU, B)
+        return adjointU
+    else
+        error("Adjoint found not valid")
+    end
+end
+
 #############################################################################
 # Tests
 #############################################################################
-# Constant p_k
-y'' + 4y = 0, y(0)=y(2pi)=0
-p0, p1, p2 = 1, 0, 4
-p00, p10 = p0, p1
-p01, p11 = 0, 0
-pDerivMatrix = [p00 p01; p10 p11]
-L = LinearDifferentialOperator([p0 p1 p2], (0,2pi))
-U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0]) 
-# TODO: 1. Need checks that connect L and U? e.g., dimensions should match? 2. Most boundary conditions give Us like this?
-construct_valid_adjoint(L, U, pDerivMatrix)
-
-# Variable p_k
-# p0*y'' + p1*y' + p2*y = 0, y(0)=y(1)=0
-function p0(t) return t + 1 end
-function p1(t) return t^2 + 1 end
-function p2(t) return 1 end
-p00, p10 = p0, p1
-function p01(t) return 1 end
-function p11(t) return 2t end
-pDerivMatrix = [p00 p01; p10 p11]
-L = LinearDifferentialOperator([p0 p1 p2], (0,1))
-U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0]) 
-construct_valid_adjoint(L, U, pDerivMatrix)
-
-# Check if the Bjk formula works using symbolic epxressions
-t = symbols("t")
-p = SymFunction("p")(t)
-for counter = 2:11
-    symL = SymLinearDifferentialOperator(repeat([p],outer=(1,counter)), (0, 1), t)
-    u, v = SymFunction("u")(t), SymFunction("v")(t)
-    symUvForm = symUv_form(symL, u, v)
-    pStringMatrix = pString_matrix(symL)
-    symB = get_symB(symL, symUvForm, u, v)
-    symBByFormula = get_symB_by_formula(symL, pStringMatrix)
-
-    # Base.showarray(STDOUT, symB, false)
-    # Base.showarray(STDOUT, symBByFormula, false)
-    println(symB == symBByFormula)
+# Constant p_k starting with U
+function generate_adjoint(n)
+    pFunctions = rand(Uniform(1.0,10.0), 1, (n+1))
+    MCand = rand(Uniform(1.0,10.0), n, n)
+    NCand = rand(Uniform(1.0,10.0), n, n)
+    U = VectorBoundaryForm(MCand, NCand)
+    L = LinearDifferentialOperator(pFunctions, (0,1))
+    pDerivMatrix = eye(n)
+    for i = 1:n
+        for j = 1:n
+            if j == 1
+                pDerivMatrix[i,j] = pFunctions[i]
+            else
+                pDerivMatrix[i,j] = 0
+            end
+        end
+    end
+    adjoint = construct_valid_adjoint_by_formula(L, U, pDerivMatrix)
+    println("Adjoint: ")
+    println(adjoint)
+    return adjoint
 end
 
-# Verify Bjk formula with julia functions
-function p(t) return t + 1 end
-L = LinearDifferentialOperator([p p p], (0, 1))
-pStringMatrix = pString_matrix(L)
-symB = get_symB_from_L(L)
-p00, p10 = p, p
-p01, p11 = 1, 1
-pDerivMatrix = [p00 p01; p10 p11]
-B = get_B(L, pStringMatrix, pDerivMatrix, symB)
-B[1,1](2)
-B[1,2](2)
-B[2,1](2)
-B[2,2]
+for n = 1:10
+    generate_adjoint(n)
+end
+
+# # Constant p_k starting with L
+# # y'' + 4y = 0, y(0)=y(2pi)=0
+# p0, p1, p2 = 1, 0, 4
+# p00, p10 = p0, p1
+# p01, p11 = 0, 0
+# pDerivMatrix = [p00 p01; p10 p11]
+# L = LinearDifferentialOperator([p0 p1 p2], (0,2pi))
+# U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0]) 
+# # TODO: 1. Need checks that connect L and U? e.g., dimensions should match? 2. Most boundary conditions give Us like this?
+# construct_valid_adjoint(L, U, pDerivMatrix)
+# construct_valid_adjoint_by_formula(L, U, pDerivMatrix)
+
+# # Variable p_k starting with L
+# # p0*y'' + p1*y' + p2*y = 0, y(0)=y(1)=0
+# function p0(t) return t + 1 end
+# function p1(t) return t^2 + 1 end
+# function p2(t) return 1 end # both constant function and constant work
+# # p2 = 1
+# p00, p10 = p0, p1
+# function p01(t) return 1 end # both constant function and constant work
+# # p01 = 1
+# function p11(t) return 2t end
+# pDerivMatrix = [p00 p01; p10 p11]
+# L = LinearDifferentialOperator([p0 p1 p2], (0,1))
+# U = VectorBoundaryForm([1 0; 0 0], [0 0; 1 0]) 
+# construct_valid_adjoint(L, U, pDerivMatrix)
+# construct_valid_adjoint_by_formula(L, U, pDerivMatrix)
+
+# # Verify Bjk formula using symbolic epxressions
+# t = symbols("t")
+# p = SymFunction("p")(t)
+# for counter = 2:11
+#     symL = SymLinearDifferentialOperator(repeat([p],outer=(1,counter)), (0, 1), t)
+#     u, v = SymFunction("u")(t), SymFunction("v")(t)
+#     symUvForm = symUv_form(symL, u, v)
+#     # symUvFormOriginalPk = symUv_form_original_pk(symL, u, v)
+#     # println(symUvForm)
+#     # println(symUvFormOriginalPk)
+#     pStringMatrix = pString_matrix(symL)
+#     symB = get_symB(symL, symUvForm, u, v)
+#     symBByFormula = get_symB_by_formula(symL, pStringMatrix)
+
+#     Base.showarray(STDOUT, symB, false)
+#     println(' ')
+#     Base.showarray(STDOUT, symBByFormula, false)
+#     println(' ')
+#     println(symB == symBByFormula)
+# end
+
+# # Verify Bjk formula with julia functions
+# function p(t) return t + 1 end
+# L = LinearDifferentialOperator([p p p], (0, 1))
+# pStringMatrix = pString_matrix(L)
+# symB = get_symB_from_L(L)
+# p00, p10 = p, p
+# p01, p11 = 1, 1
+# pDerivMatrix = [p00 p01; p10 p11]
+# B = get_B(L, pStringMatrix, pDerivMatrix, symB)
+# B[1,1](2)
+# B[1,2](2)
+# B[2,1](2)
+# B[2,2]
+
+# Clear workspace to avoid "invalid redefinition of constant" errors
+# workspace()

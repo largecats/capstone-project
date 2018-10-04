@@ -94,10 +94,8 @@ where $M_{jk}, N_{jk}$ are complex constants.
             [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
             &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)\left(\sum_{l=0}^j\binom{j}{l}p_{n-m}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)\\
             &= \sum_{m=1}^n\sum_{k=0}^{m-1}(-1)^{m-1-k} u^{(k)}(t)\left(\sum_{l=0}^{m-1-k}\binom{m-1-k}{l}p_{n-m}^{(m-1-k-l)}(t)\bar{v}^{(l)}(t)\right)\\
-            &= \sum_{m=1}^n\sum_{k=1}^{m}(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\quad\mbox{(shifting $k$ to $k+1$)}.
-            % &= \sum_{j+k=1}^n\sum_{k=1}^{j+k}(-1)^{j+k-k}\left(\sum_{l=0}^{j+k-k}\binom{j+k-k}{l}p_{n-j-k}^{(j+k-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
-            % &= \sum_{j+k=1}^n\sum_{k=1}^{j+k}(-1)^{j}\left(\sum_{l=0}^{j}\binom{j}{l}p_{n-j-k}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
-            % &= \sum_{j=0}^{n-1}\sum_{k=1}^{n}\\
+            &= \sum_{m=1}^n\sum_{k=1}^{m}(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\quad\mbox{(shifting $k$ to $k+1$)}\\
+            &= \sum_{k=1}^n\sum_{m=k}^n (-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t).
         \end{split}
     \end{equation*}
 
@@ -105,16 +103,18 @@ where $M_{jk}, N_{jk}$ are complex constants.
     \begin{align*}
         \binom{m-k}{j-1}p_{n-m}^{(m-k-j+1)}(t).
     \end{align*}
-    To find the coefficient of $u^{(k-1)}\bar{v}^{(j-1)}$, we need to fix $k$ and collect the above coefficient across all values of $m$. Since $m$ goes up to $n$, $m-k$ goes up to $n-k$. But $\binom{x}{j-1}=0$ for $x<j-1$, so $m-k$ effectively ranges from $j-1$ to $n-k$. Let $l':=m-k$, then $m=k+l'$, and the above equation becomes
+    To find the coefficient of $u^{(k-1)}\bar{v}^{(j-1)}$, we need to fix $k$ and collect the above coefficient across all values of $m$. Since $m$ goes up to $n$, $m-k$ goes up to $n-k$. Since $l\leq m-k$, $l=j-1$ implies $j-1\leq m-k$. Thus, $m-k$ ranges from $j-1$ to $n-k$.
+    % But $\binom{x}{j-1}=0$ for $x<j-1$, so $m-k$ effectively ranges from $j-1$ to $n-k$. 
+    
+    Let $l':=m-k$, then $m=k+l'$, and the above equation becomes
     \begin{align*}
-        [uv](t) &= \sum_{m=1}^n\sum_{k=1}^{m}(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
+        [uv](t) &= \sum_{k=1}^n\sum_{m=k}^n(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\\
         &= \sum_{k=1}^n\sum_{j=1}^n (-1)^{l'}\left(\sum_{l'=j-1}^{n-k}\binom{l'}{j-1}p_{n-(k+l')}^{(l'-(j-1))}\right)\bar{v}^{(j-1)}(t)u^{(k-1)}(t)\\
         &= \sum_{j,k=1}^n \left(\sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(-1)^l\right)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)\quad\mbox{(replace $l'$ by $l$)}.
     \end{align*}
     Thus,
     \[B_{jk} = \sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(-1)^l.\]
     }
-    \unsure[inline]{Does this argument make sense?}
     Define $B(t)$ to be the $n\times n$ matrix whose entry is $B_{jk}$:
     \begin{equation}\label{B(t)}
         B(t)=\begin{bmatrix}
