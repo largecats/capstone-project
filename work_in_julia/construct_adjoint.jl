@@ -1,8 +1,8 @@
 #############################################################################
 # Course: YSC4103 MCS Capstone
-# Date created: 2018/09/21
+# Date created: 2018/10/07
 # Name: Linfan XIAO
-# Description: Algorithm to construct a valid adjoint boundary condition from a given (homogeneous) boundary condition based on Chapter 11 in Theory of Ordinary Differential Equations (Coddington & Levinson). The implementation uses Julia functions as main objects but supports symbolic expressions in the form of Julia struct attributes.
+# Description: Algorithm to construct a valid adjoint boundary condition from a given (homogeneous) boundary condition based on Chapter 11 in Theory of Ordinary Differential Equations (Coddington & Levinson). The implementation uses Julia functions as main objects but supports symbolic expressions in the form of Julia struct attributes. If a function can produce both symbolic and non-symbolic outputs, the output type is controlled by get_output(...; symbolic = true/false). If a function produces only symbolic outputs, it is usually called get_symOutput().
 #############################################################################
 # Importing packages
 #############################################################################
@@ -67,7 +67,7 @@ end
 # Construct the symbolic expression for the kth derivative of u with respect to t
 function deriv(u::SymPy.Sym, t::SymPy.Sym, k::Int)
     if k < 0
-        error("Only nonnegative degrees are allowed")
+        throw(error("Only nonnegative degrees are allowed"))
     end
     y = u
     for i = 1:k
@@ -144,7 +144,7 @@ end
 # Get the kth derivative of a polynomial implemented above
 function get_polynomialDeriv(coeffList::Array, k::Int)
     if k < 0
-        error("Only nonnegative degrees are allowed")
+        throw(error("Only nonnegative degrees are allowed"))
     elseif k == 0
         newCoeffList = coeffList
     else
@@ -195,6 +195,8 @@ function check_symLinearDifferentialOperator_input(symL::SymLinearDifferentialOp
 end
 
 # A linear differential operator of order n is encoded by an 1 x (n+1) array of functions, an interval [a,b], and its symbolic expression.
+# symL is an attribute of L that needs to be input by the user. There are checks to make sure symL is indeed the symbolic version of L.
+# Principle: Functionalities of Julia Functions >= Functionalities of SymPy. If p_k has no SymPy representation, the only consequence should be that outputs by functions that take L as arugment has no symbolic expression. E.g., we allow L.pFunctions and L.symL.pFunctions to differ.
 struct LinearDifferentialOperator
     pFunctions::Array # Array of julia functions or numbers representing constant functions
     interval::Tuple{Number,Number}
@@ -261,7 +263,7 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
         throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
     elseif !all(i -> check_func_sym_equal(pFunctions[i], symPFunctions[i], (a,b), t), 1:length(pFunctions))
         # throw(StructDefinitionError(:"symP_k does not agree with p_k on [a,b]"))
-        warn("symP_k does not agree with p_k on [a,b]") # Make this a warning instead of an error because the functionalities of Julia functions may be more than those of SymPy objects; we do not want to compromise the functionalities of LinearDifferentialOperator because of the restrictions on SymPy.
+        warn("symP_k does not agree with p_k on [a,b]") # Make this a warning instead of an error because the functionalities of Julia Functions may be more than those of SymPy objects; we do not want to compromise the functionalities of LinearDifferentialOperator because of the restrictions on SymPy.
     else
         return true
     end
@@ -357,7 +359,7 @@ end
 
 # Construct a matrix whose ij-entry is the symbolic expression of the jth derivative of p_i.
 # Functions with keyword arguments are defined using a semicolon in the signature.
-function get_symPDerivMatrix(L::LinearDifferentialOperator; substitute = false)
+function get_symPDerivMatrix(L::LinearDifferentialOperator; substitute = true)
     symL = L.symL
     symPFunctions, t = symL.symPFunctions, symL.t
     n = length(symPFunctions)-1
@@ -382,7 +384,7 @@ end
 
 # Create the symbolic expression for [uv](t).
 # If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
-function get_symUvForm(L::LinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym; substitute = false)
+function get_symUvForm(L::LinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym; substitute = true)
     symL = L.symL
     symPFunctions, t = symL.symPFunctions, symL.t
     n = length(symPFunctions)-1
@@ -402,53 +404,63 @@ function get_symUvForm(L::LinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym
     return sum
 end
 
-# Find symbolic expression for Bjk using explicit formula.
-# If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
-function get_symBjk(L::LinearDifferentialOperator, j::Int, k::Int; substitute = false)
-    n = length(L.pFunctions)-1
-    sum = 0
-    matrix = get_symPDerivMatrix(L; substitute = substitute)
-    for l = (j-1):(n-k)
-        summand = binomial(l, j-1) * matrix[n-k-l+1, l-j+1+1] * (-1)^l
-        sum += summand
-    end
-    return sum
-end
+# # Find symbolic expression for Bjk using explicit formula.
+# # If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
+# function get_symBjk(L::LinearDifferentialOperator, j::Int, k::Int; substitute = true)
+#     n = length(L.pFunctions)-1
+#     sum = 0
+#     matrix = get_symPDerivMatrix(L; substitute = substitute)
+#     for l = (j-1):(n-k)
+#         summand = binomial(l, j-1) * matrix[n-k-l+1, l-j+1+1] * (-1)^l
+#         sum += summand
+#     end
+#     return sum
+# end
 
-# Find symbolic B using explicit formula.
-# If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
-function get_symB(L::LinearDifferentialOperator; substitute = false)
-    n = length(L.pFunctions)-1
-    B = Array{Any}(n,n)
-    for j = 1:n
-        for k = 1:n
-            B[j,k] = get_symBjk(L, j, k; substitute = substitute)
-        end
-    end
-    return B
-end
+# # Find symbolic B using explicit formula.
+# # If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
+# function get_symB(L::LinearDifferentialOperator; substitute = true)
+#     n = length(L.pFunctions)-1
+#     B = Array{Any}(n,n)
+#     for j = 1:n
+#         for k = 1:n
+#             B[j,k] = get_symBjk(L, j, k; substitute = substitute)
+#         end
+#     end
+#     return B
+# end
 
 # Find Bjk using explicit formula
-function get_Bjk(L::LinearDifferentialOperator, j::Int, k::Int, pDerivMatrix::Array)
+function get_Bjk(L::LinearDifferentialOperator, j::Int, k::Int; symbolic = false, substitute = true, pDerivMatrix::Array = [])
     n = length(L.pFunctions)-1
-    if size(pDerivMatrix) != (n,n)
-        throw(error("Size of pDerivMatrix should be ($n,$n)"))
-    end
     sum = 0
-    for l = (j-1):(n-k)
-        summand = mult_func(binomial(l, j-1) * (-1)^l, pDerivMatrix[n-k-l+1, l-j+1+1])
-        sum = add_func(sum, summand)
+    if symbolic
+        symPDerivMatrix = get_symPDerivMatrix(L; substitute = substitute)
+        for l = (j-1):(n-k)
+            summand = binomial(l, j-1) * symPDerivMatrix[n-k-l+1, l-j+1+1] * (-1)^l
+            sum += summand
+        end
+    else
+        if isempty(pDerivMatrix)
+            throw(error("pDerivMatrix required"))
+        elseif size(pDerivMatrix) != (n,n)
+            throw(error("Size of pDerivMatrix should be ($n,$n)"))
+        end
+        for l = (j-1):(n-k)
+            summand = mult_func(binomial(l, j-1) * (-1)^l, pDerivMatrix[n-k-l+1, l-j+1+1])
+            sum = add_func(sum, summand)
+        end
     end
     return sum
 end
 
 # Construct the B matrix using explicit formula
-function get_B(L::LinearDifferentialOperator, pDerivMatrix::Array)
+function get_B(L::LinearDifferentialOperator; symbolic = false, substitute = true, pDerivMatrix::Array = [])
     n = length(L.pFunctions)-1
-    B = Array{Any}(n,n)
+    B = Array{Union{Function, Number}}(n,n)
     for j = 1:n
         for k = 1:n
-            B[j,k] = get_Bjk(L, j, k, pDerivMatrix)
+            B[j,k] = get_Bjk(L, j, k; symbolic = symbolic, substitute = substitute, pDerivMatrix = pDerivMatrix)
         end
     end
     return B
@@ -497,7 +509,7 @@ function get_symXi(L::LinearDifferentialOperator; substitute = false, xDef = not
             symXi[i] = deriv(xDef,t,i-1)
         catch err
             if isa(err, MethodError)
-                error("Definition of x required")
+                throw(error("Definition of x required"))
             end
         end
     end
@@ -548,13 +560,13 @@ function check_adjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, adj
     right = N * inv(BEvalB) * Q
     # println("M * inv(BEvalA) * P = $left")
     # println("N * inv(BEvalB) * Q = $right")
-    tol = set_tol_matrix(left, right) # Use matrix norm!
+    tol = set_tol_matrix(left, right)
     return all(i -> isapprox(left[i], right[i]; atol = tol), length(left)) # Can't use == to deterimine equality because left and right are arrays of floats
 end
 
 # Find a valid adjoint
 function construct_validAdjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, pDerivMatrix::Array)
-    B = get_B(L, pDerivMatrix)
+    B = get_B(L; pDerivMatrix = pDerivMatrix)
     BHat = get_BHat(L, B)
     Uc = get_Uc(U)
     H = get_H(U, Uc)
@@ -563,6 +575,6 @@ function construct_validAdjoint(L::LinearDifferentialOperator, U::VectorBoundary
     if check_adjoint(L, U, adjointU, B)
         return adjointU
     else
-        error("Adjoint found not valid")
+        throw(error("Adjoint found not valid"))
     end
 end
