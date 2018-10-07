@@ -7,8 +7,10 @@
 # Importing packages
 #############################################################################
 using SymPy
-using Roots
+# using Roots
 using Distributions
+using IntervalArithmetic
+using IntervalRootFinding
 #############################################################################
 # Helper functions
 #############################################################################
@@ -24,7 +26,15 @@ end
 
 # Set an appropriate tolerance when checking whether x \approx y
 function set_tol(x::Number, y::Number)
-    return 1e-09 * mean([x y])
+    return 1e-05 * mean([x y])
+end
+
+# Set an appropriate tolerance when checking whether M \approx N
+function set_tol_matrix(A::Array{Number}, B::Array{Number})
+    if size(A) != size(B)
+        throw(error("Matrix dimensions do not match"))
+    end
+    return 1e-05 * (norm(A,2) + norm(B,2))
 end
 
 # Evaluate function on x where the function is Function, SymPy.Sym, or Number.
@@ -119,6 +129,33 @@ function evaluate_matrix(matrix::Array, a::Number, t=nothing)
     end
     return matrixA
 end
+
+# Implement a polynomial in the form of Julia function given an array containing coefficients of x^n, x^{n-1},..., x^2, x, 1.
+function get_polynomial(coeffList::Array)
+    polynomial = 0
+    n = length(coeffList)-1
+    for i in 0:n
+        newTerm = t -> coeffList[i+1] * t^(n-i)
+        polynomial = add_func(polynomial, newTerm)
+    end
+    return polynomial
+end
+
+# Get the kth derivative of a polynomial implemented above
+function get_polynomialDeriv(coeffList::Array, k::Int)
+    if k < 0
+        error("Only nonnegative degrees are allowed")
+    elseif k == 0
+        newCoeffList = coeffList
+    else
+        for counter = 1:k
+            n = length(coeffList)
+            newCoeffList = hcat([0],[(n-i)*coeffList[i] for i in 1:(n-1)]')
+            coeffList = newCoeffList
+        end
+    end
+    return get_polynomial(newCoeffList)
+end
 #############################################################################
 # Structs
 #############################################################################
@@ -176,7 +213,7 @@ end
 # That is, assume the input symFunc comes from SymLinearDifferentialOperator.
 function check_func_sym_equal(func::Union{Function,Number}, symFunc, interval::Tuple{Number,Number}, t::SymPy.Sym) # symFunc should be Union{SymPy.Sym, Number}, but somehow SymPy.Sym gets ignored
     (a,b) = interval
-    # Randomly sample 100 points from (a,b) and check if func and symFunc agree on them
+    # Randomly sample 10 points from (a,b) and check if func and symFunc agree on them
     for i = 1:10
         # Check endpoints
         if i == 1
@@ -197,6 +234,10 @@ function check_func_sym_equal(func::Union{Function,Number}, symFunc, interval::T
         end
         tol = set_tol(funcEvalX, symFuncEvalX)
         if !isapprox(funcEvalX, symFuncEvalX; atol = tol)
+            println("x = $x")
+            println("symFunc = $symFunc")
+            println("funcEvalX = $funcEvalX")
+            println("symFuncEvalX = $symFuncEvalX")
             return false
         end
     end
@@ -207,6 +248,7 @@ end
 function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     pFunctions, (a,b), symL = L.pFunctions, L.interval, L.symL
     symPFunctions, t = symL.symPFunctions, symL.t
+    domainC = Complex(a..b, 0..0) # Domain [a,b] represented in the complex plane
     p0 = pFunctions[1]
     if !check_all(pFunctions, pFunc -> (isa(pFunc, Function) || isa(pFunc, Number)))
         throw(StructDefinitionError(:"p_k should be Function or Number"))
@@ -215,10 +257,11 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     elseif (a,b) != symL.interval
         throw(StructDefinitionError(:"Intervals do not match"))
     # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b].
-    elseif (isa(p0, Function) && (length(find_zeros(p0, a, b)) != 0 || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
+    elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
         throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
     elseif !all(i -> check_func_sym_equal(pFunctions[i], symPFunctions[i], (a,b), t), 1:length(pFunctions))
-        throw(StructDefinitionError(:"symP_k does not agree with p_k on [a,b]"))
+        # throw(StructDefinitionError(:"symP_k does not agree with p_k on [a,b]"))
+        warn("symP_k does not agree with p_k on [a,b]") # Make this a warning instead of an error because the functionalities of Julia functions may be more than those of SymPy objects; we do not want to compromise the functionalities of LinearDifferentialOperator because of the restrictions on SymPy.
     else
         return true
     end
@@ -296,7 +339,7 @@ function get_H(U::VectorBoundaryForm, Uc::VectorBoundaryForm)
 end
 
 # Construct a matrix whose ij-entry is a string "pij" which denotes the jth derivative of p_i
-function get_pStringMatrix(L::Union{LinearDifferentialOperator, SymLinearDifferentialOperator})
+function get_pStringMatrix(L::LinearDifferentialOperator)
     if isa(L, LinearDifferentialOperator)
         pFunctions = L.pFunctions
     else
@@ -313,7 +356,9 @@ function get_pStringMatrix(L::Union{LinearDifferentialOperator, SymLinearDiffere
 end
 
 # Construct a matrix whose ij-entry is the symbolic expression of the jth derivative of p_i.
-function get_symPDerivMatrix(symL::SymLinearDifferentialOperator, substitute = false)
+# Functions with keyword arguments are defined using a semicolon in the signature.
+function get_symPDerivMatrix(L::LinearDifferentialOperator; substitute = false)
+    symL = L.symL
     symPFunctions, t = symL.symPFunctions, symL.t
     n = length(symPFunctions)-1
     symPDerivMatrix = Array{SymPy.Sym}(n,n)
@@ -337,7 +382,8 @@ end
 
 # Create the symbolic expression for [uv](t).
 # If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
-function get_symUvForm(symL::SymLinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym, substitute = false)
+function get_symUvForm(L::LinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym; substitute = false)
+    symL = L.symL
     symPFunctions, t = symL.symPFunctions, symL.t
     n = length(symPFunctions)-1
     if substitute
@@ -358,10 +404,10 @@ end
 
 # Find symbolic expression for Bjk using explicit formula.
 # If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
-function get_symBjk(symL::SymLinearDifferentialOperator, j::Int, k::Int, substitute = false)
-    n = length(symL.symPFunctions)-1
+function get_symBjk(L::LinearDifferentialOperator, j::Int, k::Int; substitute = false)
+    n = length(L.pFunctions)-1
     sum = 0
-    matrix = get_symPDerivMatrix(symL, substitute)
+    matrix = get_symPDerivMatrix(L; substitute = substitute)
     for l = (j-1):(n-k)
         summand = binomial(l, j-1) * matrix[n-k-l+1, l-j+1+1] * (-1)^l
         sum += summand
@@ -371,12 +417,12 @@ end
 
 # Find symbolic B using explicit formula.
 # If substitute is true: Substitute the p_k SymFunctions with SymPy.Sym definitions, e.g., substitute p0 by t + 1.
-function get_symB(symL::SymLinearDifferentialOperator, substitute = false)
-    n = length(symL.symPFunctions)-1
+function get_symB(L::LinearDifferentialOperator; substitute = false)
+    n = length(L.pFunctions)-1
     B = Array{Any}(n,n)
     for j = 1:n
         for k = 1:n
-            B[j,k] = get_symBjk(symL, j, k, substitute)
+            B[j,k] = get_symBjk(L, j, k; substitute = substitute)
         end
     end
     return B
@@ -385,6 +431,9 @@ end
 # Find Bjk using explicit formula
 function get_Bjk(L::LinearDifferentialOperator, j::Int, k::Int, pDerivMatrix::Array)
     n = length(L.pFunctions)-1
+    if size(pDerivMatrix) != (n,n)
+        throw(error("Size of pDerivMatrix should be ($n,$n)"))
+    end
     sum = 0
     for l = (j-1):(n-k)
         summand = mult_func(binomial(l, j-1) * (-1)^l, pDerivMatrix[n-k-l+1, l-j+1+1])
@@ -405,7 +454,7 @@ function get_B(L::LinearDifferentialOperator, pDerivMatrix::Array)
     return B
 end
 
-# Construct B_hat
+# Construct B_hat. Since all entries of B_hat are evaluated, BHat is a numeric matrix.
 function get_BHat(L::LinearDifferentialOperator, B::Array)
     pFunctions, (a,b) = L.pFunctions, L.interval
     n = length(pFunctions)-1
@@ -435,23 +484,17 @@ function get_adjoint(J)
     return adjoint
 end
 
-# Construct \xi = [x; x'; x''; ...], an n x 1 vector of derivatives of x(t)
-function get_symXi(L::Union{LinearDifferentialOperator, SymLinearDifferentialOperator}, substitute = false, xDef = nothing)
-    if isa(L, LinearDifferentialOperator)
-        pFunctions = L.pFunctions
-    else
-        pFunctions = L.symPFunctions
-    end
-    n = length(pFunctions)
+# Construct the symbolic expression of \xi = [x; x'; x''; ...], an n x 1 vector of derivatives of x(t)
+function get_symXi(L::LinearDifferentialOperator; substitute = false, xDef = nothing)
+    n = length(L.pFunctions)-1
     t = symbols("t")
     symXi = Array{SymPy.Sym}(n,1)
-    
     if !substitute
         xDef = SymFunction("x")(t)
     end
     for i = 1:n
         try
-            symXi[i] = deriv(xDef,t,i)
+            symXi[i] = deriv(xDef,t,i-1)
         catch err
             if isa(err, MethodError)
                 error("Definition of x required")
@@ -461,21 +504,37 @@ function get_symXi(L::Union{LinearDifferentialOperator, SymLinearDifferentialOpe
     return symXi
 end
 
-# For L, \xi needs to be contructed by hand
-# xi = [x; x'; x''; ...]
+# For L, \xi needs to be contructed by hand, e.g., xi = [t->t^2+1; t->2t; t->2; ...]
 
-# Evaluate \xi at a
-function evaluate_xi(L::Union{LinearDifferentialOperator, SymLinearDifferentialOperator}, a::Number, xDef::Union{Function, Number})
-    if isa(L, SymLinearDifferentialOperator)
-        t = L.t
+# Evaluate \xi at a.
+# \xi could be Function, SymPy.Sym, or Number.
+function evaluate_xi(L::LinearDifferentialOperator, a::Number, xi)
+    if any(xDeriv->isa(xDeriv, SymPy.Sym), xi)
+        t = L.symL.t
+    else
+        t = nothing
     end
-    symXi = get_symXi(L, true, xDef)
-    n = length(symXi)
+    n = length(xi)
     xiEvalA = Array{Number}(n,1)
     for i = 1:n
-        xiEvalA[i,1] = evaluate(symXi[i,1],a,t)
+        xiEvalA[i,1] = evaluate(xi[i,1],a,t)
     end
     return xiEvalA
+end
+
+# Get boundary condition Ux = M\xi(a) + N\xi(b)
+function get_boundaryCondition(L::LinearDifferentialOperator, U::VectorBoundaryForm, xi)
+    # xi cannot contain other types than Function or Number
+    if !all(xDeriv->isa(xDeriv, Union{Function, Number}), xi)
+        typeXi = typeof(xi)
+        throw(error("xi of type $typeXi does not match L of type LinearDifferentialOperator"))
+    end
+    (a,b) = L.interval
+    M, N = U.M, U.N
+    xiEvalA = evaluate_xi(L, a, xi)
+    xiEvalB = evaluate_xi(L, b, xi)
+    Ux = M*xiEvalA + N*xiEvalB
+    return Ux
 end
 
 # Check if U+ is valid (only works for homogeneous cases Ux=0)
@@ -487,16 +546,14 @@ function check_adjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, adj
     BEvalB = evaluate_matrix(B, b)
     left = M * inv(BEvalA) * P
     right = N * inv(BEvalB) * Q
-    println("M * inv(BEvalA) * P")
-    println(left)
-    println("N * inv(BEvalB) * Q")
-    println(right)
-    tol = 1e-09 # Use matrix norm!
-    return isapprox(left, right; atol = tol) # Can't use == to deterimine equality because left and right are arrays of floats
+    # println("M * inv(BEvalA) * P = $left")
+    # println("N * inv(BEvalB) * Q = $right")
+    tol = set_tol_matrix(left, right) # Use matrix norm!
+    return all(i -> isapprox(left[i], right[i]; atol = tol), length(left)) # Can't use == to deterimine equality because left and right are arrays of floats
 end
 
 # Find a valid adjoint
-function construct_valid_adjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, pDerivMatrix::Array)
+function construct_validAdjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, pDerivMatrix::Array)
     B = get_B(L, pDerivMatrix)
     BHat = get_BHat(L, B)
     Uc = get_Uc(U)
@@ -509,322 +566,3 @@ function construct_valid_adjoint(L::LinearDifferentialOperator, U::VectorBoundar
         error("Adjoint found not valid")
     end
 end
-#############################################################################
-# Tests
-#############################################################################
-# Test for SymLinearDifferentialOperator definition
-function test_symLinearDifferentialOperator_def()
-    results = [true]
-    println("Testing definition of SymLinearDifferentialOperator: SymPy.Sym coefficients")
-    t = symbols("t")
-    passed = false
-    try
-        SymLinearDifferentialOperator([t+1 t+1 t+1], (0,1), t)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    println("Testing definition of SymLinearDifferentialOperator: Number coefficients")
-    passed = false
-    try
-        SymLinearDifferentialOperator([1 1 1], (0,1), t)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    println("Testing definition of SymLinearDifferentialOperator: SymPy.Sym and Number coefficients")
-    passed = false
-    try
-        SymLinearDifferentialOperator([1 1 t+1], (0,1), t)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: symP_k should be SymPy.Sym or Number")
-    passed = false
-    try
-        SymLinearDifferentialOperator(['s' 1 t+1], (0,1), t)
-    catch err
-        if isa(err,StructDefinitionError) && err.msg == "symP_k should be SymPy.Sym or Number"
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: Only one free symbol is allowed in symP_k")
-    a = symbols("a")
-    passed = false
-    try
-        SymLinearDifferentialOperator([t+1 t+1 a*t+1], (0,1), t)
-    catch err
-        if isa(err,StructDefinitionError) && err.msg == "Only one free symbol is allowed in symP_k"
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    return all(results)
-end
-test_symLinearDifferentialOperator_def()
-
-# Test for LinearDifferentialOperator definition
-function test_linearDifferentialOperator_def()
-    results = [true]
-    # Variable p_k
-    println("Testing definition of LinearDifferentialOperator: Function coefficients")
-    t = symbols("t")
-    symL = SymLinearDifferentialOperator([t+1 t+1 t+1], (1,2), t)
-    passed = false
-    try
-        L = LinearDifferentialOperator([t->t+1 t->t+1 t->t+1], (1,2), symL)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    # Constant coefficients
-    println("Testing definition of LinearDifferentialOperator: Constant coefficients represented by Numbers")
-    symL = SymLinearDifferentialOperator([1 1 1], (0,1), t)
-    passed = false
-    try
-        LinearDifferentialOperator([1 1 1], (0,1), symL)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    println("Testing definition of LinearDifferentialOperator: Constant coefficients represented by constant functions")
-    symL = SymLinearDifferentialOperator([1 1 1], (0,1), t)
-    passed = false
-    try
-        LinearDifferentialOperator([t->1 t->1 t->1], (0,1), symL)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    # Mixed coefficients
-    println("Testing definition of LinearDifferentialOperator: Function and constant coefficients represented by Numbers and Functions")
-    symL = SymLinearDifferentialOperator([1 1 t+1], (0,1), t)
-    passed = false
-    try
-        LinearDifferentialOperator([1 t->1 t->t+1], (0,1), symL)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: p_k should be Function or Number")
-    passed = false
-    try
-        LinearDifferentialOperator(['s' 1 1], (0,1), symL)
-    catch err
-        if err.msg == "p_k should be Function or Number" && (isa(err,StructDefinitionError))
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: Number of p_k and symP_k do not match")
-    symL = SymLinearDifferentialOperator([1 1 t+1], (0,1), t)
-    passed = false
-    try
-        LinearDifferentialOperator([1 t->1], (0,1), symL)
-    catch err
-        if err.msg == "Number of p_k and symP_k do not match" && (isa(err, StructDefinitionError))
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: p0 vanishes on [a,b]")
-    function p2(t) return t end
-    symL = SymLinearDifferentialOperator([t 1 2], (0,1), t)
-    passed = false
-    try
-        LinearDifferentialOperator([t->t 1 2], (0,1), symL)
-    catch err
-        if err.msg == "p0 vanishes on [a,b]" && (isa(err, StructDefinitionError))
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-    
-    println("Testing StructDefinitionError: symP_k does not agree with p_k on [a,b]")
-    symL1 = SymLinearDifferentialOperator([t+1 t+1 t+2], (0,1), t)
-    passed = false
-    try
-        LinearDifferentialOperator([t->t+1 t->t+1 t->t+1], (0,1), symL1)
-    catch err
-        if err.msg == "symP_k does not agree with p_k on [a,b]" && (isa(err,StructDefinitionError))
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    return all(results)
-end
-test_linearDifferentialOperator_def()
-
-# Test for VectorBoundaryForm definition
-function test_vectorBoundaryForm_def()
-    results = [true]
-    println("Testing the definition of VectorBoundaryForm")
-    M = eye(3)
-    N = M
-    passed = false
-    try
-        VectorBoundaryForm(M, N)
-        passed = true
-    catch err
-        println("Failed with $err")
-    end
-    if passed
-        println("Passed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: Entries of M, N should be Number")
-    M = ['a' 2; 3 4]
-    N = M
-    passed = false
-    try
-        VectorBoundaryForm(M, N)
-    catch err
-        if err.msg == "Entries of M, N should be Number" && isa(err, StructDefinitionError)
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: M, N dimensions do not match")
-    M = eye(2)
-    N = eye(3)
-    passed = false
-    try
-        VectorBoundaryForm(M, N)
-    catch err
-        if err.msg == "M, N dimensions do not match" && isa(err,StructDefinitionError)
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: M, N should be square matrices")
-    M = [1 2]
-    N = M
-    passed = false
-    try
-        VectorBoundaryForm(M, N)
-    catch err
-        if err.msg == "M, N should be square matrices" && isa(err,StructDefinitionError)
-            passed = true
-            println("Passed!")
-        else
-            println("Failed with $err")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    println("Testing StructDefinitionError: Boundary operators not linearly independent")
-    M = [1 2; 2 4]
-    N = [3 4; 6 8]
-    passed = false
-    try
-        VectorBoundaryForm(M, N)
-    catch err
-        if err.msg == "Boundary operators not linearly independent" && isa(err,StructDefinitionError)
-            passed = true
-            println("Passed!")
-        end
-    end
-    if !passed
-        println("Failed!")
-    end
-    append!(results, passed)
-
-    return all(results)
-end
-test_vectorBoundaryForm_def()
