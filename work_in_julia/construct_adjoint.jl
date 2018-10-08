@@ -65,7 +65,7 @@ function partition(n::Int)
 end
 
 # Construct the symbolic expression for the kth derivative of u with respect to t
-function deriv(u::SymPy.Sym, t::SymPy.Sym, k::Int)
+function symDeriv(u::SymPy.Sym, t::SymPy.Sym, k::Int)
     if k < 0
         throw(error("Only nonnegative degrees are allowed"))
     end
@@ -215,8 +215,8 @@ end
 # That is, assume the input symFunc comes from SymLinearDifferentialOperator.
 function check_func_sym_equal(func::Union{Function,Number}, symFunc, interval::Tuple{Number,Number}, t::SymPy.Sym) # symFunc should be Union{SymPy.Sym, Number}, but somehow SymPy.Sym gets ignored
     (a,b) = interval
-    # Randomly sample 10 points from (a,b) and check if func and symFunc agree on them
-    for i = 1:10
+    # Randomly sample 1000 points from (a,b) and check if func and symFunc agree on them
+    for i = 1:1000
         # Check endpoints
         if i == 1
             x = a
@@ -257,7 +257,7 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     elseif length(pFunctions) != length(symPFunctions)
         throw(StructDefinitionError(:"Number of p_k and symP_k do not match"))
     elseif (a,b) != symL.interval
-        throw(StructDefinitionError(:"Intervals do not match"))
+        throw(StructDefinitionError(:"Intervals of L and symL do not match"))
     # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b].
     elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
         throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
@@ -373,7 +373,7 @@ function get_symPDerivMatrix(L::LinearDifferentialOperator; substitute = true)
         for j in 1:n
             index, degree = i-1, j-1
             symPDeriv = pFunctionSymbols[index+1]
-            symPDerivMatrix[i,j] = deriv(symPDeriv, t, degree)
+            symPDerivMatrix[i,j] = symDeriv(symPDeriv, t, degree)
         end
     end
     return symPDerivMatrix
@@ -396,7 +396,7 @@ function get_symUvForm(L::LinearDifferentialOperator, u::SymPy.Sym, v::SymPy.Sym
     sum = 0
     for m = 1:n
         for (j,k) in partition(m-1)
-            summand = (-1)^j * deriv(u, t, k) * deriv(pFunctionSymbols[n-m+1] * conj(v), t, j)
+            summand = (-1)^j * symDeriv(u, t, k) * symDeriv(pFunctionSymbols[n-m+1] * conj(v), t, j)
             sum += summand
         end
     end
@@ -506,7 +506,7 @@ function get_symXi(L::LinearDifferentialOperator; substitute = false, xDef = not
     end
     for i = 1:n
         try
-            symXi[i] = deriv(xDef,t,i-1)
+            symXi[i] = symDeriv(xDef,t,i-1)
         catch err
             if isa(err, MethodError)
                 throw(error("Definition of x required"))
