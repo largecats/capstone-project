@@ -450,24 +450,25 @@ function test_linearDifferentialOperatorDef(n, k)
         end
         append!(results, passed)
 
-        println("Testing StructDefinitionError: p0 vanishes on [a,b]")
-        function p2(t) return t end
-        symL = SymLinearDifferentialOperator([t 1 2], (a,b), t)
-        passed = false
-        try
-            LinearDifferentialOperator([t->t 1 2], (a,b), symL)
-        catch err
-            if err.msg == "p0 vanishes on [a,b]" && (isa(err, StructDefinitionError))
-                passed = true
-                println("Passed!")
-            else
-                println("Failed with $err")
-            end
-        end
-        if !passed
-            println("Failed!")
-        end
-        append!(results, passed)
+        # # This error is deprecated
+        # println("Testing StructDefinitionError: p0 vanishes on [a,b]")
+        # function p2(t) return t end
+        # symL = SymLinearDifferentialOperator([t 1 2], (a,b), t)
+        # passed = false
+        # try
+        #     LinearDifferentialOperator([t->t 1 2], (a,b), symL)
+        # catch err
+        #     if err.msg == "p0 vanishes on [a,b]" && (isa(err, StructDefinitionError))
+        #         passed = true
+        #         println("Passed!")
+        #     else
+        #         println("Failed with $err")
+        #     end
+        # end
+        # if !passed
+        #     println("Failed!")
+        # end
+        # append!(results, passed)
         
         # # This is now a warning
         # println("Testing StructDefinitionError: symP_k does not agree with p_k on [a,b]")

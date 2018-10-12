@@ -259,9 +259,9 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
         throw(StructDefinitionError(:"Number of p_k and symP_k do not match"))
     elseif (a,b) != symL.interval
         throw(StructDefinitionError(:"Intervals of L and symL do not match"))
-    # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b]. roots() doesn't work if p0 is sth like t+2*im
-    elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
-        throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
+    # # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b]. roots() doesn't work if p0 is sth like t*im - 2*im
+    # elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
+    #     throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
     elseif !all(i -> check_func_sym_equal(pFunctions[i], symPFunctions[i], (a,b), t), 1:length(pFunctions))
         # throw(StructDefinitionError(:"symP_k does not agree with p_k on [a,b]"))
         warn("symP_k does not agree with p_k on [a,b]") # Make this a warning instead of an error because the functionalities of Julia Functions may be more than those of SymPy objects; we do not want to compromise the functionalities of LinearDifferentialOperator because of the restrictions on SymPy.
