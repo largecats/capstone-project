@@ -14,7 +14,7 @@
 \date{\vspace{-5ex}}
 %----------------------------------
 %unnumbered sections in TOC
-\setcounter{secnumdepth}{0}
+%\setcounter{secnumdepth}{0}
 
 %-----This is where the GOOD STUFF begins---
 \begin{document}
@@ -26,34 +26,821 @@
 % \tableofcontents
 
 \section{Introduction}
-Solving evolution partial differential equations (PDEs) typically requires ad-hoc methods and special treatments. The recently discovered ``Fokas method''\cite{Kesici2016} allows solving many of these equations algorithmically. The first goal of this project concerns implementing the Fokas method in the Julia mathematical programming language. The first step in the implementation is to construct a valid adjoint boundary condition from a given boundary condition.
+Solving evolution partial differential equations (PDEs) typically requires ad-hoc methods and special treatments. The recently discovered ``Fokas method''\cite{Kesici2016} allows solving many of these equations algorithmically. The first goal of this project concerns implementing the Fokas method in the Julia mathematical programming language. The first steps in the implementation involves constructing a valid adjoint boundary condition from a given homogeneous boundary condition.
 
-We begin by defining the objects involved in the construction.
+In this report, we begin by introducing the preliminary materials used by the construction algorithm. In the spirit of making the report self-contained, cited definitions and theorems are included in the report. Most of them are taken from \textit{Theory of Ordinary Differential Equations}\cite{CoddingtonLevinson}, with frequent supplies of the student's own notes to build on existing literature so as to make the results relevant to the construction algorithm. 
 
-\section{Preliminary definitions\cite{CoddingtonLevinson}}
-A linear differential operator $L$ of order $n$ ($n$>1) is defined by
-\[Lx = p_0x^{(n)} + p_1x^{(n-1)} + \cdots + p_{n-1}x' + p_nx,\]
-where the $p_k$ are complex-valued functions of class $C^{n-k}$ on a closed bounded interval $[a,b]$ (i.e., derivatives $p_k, p'_k, \ldots, p^{(n-k)}_k$ exist on $[a,b]$ and are continuous) and $p_0(t)\neq 0$ on $[a,b]$.
+We then present an outline of the construction algorithm, referencing definitions and theorems introduced in the preliminary section. The outline is mostly in higher-level or abstract form, with occasional occurrences of pseudo-code when deemed necessary. 
 
-A homogeneous boundary condition is a set of equations of the type
-\begin{equation}\label{eq:homogeneous boundary conditions}
-    \sum_{k=1}^n (M_{jk}x^{(k-1)}(a) + N_{jk}x^{(k-1)}(b))=0 \quad (j=1,\ldots,m) 
+After that, we briefly discuss the implementation of the algorithm in Julia. The discussion will focus on the characterizations of key mathematical objects, notable features, and user experience.
+
+We will conclude the report with a summary of the progress so far with respect to the plan in the project proposal. This will be followed by a brief discussion of plans for the next steps.
+
+\section{Preliminaries\cite{CoddingtonLevinson}}
+
+The construction algorithm depends on two important results, namely Green's formula and boundary-form formula. Generally speaking, Green's formula provides a way to characterize a form, which, when used in the boundary-form formula, gives rise to the desired construction. 
+
+We begin with the Green's formula.
+
+\subsection{Green's formula}
+\begin{defn}\label{defn:linear differential operator}
+    A \textbf{linear differential operator} $L$ of order $n$ ($n>1$) is defined by
+    \[Lx = p_0x^{(n)} + p_1x^{(n-1)} + \cdots + p_{n-1}x' + p_nx,\]
+    where the $p_k$ are complex-valued functions of class $C^{n-k}$ on a closed bounded interval $[a,b]$ (i.e., derivatives $p_k, p'_k, \ldots, p^{(n-k)}_k$ exist on $[a,b]$ and are continuous) and $p_0(t)\neq 0$ on $[a,b]$.
+\end{defn}
+
+\begin{defn}\label{defn:homogeneous boundary conditions}
+    \textbf{Homogeneous boundary conditions} refer to a set of equations of the type
+    \begin{equation}\label{eq:homogeneous boundary conditions}
+        \sum_{k=1}^n (M_{jk}x^{(k-1)}(a) + N_{jk}x^{(k-1)}(b))=0 \quad (j=1,\ldots,m) 
+    \end{equation}
+    where $M_{jk}, N_{jk}$ are complex constants.
+\end{defn}
+
+\begin{defn}\label{defn:homogeneous boundary value problem}
+    A \textbf{homogeneous boundary value problem} concerns finding the solutions of 
+    \[Lx=0\] on some interval $[a,b]$ which satisfy some homogeneous boundary conditions (Definition \ref{defn:homogeneous boundary conditions}).
+\end{defn}
+
+For any homogeneous boundary value problem, an \textbf{adjoint problem} refers to the problem of finding the solutions of
+\[L^{+}x:=(-1)^n(\bar{p}_0x)^{(n)}+(-1)^{n-1}(\bar{p}_1x)^{(n-1)}+\cdots+\bar{p}_nx=0\]
+on $[a,b]$ which satisfy some homogeneous boundary conditions ``complementary'' to the conditions associated with the solutions of $Lx=0$. We seek to characterize these boundary conditions in the following sections.
+
+With these definitions, we are ready to introduce Green's formula, the first important result the construction depends on.
+
+\begin{thm}{(Green's formula)}\label{thm:green's formula}
+    For $u, v\in C^n$ on $[a,b]$,
+    \begin{equation}\label{eq:green's formula}
+        \int_{t_1}^{t_2}(Lu)\bar{v}\,dt - \int_{t_1}^{t_2}u(\overline{L^+v})\,dt = [uv](t_2) - [uv](t_1) 
+    \end{equation}
+    where $a\leq t_1<t_2\leq b$ and $[uv](t)$ is the form in $(u, u', \ldots, u^{(n-1)})$ and $(v, v', \ldots, v^{(n-1)})$ given by
+    \begin{equation}\label{eq:[uv](t) defn}
+        [uv](t)=\sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)
+    \end{equation}
+\end{thm}
+
+Using the form $[uv](t)$, we define an important $n\times n$ matrix $B$ whose entries $B_{jk}$ satisfy
+\begin{equation}\label{eq:[uv](t) in B matrix}
+    \begin{split}
+        [uv](t) = \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t).
+    \end{split}
 \end{equation}
-where $M_{jk}, N_{jk}$ are complex constants.
+Note that
+\begin{equation*}
+    \begin{split}
+        [uv](t) &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)\\
+        &= \sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)\left(\sum_{l=0}^j\binom{j}{l}p_{n-m}^{(j-l)}(t)\bar{v}^{(l)}(t)\right)\\
+        &= \sum_{m=1}^n\sum_{k=0}^{m-1}(-1)^{m-1-k} u^{(k)}(t)\left(\sum_{l=0}^{m-1-k}\binom{m-1-k}{l}p_{n-m}^{(m-1-k-l)}(t)\bar{v}^{(l)}(t)\right)\\
+        &= \sum_{m=1}^n\sum_{k=1}^{m}(-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t)\quad\mbox{(shifting $k$ to $k+1$)}\\
+        &= \sum_{k=1}^n\sum_{m=k}^n (-1)^{m-k}\left(\sum_{l=0}^{m-k}\binom{m-k}{l}p_{n-m}^{(m-k-l)}(t)\bar{v}^{(l)}(t)\right)u^{(k-1)}(t).
+    \end{split}
+\end{equation*}
 
-A homogeneous boundary-value problem concerns finding the solutions of 
-\[Lx=0\] on $[a,b]$ which satisfy some homogeneous boundary conditions defined above.
-
-A semibilinear form is a complex-valued function $\mathcal{S}$ defined for pairs of vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$ satisfying
+To find $B_{jk}$, we need to extract the coefficients of $u^{(k-1)}\bar{v}^{(j-1)}$. We first note that, fixing $m$ and $k$, when $l=j-1$, the coefficient of $\bar{v}^{(j-1)}$ is
 \begin{align*}
-    \mathcal{S}(\alpha f+\beta g, h)&=\alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h)\\
-    \mathcal{S}(f, \alpha g + \beta h) &= \bar{\alpha}\mathcal{S}(f,g) + \bar{\beta}\mathcal{S}(f, h)
+    \binom{m-k}{j-1}p_{n-m}^{(m-k-j+1)}(t).
 \end{align*}
-for any complex numbers $\alpha, \beta$ and vectors $f,g,h$.
+To find the coefficient of $u^{(k-1)}\bar{v}^{(j-1)}$, we need to fix $k$ and collect the above coefficient across all values of $m$. Since $m$ goes up to $n$, $m-k$ goes up to $n-k$. Since $l\leq m-k$, $l=j-1$ implies $j-1\leq m-k$. Thus, $m-k$ ranges from $j-1$ to $n-k$. Let $l':=m-k$, then $m=k+l'$, and the above equation becomes
+\begin{align*}
+    [uv](t) 
+    &= \sum_{k=1}^n\sum_{j=1}^n (-1)^{l'}\left(\sum_{l'=j-1}^{n-k}\binom{l'}{j-1}p_{n-(k+l')}^{(l'-(j-1))}(t)\right)\bar{v}^{(j-1)}(t)u^{(k-1)}(t)\\
+    &= \sum_{j,k=1}^n \left(\sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(t)(-1)^l\right)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)\quad\mbox{(replace $l'$ by $l$)}.
+\end{align*}
+Thus,
+\[B_{jk}(t) = \sum_{l=j-1}^{n-k}\binom{l}{j-1}p^{(l-j+1)}_{n-k-l}(t)(-1)^l.\]
+We note that for $j+k>n+1$, or $j-1>n-k$, $l$ is undefined. This means that terms $u^{(k-1)}(t)\bar{v}^{(j-1)}(t)$ with $j+k>n+1$ does not exist in $[uv](t)$. Thus, $B_{jk}(t)=0$. Also, for $j+k=n+1$, or $j-1=n-k$,
+\[B_{jk}(t) = \binom{j-1}{j-1}p^{(j-1-j+1)}_{j-1-(j-1)}(t)(-1)^{j-1} = (-1)^{j-1}p_0(t).\] 
+Thus, the matrix $B$ has the form
+\begin{equation}\label{B(t)}
+    B(t)=\begin{bmatrix}
+        B_{11} & B_{12} & \cdots & \cdots & p_0(t)\\
+        \vdots & \vdots & \cdots & -p_0(t) & 0\\
+        \vdots & \vdots & \cdots & \vdots & \vdots\\
+        (-1)^{n-1}p_0(t) & 0 & \cdots & 0 & 0
+    \end{bmatrix}.
+\end{equation}
+We note that because $p_0(t)\neq 0$ on $[a,b]$ (as required in Definition \ref{defn:linear differential operator}), $B(t)$ is square with $\det B(t)=(p_0(t))^n\neq 0$ on $[a,b]$. Thus, $B(t)$ is nonsingular for $t\in [a,b]$.
 
-With these definitions, we now outline the construction, introducing relevant theorems as per need.
 
-\section{Construction outline}
+Now we seek another matrix $\hat{B}$ that embodies both the characteristics of $B$ and those of the interval $[a,b]$. This concerns writing an equation of $[uv](t)$ in matrix form. We begin by introducing the following definitions.
+
+\begin{defn}\label{defn:f cdot g}
+    For vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$, define the product
+    \[f\cdot g:=\sum_{i=1}^k f_i\bar{g}_i.\]
+    Note that $f\cdot g = g^*f$.
+\end{defn}
+
+\begin{defn}
+    A \textbf{semibilinear form} is a complex-valued function $\mathcal{S}$ defined for pairs of vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$ satisfying
+    \begin{align*}
+        \mathcal{S}(\alpha f+\beta g, h)&=\alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h)\\
+        \mathcal{S}(f, \alpha g + \beta h) &= \bar{\alpha}\mathcal{S}(f,g) + \bar{\beta}\mathcal{S}(f, h)
+    \end{align*}
+    for any complex numbers $\alpha, \beta$ and vectors $f,g,h$.
+\end{defn}
+We note that if
+\[S = \begin{bmatrix}
+    s_{11} & \cdots & s_{1k}\\
+    \vdots &  & \vdots\\
+    s_{k1} & \cdots & s_{kk}
+\end{bmatrix},\]
+then $Sf\cdot g$ is a semibilinear form given by
+\begin{equation}\label{eq:semibilinear form}
+    \begin{split}
+    \mathcal{S}(f,g) &:= Sf\cdot g = \begin{bmatrix}
+        s_{11} & \cdots & s_{1k}\\
+        \vdots & & \vdots\\
+        s_{k1} & \cdots & s_{kk}
+    \end{bmatrix} \begin{bmatrix}
+        f_1\\
+        \vdots\\
+        f_k
+    \end{bmatrix} \cdot \begin{bmatrix}
+        g_1\\
+        \vdots\\
+        g_k
+    \end{bmatrix} = \begin{bmatrix}
+        \sum_{j=1}^k s_{1j}f_j\\
+        \vdots\\
+        \sum_{j=1}^k s_{kj}f_j
+    \end{bmatrix}\cdot \begin{bmatrix}
+        g_1\\
+        \vdots\\
+        g_k
+    \end{bmatrix}\\
+    &= \sum_{i=1}^k\left(\sum_{j=1}^k s_{ij}f_j\right)\bar{g}_i =\sum_{i,j=1}^k s_{ij}f_i\bar{g}_i. 
+    \end{split}
+\end{equation}
+Indeed:
+\begin{align*}
+    \mathcal{S}(\alpha f+\beta g, h)
+    &= \sum_{i,j=1}^k s_{ij}(\alpha f_j + \beta g_j)\bar{h}_i
+    = \alpha \sum_{i,j=1}^k s_{ij}f_j\bar{h}_i + \beta \sum_{i,j=1}^k g_j\bar{h}_i\\
+    &= \alpha Sf\cdot h + \beta Sg\cdot h
+    = \alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h).
+\end{align*}
+Similarly,
+\begin{align*}
+    \mathcal{S}(f, \alpha g + \beta h)
+    &= \sum_{i,j=1}^k s_{ij}f_j(\overline{\alpha g_i + \beta h_i})
+    = \bar{\alpha}\sum_{i,j=1}^k s_{ij}f_j\bar{g}_i + \bar{\beta}\sum_{i,j=1}^k f_j \bar{h}_i\\
+    &= \bar{\alpha}Sf\cdot g + \bar{\beta}Sf\cdot h
+    = \bar{\alpha}\mathcal{S}(f,g) + \bar{\beta}\mathcal{S}(f,h).
+\end{align*}
+
+
+Under a similar matrix framework, we see that $[uv](t)$ is a semibilinear form with matrix $B(t)$: Let $\vec{u}=(u, u', \ldots, u^{(n-1)})$ and $\vec{v}=(v, v', \ldots, v^{(n-1)})$. Then we have
+\begin{equation}\label{[uv](t) in semibilinear form}
+    \begin{split}
+    [uv](t) &= \sum_{j,k=1}^n B_{jk}(t)u^{(k-1)}(t)\bar{v}^{(j-1)}(t)\quad\mbox{(by \eqref{eq:[uv](t) in B matrix})}\\
+    &= \sum_{i,j=1}^n (B_{ij}u^{(j-1)}\overline{v}^{(i-1)})(t)\\
+    &= (B\vec{u}\cdot \vec{v})(t)\quad\mbox{(by (\ref{eq:semibilinear form}))}\\
+    &=: \mathcal{S}(\vec{u},\vec{v})(t).
+    \end{split}
+\end{equation}
+With this notation, we can rewrite the right hand side of Green's formula as a semibilinear form below:
+\begin{equation}\label{eq:green's formula in semibilinear form}
+    \begin{split}
+    [uv](t_2)-[uv](t_1) &= \sum_{j,k=1}^n B_{jk}(t_2)u^{(k-1)}(t_2)\bar{v}^{(j-1)}(t_2) - \sum_{j,k=1}^n B_{jk}(t_2)u^{(k-1)}(t_1)\bar{v}^{(j-1)}(t_1)\\
+    &= B(t_2)\vec{u}(t_2)\cdot \vec{v}(t_2) - B(t_1)\vec{u}(t_1)\cdot \vec{v}(t_1)\\
+    &= \begin{bmatrix}
+        B_{11}(t_2) & \cdots & B_{1n}(t_2)\\
+        \vdots &  & \vdots\\
+        B_{n1}(t_2) & \ldots & B_{nn}(t_2)
+    \end{bmatrix} 
+    \begin{bmatrix}
+    u(t_2)\\
+    \vdots\\
+    u^{(n-1)}(t_2)
+    \end{bmatrix}\cdot 
+    \begin{bmatrix}
+        \bar{v}(t_2)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_2)
+    \end{bmatrix} -\\
+    &\qquad \begin{bmatrix}
+        B_{11}(t_1) & \cdots & B_{1n}(t_1)\\
+        \vdots &  & \vdots\\
+        B_{n1}(t_1) & \ldots & B_{nn}(t_1)
+    \end{bmatrix} 
+    \begin{bmatrix}
+    u(t_1)\\
+    \vdots\\
+    u^{(n-1)}(t_1)
+    \end{bmatrix}\cdot 
+    \begin{bmatrix}
+        \bar{v}(t_1)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_1)
+    \end{bmatrix}\\
+    &= \begin{bmatrix}
+        -B_{11}(t_1) & \cdots & -B_{1n}(t_1)\\
+        \vdots &  & \vdots\\
+        -B_{n1}(t_1) & \ldots & -B_{nn}(t_1)
+    \end{bmatrix} 
+    \begin{bmatrix}
+    u(t_1)\\
+    \vdots\\
+    u^{(n-1)}(t_1)
+    \end{bmatrix}\cdot 
+    \begin{bmatrix}
+        \bar{v}(t_1)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_1)
+    \end{bmatrix} + \\
+    &\qquad \begin{bmatrix}
+        B_{11}(t_2) & \cdots & B_{1n}(t_2)\\
+        \vdots &  & \vdots\\
+        B_{n1}(t_2) & \ldots & B_{nn}(t_2)
+    \end{bmatrix} 
+    \begin{bmatrix}
+    u(t_2)\\
+    \vdots\\
+    u^{(n-1)}(t_2)
+    \end{bmatrix}\cdot 
+    \begin{bmatrix}
+        \bar{v}(t_2)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_2)
+    \end{bmatrix}\\
+    &= \begin{bmatrix}
+        -B_{11}(t_1) & \cdots & -B_{1n}(t_1) & 0 & \cdots & 0\\
+        \vdots &  & \vdots & \vdots &  & \vdots\\
+        -B_{n1}(t_1) & \cdots & -B_{nn}(t_1) & 0 & \cdots & 0\\
+        0 & \cdots & 0 & B_{11}(t_2) & \cdots & B_{1n}(t_2)\\
+        \vdots &  & \vdots & \vdots &  & \vdots\\
+        0 & \cdots & 0 & B_{n1}(t_2) & \cdots & B_{nn}(t_2)
+    \end{bmatrix} 
+    \begin{bmatrix}
+        u(t_1)\\
+        \vdots\\
+        u^{(n-1)}(t_1)\\
+        u(t_2)\\
+        \vdots\\
+        u^{(n-1)}(t_2)
+    \end{bmatrix}\cdot
+    \begin{bmatrix}
+        \bar{v}(t_1)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_1)\\
+        \bar{v}(t_2)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_2)
+    \end{bmatrix}\\
+    &= \begin{bmatrix}
+        -B(t_1) & 0_n\\
+        0_n & B(t_2)
+    \end{bmatrix}
+    \begin{bmatrix}
+        u(t_1)\\
+        \vdots\\
+        u^{(n-1)}(t_1)\\
+        u(t_2)\\
+        \vdots\\
+        u^{(n-1)}(t_2)
+    \end{bmatrix}\cdot
+    \begin{bmatrix}
+        \bar{v}(t_1)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_1)\\
+        \bar{v}(t_2)\\
+        \vdots\\
+        \bar{v}^{(n-1)}(t_2)
+    \end{bmatrix}\\
+    &=:\hat{B}
+    \begin{bmatrix}
+        \vec{u}(t_1)\\
+        \vec{u}(t_2)
+    \end{bmatrix}\cdot
+    \begin{bmatrix}
+        \vec{v}(t_1)\\
+        \vec{v}(t_2)
+    \end{bmatrix}.
+\end{split}
+\end{equation}
+Recall that $\det(\lambda A) = \lambda^n\det(A)$ for $n\times n$ matrix $A$. Thus,
+\[\det\hat{B}= \det(-B(t_1))\det(B(t_2))= (-1)^n\det B(t_1)\det B(t_2)\]
+since $B(t_1)$ is $n\times n$. Since $B(t)$ is nonsingular for $t\in [a,b]$ (as shown before), $\hat{B}$ is nonsingular for $t_1, t_2\in [a,b]$.
+
+\subsection{Boundary-form formula}
+We now introduce the definitions and results involving boundary conditions.
+
+\begin{defn}\label{defn:boundary form}
+    Given any set of $2mn$ complex constants $M_{ij}, N_{ij}$ ($i=1,\ldots, m;\,j=1,\ldots,n$), define $m$ \textbf{boundary operators (boundary forms)} $U_1,\ldots,U_m$ for functions $x$ on $[a,b]$, for which $x^{(j)}$ ($j=1,\ldots,n-1$) exists at $a$ and $b$, by
+    \begin{equation}\label{eq:U_i defn}
+        U_i x = \sum_{j=1}^n (M_{ij}x^{(j-1)}(a) + N_{ij}x^{(j-1)}(b))\quad\mbox{($i=1,\ldots,m$)} 
+    \end{equation}
+    $U_i$ are \textbf{linearly independent} if the only set of complex constants $c_1, \ldots, c_m$ for which
+    \[\sum_{i=1}^m c_i U_ix=0\]
+    for all $x\in C^{n-1}$ on $[a,b]$ is $c_1=c_2=\cdots =c_m=0$.
+\end{defn}
+
+\begin{defn}\label{defn:vectory boundary form}
+    A \textbf{vectory boundary form} $U=(U_1,\ldots,U_m)$ is a vector whose components are boundary forms (Definition \ref{defn:boundary form}). When $U_1,\ldots,U_m$ are linearly independent, we say that $U$ has rank $m$. We assume $U$ has full rank below.
+\end{defn}
+
+With the above definitions, we can now write a set of homogeneous boundary conditions (Definition \ref{defn:homogeneous boundary conditions}) in matrix form. Define
+\[
+    \xi:= \begin{bmatrix}x\\ x'\\ \vdots \\ x^{(n-1)}
+    \end{bmatrix};
+        \quad
+    U := \begin{bmatrix}U_1\\ U_2\\ \vdots \\ U_m
+    \end{bmatrix};
+        \quad
+    M := \begin{bmatrix}
+        M_{11} & \cdots & M_{1n}\\
+        \vdots &  & \vdots\\
+        M_{m1} & \cdots & M_{mn}
+    \end{bmatrix};
+    \quad
+    N := \begin{bmatrix}
+        N_{11} & \cdots & N_{1n}\\
+        \vdots &  & \vdots\\
+        N_{m1} & \cdots & N_{mn}
+    \end{bmatrix}.
+\]
+Then the set of homogeneous boundary conditions in \ref{eq:homogeneous boundary conditions} can be written as
+\[Ux = M\xi(a) + N\xi(b).\]
+Indeed:
+\begin{align*}
+    M\xi(a) + N\xi(b) &= \begin{bmatrix}
+        M_{11} & \cdots & M_{1n}\\
+        \vdots &  & \vdots\\
+        M_{m1} & \cdots & M_{mn}
+    \end{bmatrix}\begin{bmatrix}x(a)\\ x'(a)\\ \vdots \\ x^{(n-1)}(a)
+        \end{bmatrix} + \begin{bmatrix}
+            N_{11} & \cdots & N_{1n}\\
+            \vdots &  & \vdots\\
+            N_{m1} & \cdots & N_{mn}
+        \end{bmatrix}\begin{bmatrix}x(b)\\ x'(b)\\ \vdots \\ x^{(n-1)}(b)
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            \sum_{j=1}^n M_{1j}x^{(j-1)}(a)\\
+            \vdots\\
+            \sum_{j=1}^n M_{mj}x^{(j-1)}(a)
+        \end{bmatrix} + \begin{bmatrix}
+            \sum_{j=1}^n N_{1j}x^{(j-1)}(b)\\
+            \vdots\\
+            \sum_{j=1}^n N_{mj}x^{(j-1)}(b)
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            \sum_{j=1}^n (M_{1j}x^{(j-1)}(a) + N_{1j}x^{(j-1)}(b))\\
+            \vdots\\
+            \sum_{j=1}^n (M_{mj}x^{(j-1)}(a) + N_{mj}x^{(j-1)}(b))
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            U_1 x\\
+            \vdots\\
+            U_m x
+        \end{bmatrix} = \begin{bmatrix}U_1\\ U_2\\ \vdots \\ U_m
+        \end{bmatrix}x = Ux.
+\end{align*}
+Based on the above, we propose another way to write $U_x$. Define the $m\times 2n$ matrix
+\[(M:N):=\begin{bmatrix}
+    M_{11} & \cdots & M_{1n} & N_{11} & \cdots & N_{1n}\\
+    \vdots &  & \vdots & \vdots & & \vdots\\
+    M_{m1} & \cdots & M_{mn} & N_{m1} & \cdots & N_{mn}
+\end{bmatrix}.\]
+Then $U_1,\ldots,U_m$ are linearly independent if and only if $\rank(M:N)=m$, or equivalently, $\rank(U)=m$. 
+%Recall that the rank of a matrix is the largest number of linearly independent rows or columns in it. For a matrix $A_{m\times n}$, $\rank(A)\leq \min\{m,n\}$ and $\rank(A)=\rank(A^T)$.
+Moreover, $Ux$ can also be written as
+\begin{align*}
+    Ux &= \begin{bmatrix}
+        \sum_{j=1}^n (M_{1j}x^{(j-1)}(a) + N_{1j}x^{(j-1)}(b))\\
+        \vdots\\
+        \sum_{j=1}^n (M_{mj}x^{(j-1)}(a) + N_{mj}x^{(j-1)}(b))
+    \end{bmatrix}\\
+    &= \begin{bmatrix}
+        M_{11} & \cdots & M_{1n} & N_{11} & \cdots & N_{1n}\\
+        \vdots &  & \vdots & \vdots & & \vdots\\
+        M_{m1} & \cdots & M_{mn} & N_{m1} & \cdots & N_{mn}
+    \end{bmatrix} \begin{bmatrix}x(a)\\\vdots\\x^{(n-1)}(a)\\ x(b)\\\vdots\\x^{(n-1)}(b)\end{bmatrix}\\
+    &= (M:N)\begin{bmatrix}
+        \xi(a)\\
+        \xi(b)
+    \end{bmatrix}.
+\end{align*}
+
+Having proposed a compact way to represent a set of homogeneous boundary conditions, we begin building our way to characterize the notion of adjoint boundary condition.
+
+\begin{defn}\label{defn:complementary boundary form}
+    If $U=(U_1,\ldots, U_m)$ is any boundary form with $\rank(U)=m$ and $U_c=(U_{m+1},\ldots,U_{2n})$ any form with $\rank(U_c)=2n-m$ such that $(U_1,\ldots, U_{2n})$ has rank $2n$, then $U$ and $U_c$ are \href[page=299]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{complementary boundary forms}}. 
+    
+    Note that ``appending'' $U_{m+1},\ldots, U_{2n}$ to $U_1,\ldots,U_m$ is equivalent to imbedding the matrix $(M:N)$ in a $2n\times 2n$ nonsingular matrix (recall that a square matrix is nonsingular if and only if it has full rank).
+\end{defn}
+
+The boundary-form formula is motivated by writing the right-hand side of Green's formula \eqref{eq:green's formula} as the linear combination of a boundary form $U$ and a complementary form $U_c$. Before getting to it, we first need the following propositions.
+
+\begin{prop}
+    In the context of the semibilinear form \eqref{eq:semibilinear form}, we have
+    \begin{equation}\label{eq:semibilinear adjoint}
+        Sf\cdot g = f\cdot S^*g, 
+    \end{equation}
+    where $S^*$ is the conjugate transpose of $S$.
+\end{prop}
+\begin{proof}
+    \begin{align*}
+        Sf\cdot g &= \sum_{i,j=1}^k s_{ij}f_j\bar{g}_i \quad\mbox{(by \eqref{eq:semibilinear form})};\\
+        f\cdot S^*g &= \begin{bmatrix}
+            f_1\\
+            \vdots\\
+            f_k
+        \end{bmatrix}\cdot \begin{bmatrix}
+            \bar{s}_{11} & \cdots & \bar{s}_{k1}\\
+            \vdots & & \vdots\\
+            \bar{s}_{1k} & \cdots & \bar{s}_{kk}
+        \end{bmatrix} \begin{bmatrix}
+            g_1\\
+            \vdots\\
+            g_k
+        \end{bmatrix}\\
+        &= \begin{bmatrix}
+            f_1\\
+            \vdots\\
+            f_k
+        \end{bmatrix}\cdot \begin{bmatrix}
+            \sum_{j=1}^k \bar{s}_{j1}g_j\\
+            \vdots\\
+            \sum_{j=1}^k \bar{s}_{jk}g_j
+        \end{bmatrix}\\
+        &= \sum_{i=1}^k f_i\cdot \left(\overline{\sum_{j=1}^k\bar{s}_{ji}g_j}\right)\\
+        &= \sum_{i=1}^k f_i\cdot \left(\sum_{j=1}^k s_{ji}\bar{g}_j\right)\\
+        &= \sum_{i,j=1}^k s_{ji}f_i\bar{g}_j = Sf\cdot g.\qedhere
+    \end{align*}
+\end{proof}
+
+\begin{prop}\label{prop:unique nonsingular G in semibilinear form}
+    Let $\mathcal{S}$ be the semibilinear form associated with a nonsingular matrix $S$. Suppose $\bar{f}:=Ff$ where $F$ is a nonsingular matrix. Then there exists a unique nonsingular matrix $G$ such that if $\bar{g}=Gg$, then $\mathcal{S}(f,g)=\bar{f}\cdot \bar{g}$ for all $f, g$.
+\end{prop}
+\begin{proof}
+    Let $G:=(SF^{-1})^*$, then
+    \begin{align*}
+        \mathcal{S}(f,g) &= Sf\cdot g\\
+        &= S(F^{-1}F)f\cdot g\\
+        &= SF^{-1}(Ff)\cdot g\\
+        &= SF^{-1}\bar{f} \cdot g\\
+        &= \bar{f}\cdot (SF^{-1})^*g \quad\mbox{(by \eqref{eq:semibilinear adjoint})}\\
+        &= \bar{f}\cdot G*g\\
+        &= \bar{f}\cdot \bar{g}.
+    \end{align*}
+    To see that $G$ is nonsingular, note that $\det G = \det((\overline{SF^{-1}})^T) = \det(\overline{SF^{-1}}) = \overline{\det(SF^{-1})} = \overline{\det(S)\det(F)^{-1}}\neq 0$ since $S, F$ are nonsingular.
+\end{proof}
+
+\begin{prop}\label{prop:last k-j components linear combination}
+    Suppose $\mathcal{S}$ is associated with the unit matrix $E$, i.e., $\mathcal{S}(f,g)=f\cdot g$. Let $F$ be a nonsingular matrix such that the first $j$ ($1\leq j<k$) components of $\bar{f}=Ff$ are the same as those of $f$. Then the unique nonsingular matrix $G$ such that $\bar{g}=Gg$ and $\bar{f}\cdot \bar{g}=f\cdot g$ (as in Proposition \ref{prop:unique nonsingular G in semibilinear form}) is such that the last $k-j$ components of $\bar{g}$ are linear combinations of the last $k-j$ components of $g$ with nonsingular coefficient matrix.
+\end{prop}
+\begin{proof}
+    We note that for the condition on $F$ to hold, $F$ must have the form
+\[\begin{bmatrix}E_j & 0_+\\
+F_+ & F_{k-j}\end{bmatrix}_{k\times k}\]
+where $E_j$ is the $j\times j$ identity matrix, $0_+$ is the $j\times (k-j)$ zero matrix, $F_+$ is a $(k-j)\times j$ matrix, and $F_{k-j}$ a $(k-j)\times (k-j)$ matrix. Let $G$ be the unique nonsingular matrix in Proposition \ref{prop:unique nonsingular G in semibilinear form}. Write $G$ as
+\[\begin{bmatrix}G_j & G_-\\
+G_= & G_{k-j}\end{bmatrix}_{k\times k}\]
+where $G_j, G_-, G_=, G_{k-j}$ are $j\times j, j\times (k-j), (k-j)\times j, (k-j)\times (k-j)$ matrices, respectively. By the definition of $G$,
+\[f\cdot g = Ff\cdot Gg = \bar{f}\cdot Gg = G^*\bar{f}\cdot g = G^*Ff\cdot g,\]
+(where the third equality follows from a reverse application of \eqref{eq:semibilinear adjoint} with $\bar{f}$ as $f$, $G^*$ as $S$) which implies
+\[G^*F = E_k.\]
+Since
+\begin{align*}
+    G^*F &= \begin{bmatrix}
+        G^*_j & G^*_=\\
+        G^*_- & G^*_{k-j}
+    \end{bmatrix}\begin{bmatrix}E_j & 0_+\\
+    F_+ & F_{k-j}\end{bmatrix}\\
+    &= \begin{bmatrix}
+        G^*_j + G^*_= F_+ & G^*_= F_{k-j}\\
+        G^*_- + G^*_{k-j} F_+ & G^*_{k-j}F_{k-j}
+    \end{bmatrix}\\
+    &= \begin{bmatrix}
+        E_j & 0_{j\times (k-j)}\\
+        0_{(k-j)\times j} & E_{k-j}
+    \end{bmatrix}.
+\end{align*}
+Thus, $G^*_=F_{k-j}=0_+$, the $j\times (k-j)$ zero matrix. But $\det F = \det(E_j)\cdot \det(F_{k-j})\neq 0$, so $\det F_{k-j}\neq 0$ and we must have $G^*_==0_+$, i.e., $G_= =0_{(k-j)\times j}$. Thus, $G$ is upper-triangular, and so $\det G = \det G_j \cdot \det G_{k-j}\neq 0$, which implies $\det G_{k-j}\neq 0$ and $G_{k-j}$ is nonsingular. Hence,
+\[\bar{g} = Gg = \begin{bmatrix}G_j & G_-\\
+0_{(k-j)\times j} & G_{k-j}\end{bmatrix} \begin{bmatrix}
+g_1\\
+\vdots\\
+g_k
+\end{bmatrix}\]
+where $G_{k-j}$ is the nonsingular coefficient matrix such that
+\[\begin{bmatrix}
+    \bar{g}_{j-1}\\
+    \vdots\\
+    \bar{g}_{k}
+\end{bmatrix} = G_{k-j}\begin{bmatrix}
+    g_{j-1}\\
+    \vdots\\
+    g_{k}
+\end{bmatrix}.\]
+\end{proof}
+
+We are finally ready to introduce the boundary-form formula, the theorem central to the construction of adjoint boundary condition.
+
+\begin{thm}{(Boundary-form formula)}\label{thm:boundary form formula}
+    Given any boundary form $U$ of rank $m$ (Definition \ref{defn:boundary form}), and any complementary form $U_c$ (Definition \ref{defn:complementary boundary form}), there exist unique boundary forms $U_c^+$, $U^+$ of rank $m$ and $2n-m$, respectively, such that
+    \begin{equation}\label{eq:boundary form formula}
+        [xy](b)-[xy](a) = Ux\cdot U_c^+y + U_{c}x\cdot U^+y.
+    \end{equation}
+    If $\tilde{U}_c$ is any other complementary form to $U$, and $\tilde{U}^+_c, \tilde{U}^+$ the corresponding forms of rank $m$ and $2n-m$, then
+    \begin{equation}\label{eq:adjoint boundary forms unique up to linear transformation}
+        \tilde{U}^+ y = C^*U^+y
+    \end{equation}
+    for some nonsingular matrix $C$.
+\end{thm}
+\begin{proof}
+    Recall from \eqref{eq:green's formula in semibilinear form} that the left hand side of \eqref{eq:boundary form formula} can be considered as a semibilinear form $\mathcal{S}(f,g)=\hat{B}f\cdot g$ for vectors
+    \[
+        f=
+        \begin{bmatrix}
+            x(a)\\
+            \vdots\\
+            x^{(n-1)}(a)\\
+            x(b)\\
+            \vdots\\
+            x^{(n-1)}(b)
+        \end{bmatrix},\,
+        g=
+        \begin{bmatrix}
+            y(a)\\
+            \vdots\\
+            y^{(n-1)}(a)\\
+            y(b)\\
+            \vdots\\
+            y^{(n-1)}(b)
+        \end{bmatrix}
+    \]
+    with the nonsingular matrix
+    \[
+        \hat{B}=
+        \begin{bmatrix}
+            -B(a) & 0_n\\
+            0_n & B(b)
+        \end{bmatrix}.
+    \]
+    Recall from a previous discussion that 
+    \[Ux = M\xi(a) + N\xi(b) = (M:N)\begin{bmatrix}\xi(a)\\ \xi(b)\end{bmatrix}\]
+    for $M, N, \xi$ are as defined there. With the definition of $f$, we have $f=\begin{bmatrix}\xi(a)\\ \xi(b)\end{bmatrix}$ and thus
+    \[Ux = (M:N)f.\]
+    By Definition \ref{defn:complementary boundary form}, $U_c x = (\tilde{M}:\tilde{N})f$ for two appropriate matrices $\tilde{M}, \tilde{N}$ for which
+    \[H = \begin{bmatrix}M & N\\
+    \tilde{M} & \tilde{N}\end{bmatrix}_{2n\times 2n}\]
+    has rank $2n$. Thus,
+    \[\begin{bmatrix}Ux\\ U_cx\end{bmatrix} = \begin{bmatrix}(M:N)f\\(\tilde{M}:\tilde{N})f\end{bmatrix} = \begin{bmatrix}M & N\\
+    \tilde{M} & \tilde{N}\end{bmatrix}f = Hf.\]
+    By Proposition \ref{prop:unique nonsingular G in semibilinear form}, there exists a unique $2n\times 2n$ nonsingular matrix $J$ (in fact, with $S = \hat{B}$, $F=H$, $J=G$, and $G=(SF^{-1})^\star$, we have $J=(\hat{B}H^{-1})^\star$) such that $\mathcal{S}(f,g) = Hf\cdot Jg$. Let $U^+, U_c^+$ be such that
+    \[Jg = \begin{bmatrix}U_c^+ y\\ U^+y\end{bmatrix},\]
+    then 
+    \[[xy](b)-[xy](a)=\mathcal{S}(f,g) = Hf\cdot Jg = \begin{bmatrix}Ux\\ U_cx\end{bmatrix}\cdot\begin{bmatrix}U_c^+ y \\ U^+y\end{bmatrix} = Ux\cdot U_c^+y + U_cx\cdot U^+y.\]
+    Thus, \eqref{eq:boundary form formula} holds.
+
+    The second statement in the theorem follows from Proposition \ref{prop:last k-j components linear combination} with $Hf$ and $Jg$ corresponding to $f$ and $g$.
+\end{proof}
+
+\subsection{Homogeneous boundary value problem and its adjoint}
+The boundary-form formula gives the existence and definition of adjoint boundary condition, summarized below.
+
+\begin{defn}
+    For any boundary form $U$ of rank $m$ there is associated the \href[page=300]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{homogeneous boundary condition}}
+    \begin{equation}\label{eq:homogeneous boundary condition}
+        Ux=0
+    \end{equation}
+    for functions $x\in C^{n-1}$ on $[a,b]$. If $U^+$ is any boundary form of rank $2n-m$ determined as in Theorem \ref{thm:boundary form formula}, then the homogeneous boundary condition
+    \begin{equation}\label{eq:adjoint boundary condition}
+        U^+x=0
+    \end{equation}
+    is an \href[page=301]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint boundary condition}} to \ref{eq:homogeneous boundary condition}.
+\end{defn}
+
+In connection with the notion of adjoint homogeneous boundary value problem (Definition \ref{defn:adjoint homogeneous boundary value problem}), we have the following property of adjoint boundary condition.
+
+\begin{prop}\label{prop:(Lu,v)=(u,L^+v)}
+    By Green's formula \eqref{eq:green's formula} and the boundary-form formula \eqref{eq:boundary form formula}, for $(u,v):=\int_a^b u\bar{v}\,dt$, 
+    \[(Lu, v) = (u, L^+v)\]
+    for all $u\in C^n$ on $[a,b]$ satisfying \eqref{eq:homogeneous boundary condition} and all $v\in C^n$ on $[a,b]$ satisfying \eqref{eq:adjoint boundary condition}.
+\end{prop}
+\begin{proof}
+    \begin{equation}
+        \begin{split}
+            (Lu, v) - (u, L^+v) &= \int_a^b Lu\bar{v}\,dt - \int_a^b u(\overline{L^+v})\,dt\\
+            &= [uv](a) - [uv](b) \quad\mbox{(by Green's formula \eqref{eq:green's formula})}\\
+            &= Uu\cdot U_c^+ v + U_c u\cdot U^+v \quad\mbox{(by boundary-form formula \eqref{eq:boundary form formula})}\\
+            &= 0\cdot U_c^+ v + U_c u \cdot 0 \quad\mbox{(by \eqref{eq:homogeneous boundary condition} and \eqref{eq:adjoint boundary condition})}\\
+            &= 0.\qedhere
+        \end{split}
+    \end{equation}
+\end{proof}
+
+Putting together $L, L^+$ and $U, U^+$, we have the definition of adjoint boundary value problem.
+
+\begin{defn}
+    If $U$ is a boundary form of rank $m$, the problem of finding solutions of
+    \[\pi_m:\,Lx=0\quad Ux=0\]
+    on $[a,b]$ is a \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{homogeneous boundary-value problem of rank $m$}}. The problem
+    \[\pi_{2n-m}^+:\,L^+x=0\quad U^+x=0\]
+    on $[a,b]$ is the \href[page=303]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{adjoint boundary-value problem to $\pi_m$}}.
+\end{defn}
+
+Just like how $U$ is associated with two $m\times n$ matrices $M, N$, $U^+$ is associated with two $n\times (2n-m)$ matrices $P, Q$ such that $(P^*:Q^*)$ has rank $2n-m$ and
+\begin{equation}\label{eq:U^+x in P* Q*}
+    U^+x = P^*\xi(a) + Q^*\xi(b)
+\end{equation}
+Note that imbedding $M, N, P^*, Q^*$ in the same matrix gives
+\begin{align*}
+    \begin{bmatrix}
+        (M:N)_{m\times 2n}\\
+        (P^*:Q^*)_{(2n-m)\times 2n}
+    \end{bmatrix}_{2n\times 2n} & = \begin{bmatrix}
+        M & N\\
+        P^* & Q^*
+    \end{bmatrix},
+\end{align*}
+which is a $2n\times 2n$ matrix of full rank.
+
+The following theorem is motivated by characterizing the adjoint condition \eqref{eq:adjoint boundary condition} in terms of the matrices $M, N, P, Q$. For our purpose, it provides a way to check whether a boundary condition is a valid adjoint to a given homogeneous boundary condition using the matrices $M, N, P, Q$.
+
+\begin{thm}\label{thm:condition iff adjoint}
+    The boundary condition $U^+x=0$ is adjoint to $Ux=0$ if and only if
+    \begin{equation}\label{eq:condition iff adjoint}
+        MB^{-1}(a)P = NB^{-1}(b)Q
+    \end{equation}
+    where $B(t)$ is the $n\times n$ matrix associated with the form $[xy](t)$ (\eqref{B(t)}).
+\end{thm}
+\begin{proof}
+    Let $\eta := (y, y', \ldots, y^{(n-1)})$,
+    then $[xy](t)=B(t)\xi(t)\cdot \eta(t)$ by \eqref{[uv](t) in semibilinear form}.
+
+    Suppose $U^+x=0$ is adjoint to $Ux=0$. By definition of adjoint boundary condition \ref{eq:adjoint boundary condition}, $U^+$ is determined as in Theorem \ref{thm:boundary form formula}. But by Theorem \ref{thm:boundary form formula}, in determining $U^+$, there exist boundary forms $U_c$, $U_c^+$ of rank $2n-m$ and $m$, respectively, such that \ref{eq:boundary form formula} holds. 
+
+    Put
+    \begin{align*}
+        U_cx &= M_c\xi(a) + N_c\xi(b)\quad \rank(M_c:N_c) = 2n-m\\
+        U_c^+y &= P_c^*\eta(a) + Q_c^*\eta(b)\quad\rank(P_c^*:Q_c^*)=m.
+    \end{align*}
+    Then by the boundary-form formula (\ref{eq:boundary form formula}),
+    \begin{align*}
+        B(b)\xi(b)\cdot \eta(b) - B(a)\xi(a)\cdot \eta(a) &= (M\xi(a) + N\xi(b))\cdot (P_c^*\eta(a) + Q_c^*\eta(b)) + \\
+        &\qquad (M_c\xi(a) + N_c\xi(b))\cdot (P^*\eta(a) + Q^*\eta(b)).
+    \end{align*}
+    By \ref{eq:semibilinear adjoint}, 
+    \[M\xi(a)\cdot P_c^*\eta(a) = P_cM\xi(a)\cdot \eta(a).\]
+    Thus,
+    \begin{align*}
+        B(b)\xi(b)\cdot \eta(b) - B(a)\xi(a)\cdot \eta(a) &= (P_c M + PM_c)\xi(a)\cdot \eta(a) + (Q_cM + QM_c)\xi(a)\cdot \eta(b) \\
+        &\qquad (P_cN + PN_c) \xi(b)\cdot \eta(a) + (Q_cN + QN_c) \xi(b)\cdot \eta(b).
+    \end{align*}
+    Thus, we have
+    \begin{align*}
+        P_cM + PM_c &= - B(a) & P_cN + PN_c &= 0_n\\
+        Q_cM + QM_c &= 0_n & Q_cN + QN_c &= B(b).
+    \end{align*}
+    Since $\det B(t)\neq 0$ on $t\in[a,b]$, $B^{-1}(a)$, $B^{-1}(b)$ exist, and thus
+    \begin{align*}
+        \begin{bmatrix}
+            -B^{-1}(a)P_c & -B^{-1}(a)P\\
+            B^{-1}(b)Q_c & B^{-1}(b)Q
+        \end{bmatrix}
+        \begin{bmatrix}
+            M & N\\
+            M_c & N_c
+        \end{bmatrix}
+        =
+        \begin{bmatrix}
+            E_n & 0_n\\
+            0_n & E_n
+        \end{bmatrix}.
+    \end{align*}
+    Recall that $\begin{bmatrix}
+        M & N\\
+        M_c & N_c
+    \end{bmatrix}$ has full rank, which means that it is nonsingular (Definition \ref{defn:complementary boundary form}). Thus, the two matrices on the left are inverses of each other. So we also have
+    \begin{align*}
+        \begin{bmatrix}
+            M & N\\
+            M_c & N_c
+        \end{bmatrix}
+        \begin{bmatrix}
+            -B^{-1}(a)P_c & -B^{-1}(a)P\\
+            B^{-1}(b)Q_c & B^{-1}(b)Q
+        \end{bmatrix}
+        =
+        \begin{bmatrix}
+            E_m & 0_+\\
+            0_- & E_{2n-m}
+        \end{bmatrix}.
+    \end{align*}
+    Therefore,
+    \[-MB^{-1}(a)P + NB^{-1}(b)Q = 0_+,\]
+    which is \eqref{eq:condition iff adjoint}.
+
+    Conversely, let $U_1^+$ be a boundary form of rank $2n-m$ such that
+    \[U_1^+y = P_1^*\eta(a) + Q_1^*\eta(b)\]
+    for appropriate $P_1^*$, $Q_1^*$ with $\rank(P_1^*:Q_1^*)=2n-m$. Suppose
+    \begin{equation}\label{eq:condition iff adjoint converse}
+        MB^{-1}(a)P_1 = NB^{-1}(b)Q_1
+    \end{equation}
+    holds.
+
+    Recall that $\dim(\text{solution space}) + \rank(\text{matrix}) = \text{$\#$ of unknown variables}$. Let $u$ be a $2n\times 1$ vector, then there exist exactly $2n-m$ linearly independent $2n\times 1$ vector solutions of the linear system $(M:N)_{m\times 2n}u=0$. By \eqref{eq:condition iff adjoint converse},
+    \[MB^{-1}(a)P_1 - NB^{-1}(b)Q=0,\]
+    and thus
+    \[(M:N)_{m\times 2n}\begin{bmatrix}
+        B^{-1}(a)P_1\\
+        -B^{-1}(b)Q_1
+    \end{bmatrix}_{2n\times (2n-m)} = 0_{m\times (2n-m)}.\]
+    So the $2n-m$ columns of the matrix
+    \[H_1:= \begin{bmatrix}
+        B^{-1}(a)P_1\\
+        -B^{-1}(b)Q_1
+    \end{bmatrix}\]
+    are solutions of this system. Since $\rank(P_1^*:Q_1^*)=2n-m$,
+    \[\rank\begin{bmatrix}P_1\\ Q_1\end{bmatrix}=2n-m.\]
+    Since $B(a)$, $B(b)$ are nonsingular, $\rank(H_1)=2n-m$.
+
+    If $U^+x=P^*\xi(a) + Q^*\xi(b)=0$ is a boundary condition adjoint to $Ux=0$, then the matrix
+    \[\begin{bmatrix}
+        -B^{-1}(a)P_c & -B^{-1}(a)P\\
+        B^{-1}(b)Q_c & B^{-1}(b)Q
+    \end{bmatrix}_{2n\times 2n}\]
+is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bmatrix}$), i.e., it has full rank. Thus, if 
+    \[H = \begin{bmatrix}
+        -B^{-1}(a)P\\
+        B^{-1}(b)Q
+    \end{bmatrix}_{n\times (2n-m)},\]
+    then $\rank(H)=2n-m$. Therefore, by \eqref{eq:condition iff adjoint}, the $2n-m$ columns of $H$ also form $2n=m$ linearly independent solutions of $(M:N)u=0$, as in the case of $H_1$. Hence, there exists a nonsingular $(2n-m)\times (2n-m)$ matrix $A$ such that $H_1=HA$ (change of basis in the solution space). 
+    Thus we have
+    \begin{align*}
+        \begin{bmatrix}
+            B^{-1}(a)P_1\\
+            -B^{-1}(b)Q_1
+        \end{bmatrix} = H_1 = HA = \begin{bmatrix}
+            B^{-1}(a)PA\\
+            -B^{-1}(b)QA
+        \end{bmatrix},
+    \end{align*}
+    or $P_1=PA$, $Q_1=QA$. Thus, 
+    \[U_1^+y = P_1^*\eta(a) + Q_1^*\eta(b) = A^*P^*\eta(a) + A^*Q^*\eta(b)= A^* U^+y.\]
+    Since $A^\star$ is a linear map, $U^+y=0$ implies $A^*U^+y=0$. This implies that $U_1^+y=0$ is an adjoint boundary condition to $Ux=0$.
+\end{proof}
+
+To recapitulate, the boundary-form formula (Theorem \ref{thm:boundary form formula}) gives us the existence and construction of adjoint boundary condition, and Theorem \ref{thm:condition iff adjoint} gives us a way to check whether a proposed adjoint boundary condition is valid. Now, we are ready to implement an algorithm to construct a valid adjoint given a homogeneous boundary condition.
+
+\section{Algorithm outline}
+Given a homogeneous boundary value problem
+\[Lx=0\quad Ux=0\]
+where $L$ has order $n$ and $U=(U_1,\ldots, U_n)$ (for the purpose of the project, we are only interested in cases where $m=n$), we seek to construct a valid adjoint boundary condition $U^+x=0$. 
+
+Write
+\[Ux = M\xi(a) + N\xi(b).\]
+
+\subsection{Checking input}
+We first check that $U_1,\ldots, U_n$ are linearly independent. As noted in a previous discussion, thus, we can do so by checking whether $\rank(M:N)=n$. $U$ would be considered an invalid input if $\rank(M:N)\neq n$.
+
+\subsection{Finding $U_c$}
+Recall from Definition \ref{defn:complementary boundary form} that extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix. We construct this $2n\times 2n$ nonsingular matrix from the identity matrix $E_{2n}$ and $(M:N)$ as follows. We append the rows of $E_{2n}$ one by one to $(M:N)$ and discard any row that does not make the rank of the resulting matrix increase, as shown below.
+
+\begin{algorithm}[H]
+    \caption{Removing rows from $(M:N):A$ without changing rank: Append and check rank.}\label{algo:removing rows from (M:N):A without changing rank by checking rank: apppend and check rank.}
+    \KwData{$(M:N)_{n\times 2n}$ with rank $n$, $A_{2n\times 2n}$ with rank $2n$}
+    \KwResult{A $2n\times 2n$ matrix with rank $2n$ where the first $n$ rows are $(M:N)$}
+    \Begin{
+        mat $\longleftarrow$ $(M:N)$\;
+        \For{i in range(nrow(A))}{
+            mat1 $\longleftarrow$ vcat(mat, A[i,]) \Comment*[r]{vcat := vertical concatenation}\
+            \If{rank(mat1) == rank(mat)+1}{
+                mat $\longleftarrow$ mat1
+            }
+            \Else{
+                A $\longleftarrow$ A[-i,]
+            }
+        }
+        \Return{vcat(mat, A)}
+    }
+\end{algorithm}
+
+The output from the above algorithm is of the form
+\[\begin{bmatrix}M & N\\ E' & E''\end{bmatrix}\]
+where $E', E''$ are the first $n$ entries and the last $n$ entries of certain rows of $E_{2n}$.
+
+We then identify this matrix with
+\[H = \begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
+and define
+\[U_c x = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
+
+\subsection{Finding $U^+$}
+Thus, we have found
+\[H = \begin{bmatrix} M & N\\\tilde{M} & \tilde{N}\end{bmatrix}.\]
+Let $\hat{B}$ be as in \ref{eq:green's formula in semibilinear form}. By Theorem \ref{thm:boundary form formula} and Proposition \ref{prop:unique nonsingular G in semibilinear form}, $J=(\hat{B}H^{-1})^*$ is a nonsingular $2n\times 2n$ matrix such that $\mathcal{S}(f,g) = \hat{B}f\cdot g = Hf\cdot Jg$. Let $U^+y$ be the last $n$ rows of $Jg$. Then we have found $U^+$.
+
+
+\section{Implementation}
+The above algorithm to find $U^+$ is currently implemented in Julia 0.6.4, where the main functions and unit tests are each of around $600$ lines of code. Key structs (or types, objects as in more traditional object-oriented programming languages) include linear differential operator and vector boundary form. A linear differential operator (Definition \ref{defn:linear differential operator}) is characterized by a list of functions $p_0,\ldots, p_n$ and a tuple $(a,b)$, where $a, b$ are the endpoints of the interval $[a,b]$. A vector boundary form is characterized by two $n\times n$ matrices $M, N$ such that $\rank(M:N)=n$. 
+
+In order to enhance workflow transparency and user experience, the implementation also comes with a symbolic math feature, which allows the user to keep track of the various functions in the form of symbolic expression. Without this feature, a function defined as $f(x)=x+1$ will be displayed as a general method $f$ in Julia without information for user as to what it actually is. With symbolic expression, $f$ will be displayed as $x+1$. The workflow of symbolic expressions is parallel to that of Julia functions, ensuring that the user is able to view the symbolic expression of any output whenever desired.
+
+Finding a valid adjoint boundary condition is as simple as calling one function that takes a linear differential operator, a vector boundary form $U$ corresponding to a homogeneous boundary condition, and a matrix of derivatives corresponding to the functions $p_0,\ldots, p_n$ as arguments. Yet in the spirit of maximizing workflow transparency, the implementation also contains a set of smaller functions that cover all outputs of each step in the algorithm.
+
+\section{Next steps}
 
 \newpage
 \bibliographystyle{unsrt}
