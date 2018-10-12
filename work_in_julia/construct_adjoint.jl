@@ -227,7 +227,7 @@ function check_func_sym_equal(func::Union{Function,Number}, symFunc, interval::T
         end
         funcEvalX = evaluate(func, x)
         if isa(symFunc, SymPy.Sym)
-            symFuncEvalX = N(subs(symFunc,t,x))
+            symFuncEvalX = SymPy.N(subs(symFunc,t,x))
             # N() converts SymPy.Sym to Number
             # https://docs.sympy.org/latest/modules/evalf.html
             # subs() works no matter symFunc is Number or SymPy.Sym
@@ -235,7 +235,8 @@ function check_func_sym_equal(func::Union{Function,Number}, symFunc, interval::T
             symFuncEvalX = symFunc
         end
         tol = set_tol(funcEvalX, symFuncEvalX)
-        if !isapprox(funcEvalX, symFuncEvalX; atol = tol)
+        if !isapprox(real(funcEvalX), real(symFuncEvalX); atol = real(tol)) ||
+            !isapprox(imag(funcEvalX), imag(symFuncEvalX); atol = imag(tol))
             println("x = $x")
             println("symFunc = $symFunc")
             println("funcEvalX = $funcEvalX")
@@ -258,7 +259,7 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
         throw(StructDefinitionError(:"Number of p_k and symP_k do not match"))
     elseif (a,b) != symL.interval
         throw(StructDefinitionError(:"Intervals of L and symL do not match"))
-    # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b].
+    # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b]. roots() doesn't work if p0 is sth like t+2*im
     elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
         throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
     elseif !all(i -> check_func_sym_equal(pFunctions[i], symPFunctions[i], (a,b), t), 1:length(pFunctions))

@@ -14,7 +14,7 @@
 \date{\vspace{-5ex}}
 %----------------------------------
 %unnumbered sections in TOC
-%\setcounter{secnumdepth}{0}
+\setcounter{secnumdepth}{0}
 
 %-----This is where the GOOD STUFF begins---
 \begin{document}
@@ -25,5 +25,38 @@
 
 % \tableofcontents
 
+\section{Introduction}
+Solving evolution partial differential equations (PDEs) typically requires ad-hoc methods and special treatments. The recently discovered ``Fokas method''\cite{Kesici2016} allows solving many of these equations algorithmically. The first goal of this project concerns implementing the Fokas method in the Julia mathematical programming language. The first step in the implementation is to construct a valid adjoint boundary condition from a given boundary condition.
+
+We begin by defining the objects involved in the construction.
+
+\section{Preliminary definitions\cite{CoddingtonLevinson}}
+A linear differential operator $L$ of order $n$ ($n$>1) is defined by
+\[Lx = p_0x^{(n)} + p_1x^{(n-1)} + \cdots + p_{n-1}x' + p_nx,\]
+where the $p_k$ are complex-valued functions of class $C^{n-k}$ on a closed bounded interval $[a,b]$ (i.e., derivatives $p_k, p'_k, \ldots, p^{(n-k)}_k$ exist on $[a,b]$ and are continuous) and $p_0(t)\neq 0$ on $[a,b]$.
+
+A homogeneous boundary condition is a set of equations of the type
+\begin{equation}\label{eq:homogeneous boundary conditions}
+    \sum_{k=1}^n (M_{jk}x^{(k-1)}(a) + N_{jk}x^{(k-1)}(b))=0 \quad (j=1,\ldots,m) 
+\end{equation}
+where $M_{jk}, N_{jk}$ are complex constants.
+
+A homogeneous boundary-value problem concerns finding the solutions of 
+\[Lx=0\] on $[a,b]$ which satisfy some homogeneous boundary conditions defined above.
+
+A semibilinear form is a complex-valued function $\mathcal{S}$ defined for pairs of vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$ satisfying
+\begin{align*}
+    \mathcal{S}(\alpha f+\beta g, h)&=\alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h)\\
+    \mathcal{S}(f, \alpha g + \beta h) &= \bar{\alpha}\mathcal{S}(f,g) + \bar{\beta}\mathcal{S}(f, h)
+\end{align*}
+for any complex numbers $\alpha, \beta$ and vectors $f,g,h$.
+
+With these definitions, we now outline the construction, introducing relevant theorems as per need.
+
+\section{Construction outline}
+
+\newpage
+\bibliographystyle{unsrt}
+\bibliography{C:/Bibtex/Capstone}
 \end{document}
 

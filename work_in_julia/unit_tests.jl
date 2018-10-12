@@ -503,8 +503,12 @@ function test_vectorBoundaryFormDef(n, k)
         println("Test $counter")
 
         println("Testing the definition of VectorBoundaryForm")
-        M = rand(Uniform(1.0,10.0), n, n)
-        N = rand(Uniform(1.0,10.0), n, n)
+        MReal = rand(Uniform(1.0,10.0), n, n)
+        MComplex = rand(Uniform(1.0,10.0), n, n)
+        M = MReal + im*MComplex
+        NReal = rand(Uniform(1.0,10.0), n, n)
+        NComplex = rand(Uniform(1.0,10.0), n, n)
+        N = NReal + im*NComplex
         passed = false
         try
             VectorBoundaryForm(M, N)
@@ -575,8 +579,8 @@ function test_vectorBoundaryFormDef(n, k)
         append!(results, passed)
 
         println("Testing StructDefinitionError: Boundary operators not linearly independent")
-        M = [1 2; 2 4]
-        N = [3 4; 6 8]
+        M = [1 2*im; 2 4*im]
+        N = [3 4*im; 6 8*im]
         passed = false
         try
             VectorBoundaryForm(M, N)
