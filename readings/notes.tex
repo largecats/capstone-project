@@ -38,7 +38,7 @@ This document contains all notes taken while reading materials (e.g., textbooks,
 
 \subsubsection{Introduction}
 \begin{defn}
-Let $L$ be the \href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{linear differential operator of oder $n$ ($n\geq 1$)}} defined by
+Let $L$ be the \href[page=296]{./textbooks/[Earl_A_Coddington_Norman_Levinson]_Theory_of_Ordinary_Differential_Equations.pdf}{\textbf{linear differential operator of oder $n$ ($n\geq 1$)}} on $[a,b]$ defined by
 \[Lx = p_0x^{(n)} + p_1x^{(n-1)} + \cdots + p_{n-1}x' + p_nx\]
 where the $p_k$ are complex-valued functions of class $C^{n-k}$ on a closed bounded interval $[a,b]$ \LIN{(i.e., derivatives $p_k, p'_k, \ldots, p^{(n-k)}_k$ exist on $[a,b]$ and are continuous)} and $p_0(t)\neq 0$ on $[a,b]$.
 \end{defn}
@@ -1480,7 +1480,7 @@ Let $M, N, \tilde{M}, \tilde{N}$ be such that
 \[Ux = M\xi(a) + N\xi(b);\quad U_cx = \tilde{M}\xi(a) + \tilde{N}\xi(b).\]
 Then we have found
 \[H = \begin{bmatrix} M & N\\\tilde{M} & \tilde{N}\end{bmatrix}.\]
-Let $\hat{B}$ be as in \ref{eq:eq:green's formula in semibilinear form} which depends on $L$. By Proposition \ref{prop:unique nonsingular G in semibilinear form}, $J=(\hat{B}H^{-1})^*$ is a nonsingular $2n\times 2n$ matrix such that $\mathcal{S}(f,g) = \hat{B}f\cdot g = Hf\cdot Jg$. Take $U^+y$ to be the last $n$ rows of $Jg$. Then we have found $U^+$.
+Let $\hat{B}$ be as in Theorem \ref{thm:boundary form formula} which depends on $L$. By Proposition \ref{prop:unique nonsingular G in semibilinear form}, $J=(\hat{B}H^{-1})^*$ is a nonsingular $2n\times 2n$ matrix such that $\mathcal{S}(f,g) = \hat{B}f\cdot g = Hf\cdot Jg$. Take $U^+y$ to be the last $n$ rows of $Jg$. Then we have found $U^+$.
 
 \subsubsection{Working with matrices $M$, $N$}
 For $U=(U_1,\ldots, U_n)$, write
