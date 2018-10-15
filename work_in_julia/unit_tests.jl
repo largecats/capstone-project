@@ -2,12 +2,12 @@
 # Course: YSC4103 MCS Capstone
 # Date created: 2018/10/07
 # Name: Linfan XIAO
-# Description: Unit tests for construct_adjoint_boundary_condition.jl.
+# Description: Unit tests for construct_adjoint.jl.
 #############################################################################
 # Importing packages and modules
 #############################################################################
 include("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\construct_adjoint.jl")
-using construct_adjoint
+# using construct_adjoint
 #############################################################################
 # Helper functions
 #############################################################################
@@ -18,21 +18,31 @@ function generate_symPFunctions(n; random = false, constant = false)
         for i = 1:(n+1)
             seed = rand(0:1)
             if seed == 0 # constant
-                symPFunction = rand(Uniform(1.0,10.0), 1, 1)[1]
+                symPFunctionRe = rand(Uniform(1.0,10.0), 1, 1)[1]
+                symPFunctionIm = rand(Uniform(1.0,10.0), 1, 1)[1]
+                symPFunction = symPFunctionRe + symPFunctionIm*im
             else # variable
-                pFunctionCoeffs = rand(Uniform(1.0,10.0), 1, (rand(1:5)))
+                coeffsNo = rand(1:5)
+                pFunctionCoeffsRe = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffsIm = rand(Uniform(1.0,10.0), 1,  coeffsNo)
+                pFunctionCoeffs = pFunctionCoeffsRe + pFunctionCoeffsIm*im
                 symPFunction = sum([pFunctionCoeffs[i+1]*t^(length(pFunctionCoeffs)-1-i) for i in 0:(length(pFunctionCoeffs)-1)])
             end
             symPFunctions[i] = symPFunction
         end
     else
         if constant # constant
-            symPFunctions = rand(Uniform(1.0,10.0), 1, (n+1))
+            symPFunctionsRe = rand(Uniform(1.0,10.0), 1, (n+1))
+            symPFunctionsIm = rand(Uniform(1.0,10.0), 1, (n+1))
+            symPFunctions = symPFunctionsRe + symPFunctionsIm*im
         else # variable
             symPFunctions = Array{Number}(1,n+1)
             for i = 1:(n+1)
                 # Each p_k is a polynomial function with random degree between 0 to 4 and random coefficients between 0 and 10
-                pFunctionCoeffs = rand(Uniform(1.0,10.0), 1, (rand(1:5)))
+                coeffsNo = rand(1:5)
+                pFunctionCoeffsRe = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffsIm = rand(Uniform(1.0,10.0), 1,  coeffsNo)
+                pFunctionCoeffs = pFunctionCoeffsRe + pFunctionCoeffsIm*im
                 symPFunction = sum([pFunctionCoeffs[i+1]*t^(length(pFunctionCoeffs)-1-i) for i in 0:(length(pFunctionCoeffs)-1)])
                 symPFunctions[i] = symPFunction
             end
@@ -48,13 +58,18 @@ function generate_pFunctions(n; random = false, constant = false)
         for i = 1:(n+1)
             seed = rand(0:1)
             if seed == 0 # constant
-                pFunction = rand(Uniform(1.0,10.0), 1, 1)[1]
+                pFunctionRe = rand(Uniform(1.0,10.0), 1, 1)[1]
+                pFunctionIm = rand(Uniform(1.0,10.0), 1, 1)[1]
+                pFunction = pFunctionRe + pFunctionIm*im
                 if i < n+1
                     pDerivMatrix[i,1] = pFunction
                     pDerivMatrix[i:i, 2:n] = 0
                 end
             else # variable
-                pFunctionCoeffs = rand(Uniform(1.0,10.0), 1, (rand(1:5)))
+                coeffsNo = rand(1:5)
+                pFunctionCoeffsRe = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffsIm = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffs = pFunctionCoeffsRe + pFunctionCoeffsIm*im
                 pFunction = get_polynomial(pFunctionCoeffs)
                 if i < n+1
                     pDerivMatrix[i:i, 1:n] = [get_polynomialDeriv(pFunctionCoeffs, k) for k = 0:(n-1)]
@@ -64,7 +79,9 @@ function generate_pFunctions(n; random = false, constant = false)
         end
     else
         if constant # constant
-            pFunctions = rand(Uniform(1.0,10.0), 1, (n+1))
+            pFunctionsRe = rand(Uniform(1.0,10.0), 1, (n+1))
+            pFunctionsIm = rand(Uniform(1.0,10.0), 1, (n+1))
+            pFunctions = pFunctionsRe + pFunctionsIm*im
             pDerivMatrix = eye(n)
             for i = 1:n
                 for j = 1:n
@@ -80,7 +97,10 @@ function generate_pFunctions(n; random = false, constant = false)
             pDerivMatrix = Array{Union{Function, Number}}(n,n)
             for i = 1:(n+1)
                 # Each p_k is a polynomial function with random degree between 0 to 4 and random coefficients between 0 and 10
-                pFunctionCoeffs = rand(Uniform(1.0,10.0), 1, (rand(1:5)))
+                coeffsNo = rand(1:5)
+                pFunctionCoeffsRe = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffsIm = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffs = pFunctionCoeffsRe + pFunctionCoeffsIm*im
                 if i < n+1
                     pDerivMatrix[i:i, 1:n] = [get_polynomialDeriv(pFunctionCoeffs, k) for k = 0:(n-1)]
                 end
@@ -101,14 +121,19 @@ function generate_pFunctionsAndSymPFunctions(n; random = false, constant = false
         for i = 1:(n+1)
             seed = rand(0:1)
             if seed == 0 # constant
-                pFunction = rand(Uniform(1.0,10.0), 1, 1)[1]
+                pFunctionRe = rand(Uniform(1.0,10.0), 1, 1)[1]
+                pFunctionIm = rand(Uniform(1.0,10.0), 1, 1)[1]
+                pFunction = pFunctionRe + pFunctionIm*im
                 symPFunction = pFunction
                 if i < n+1
                     pDerivMatrix[i,1] = pFunction
                     pDerivMatrix[i:i, 2:n] = 0
                 end
             else # variable
-                pFunctionCoeffs = rand(Uniform(1.0,10.0), 1, (rand(1:5)))
+                coeffsNo = rand(1:5)
+                pFunctionCoeffsRe = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffsIm = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffs = pFunctionCoeffsRe + pFunctionCoeffsIm*im
                 if i < n+1
                     pDerivMatrix[i:i, 1:n] = [get_polynomialDeriv(pFunctionCoeffs, k) for k = 0:(n-1)]
                 end
@@ -120,7 +145,9 @@ function generate_pFunctionsAndSymPFunctions(n; random = false, constant = false
         end
     else
         if constant # constant
-            pFunctions = rand(Uniform(1.0,10.0), 1, (n+1))
+            pFunctionsRe = rand(Uniform(1.0,10.0), 1, (n+1))
+            pFunctionsIm = rand(Uniform(1.0,10.0), 1, (n+1))
+            pFunctions = pFunctionsRe + pFunctionsIm*im
             symPFunctions = pFunctions
             pDerivMatrix = Array{Union{Function, Number}}(n,n)
             for i = 1:n
@@ -139,7 +166,10 @@ function generate_pFunctionsAndSymPFunctions(n; random = false, constant = false
             pDerivMatrix = Array{Union{Function, Number}}(n,n)
             for i = 1:(n+1)
                 # Each p_k is a polynomial function with random degree between 0 to 4 and random coefficients between 0 and 10
-                pFunctionCoeffs = rand(Uniform(1.0,10.0), 1, (rand(1:5)))
+                coeffsNo = rand(1:5)
+                pFunctionCoeffsRe = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffsIm = rand(Uniform(1.0,10.0), 1, coeffsNo)
+                pFunctionCoeffs = pFunctionCoeffsRe + pFunctionCoeffsIm*im
                 if i < n+1
                     pDerivMatrix[i:i, 1:n] = [get_polynomialDeriv(pFunctionCoeffs, k) for k = 0:(n-1)]
                 end
@@ -168,8 +198,12 @@ function test_generate_adjoint(n, k)
         (pFunctions, symPFunctions, pDerivMatrix) = generate_pFunctionsAndSymPFunctions(n; random = false, constant = true)
         symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
         L = LinearDifferentialOperator(pFunctions, (a,b), symL)
-        MCand = rand(Uniform(1.0,10.0), n, n)
-        NCand = rand(Uniform(1.0,10.0), n, n)
+        MCandRe = rand(Uniform(1.0,10.0), n, n)
+        MCandIm = rand(Uniform(1.0,10.0), n, n)
+        MCand = MCandRe + MCandIm*im
+        NCandRe = rand(Uniform(1.0,10.0), n, n)
+        NCandIm = rand(Uniform(1.0,10.0), n, n)
+        NCand = NCandRe + NCandIm*im
         U = VectorBoundaryForm(MCand, NCand)
         println("Testing: order of L = $n")
         passed = false
@@ -189,8 +223,12 @@ function test_generate_adjoint(n, k)
         (pFunctions, symPFunctions, pDerivMatrix) = generate_pFunctionsAndSymPFunctions(n; random = false, constant = false)
         symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
         L = LinearDifferentialOperator(pFunctions, (a,b), symL)
-        MCand = rand(Uniform(1.0,10.0), n, n)
-        NCand = rand(Uniform(1.0,10.0), n, n)
+        MCandRe = rand(Uniform(1.0,10.0), n, n)
+        MCandIm = rand(Uniform(1.0,10.0), n, n)
+        MCand = MCandRe + MCandIm*im
+        NCandRe = rand(Uniform(1.0,10.0), n, n)
+        NCandIm = rand(Uniform(1.0,10.0), n, n)
+        NCand = NCandRe + NCandIm*im
         U = VectorBoundaryForm(MCand, NCand)
         println("Testing: order of L = $n")
         try
@@ -209,8 +247,12 @@ function test_generate_adjoint(n, k)
         (pFunctions, symPFunctions, pDerivMatrix) = generate_pFunctionsAndSymPFunctions(n; random = true)
         symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
         L = LinearDifferentialOperator(pFunctions, (a,b), symL)
-        MCand = rand(Uniform(1.0,10.0), n, n)
-        NCand = rand(Uniform(1.0,10.0), n, n)
+        MCandRe = rand(Uniform(1.0,10.0), n, n)
+        MCandIm = rand(Uniform(1.0,10.0), n, n)
+        MCand = MCandRe + MCandIm*im
+        NCandRe = rand(Uniform(1.0,10.0), n, n)
+        NCandIm = rand(Uniform(1.0,10.0), n, n)
+        NCand = NCandRe + NCandIm*im
         U = VectorBoundaryForm(MCand, NCand)
         println("Testing: order of L = $n")
         try
@@ -239,7 +281,7 @@ function test_symLinearDifferentialOperatorDef(n, k)
 
     for counter = 1:k
         println("Test $counter")
-        println("Testing definition of SymLinearDifferentialOperator: symP_k are SymPy.Sym")
+        println("Testing definition of SymLinearDifferentialOperator: symP_k are Function")
         symPFunctions = generate_symPFunctions(n; random = false, constant = false)
         passed = false
         try
@@ -253,7 +295,7 @@ function test_symLinearDifferentialOperatorDef(n, k)
         end
         append!(results, passed)
 
-        println("Testing definition of SymLinearDifferentialOperator: symP_k are Number")
+        println("Testing definition of SymLinearDifferentialOperator: symP_k are constant")
         symPFunctions = generate_symPFunctions(n; random = false, constant = true)
         passed = false
         try
@@ -331,10 +373,10 @@ function test_linearDifferentialOperatorDef(n, k)
     global (a,b) = (0,1)
     
     for counter = 1:k
-        println("Test $k")
+        println("Test $counter")
 
         # Variable p_k
-        println("Testing definition of LinearDifferentialOperator: p_k are variable Function")
+        println("Testing definition of LinearDifferentialOperator: p_k are Function")
         (pFunctions, symPFunctions, pDerivMatrix) = generate_pFunctionsAndSymPFunctions(n; random = false, constant = false)
         symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
         passed = false
@@ -504,12 +546,12 @@ function test_vectorBoundaryFormDef(n, k)
         println("Test $counter")
 
         println("Testing the definition of VectorBoundaryForm")
-        MReal = rand(Uniform(1.0,10.0), n, n)
-        MComplex = rand(Uniform(1.0,10.0), n, n)
-        M = MReal + im*MComplex
-        NReal = rand(Uniform(1.0,10.0), n, n)
-        NComplex = rand(Uniform(1.0,10.0), n, n)
-        N = NReal + im*NComplex
+        MRe = rand(Uniform(1.0,10.0), n, n)
+        MIm = rand(Uniform(1.0,10.0), n, n)
+        M = MRe + MIm*im
+        NRe = rand(Uniform(1.0,10.0), n, n)
+        NIm = rand(Uniform(1.0,10.0), n, n)
+        N = NRe + NIm*im
         passed = false
         try
             VectorBoundaryForm(M, N)

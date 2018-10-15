@@ -34,6 +34,9 @@ function set_tol_matrix(A::Array{Number}, B::Array{Number})
     if size(A) != size(B)
         throw(error("Matrix dimensions do not match"))
     end
+    # Avoid InexactError() when taking norm()
+    A = convert(Array{Complex}, A)
+    B = convert(Array{Complex}, B)
     return 1e-05 * (norm(A,2) + norm(B,2))
 end
 
@@ -259,7 +262,8 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
         throw(StructDefinitionError(:"Number of p_k and symP_k do not match"))
     elseif (a,b) != symL.interval
         throw(StructDefinitionError(:"Intervals of L and symL do not match"))
-    # # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b]. roots() doesn't work if p0 is sth like t*im - 2*im
+    # # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b]. 
+    # # roots() in IntervalRootFinding doesn't work if p0 is sth like t*im - 2*im. Neither does find_zero() in Roots.
     # elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
     #     throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
     elseif !all(i -> check_func_sym_equal(pFunctions[i], symPFunctions[i], (a,b), t), 1:length(pFunctions))
@@ -286,12 +290,21 @@ end
 
 # Check whether the input matrices that characterize U are valid
 function check_vectorBoundaryForm_input(U::VectorBoundaryForm)
-    M, N = U.M, U.N
-    if !(check_all(M, x -> isa(x, Number)) && check_all(N, x -> isa(x, Number)))
+    # M, N = U.M, U.N
+    # Avoid Inexact() error when taking rank()
+    M = convert(Array{Complex}, U.M)
+    N = convert(Array{Complex}, U.N)
+    for i = 1:length(U.M)
+        M[i] = U.M[i]
+    end
+    for i = 1:length(U.N)
+        N[i] = U.N[i]
+    end
+    if !(check_all(U.M, x -> isa(x, Number)) && check_all(U.N, x -> isa(x, Number)))
         throw(StructDefinitionError(:"Entries of M, N should be Number"))
-    elseif size(M) != size(N)
+    elseif size(U.M) != size(U.N)
         throw(StructDefinitionError(:"M, N dimensions do not match"))
-    elseif size(M)[1] != size(M)[2]
+    elseif size(U.M)[1] != size(U.M)[2]
         throw(StructDefinitionError(:"M, N should be square matrices"))
     elseif rank(hcat(M, N)) != size(M)[1] # rank() throws weird "InexactError()" when taking some complex matrices
         throw(StructDefinitionError(:"Boundary operators not linearly independent"))
@@ -306,7 +319,8 @@ end
 # Calculate the rank of U, i.e., rank(M:N)
 function rank_of_U(U::VectorBoundaryForm)
     M, N = U.M, U.N
-    MHcatN = hcat(M, N)
+    # Avoid InexactError() when taking rank()
+    MHcatN = convert(Array{Complex}, hcat(M, N))
     return rank(MHcatN)
 end
 
@@ -315,12 +329,14 @@ function get_Uc(U::VectorBoundaryForm)
     try
         check_vectorBoundaryForm_input(U)
         n = rank_of_U(U)
-        I = eye(2*n)
+        I = convert(Array{Complex}, eye(2*n))
         M, N = U.M, U.N
         MHcatN = hcat(M, N)
-        mat = MHcatN
+        # Avoid InexactError() when taking rank()
+        mat = convert(Array{Complex}, MHcatN)
         for i = 1:(2*n)
             newMat = vcat(mat, I[i:i,:])
+            newMat = convert(Array{Complex}, newMat)
             if rank(newMat) == rank(mat) + 1
                 mat = newMat
             end
@@ -484,6 +500,7 @@ end
 # Construct J = (B_hat * H^{(-1)})^*, where ^* denotes conjugate transpose
 function get_J(BHat, H)
     n = size(H)[1]
+    H = convert(Array{Complex}, H)
     J = (BHat * inv(H))'
     return J
 end
@@ -491,9 +508,9 @@ end
 # Construct U+
 function get_adjoint(J)
     n = convert(Int, size(J)[1]/2)
-    Pstar = J[(n+1):2n,1:n]
-    Qstar = J[(n+1):2n, (n+1):2n]
-    adjoint = VectorBoundaryForm(Pstar, Qstar)
+    PStar = J[(n+1):2n,1:n]
+    QStar = J[(n+1):2n, (n+1):2n]
+    adjoint = VectorBoundaryForm(PStar, QStar)
     return adjoint
 end
 
@@ -555,8 +572,9 @@ function check_adjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, adj
     (a,b) = L.interval
     M, N = U.M, U.N
     P, Q = (adjointU.M)', (adjointU.N)'
-    BEvalA = evaluate_matrix(B, a)
-    BEvalB = evaluate_matrix(B, b)
+    # Avoid InexactError() when taking inv()
+    BEvalA = convert(Array{Complex}, evaluate_matrix(B, a))
+    BEvalB = convert(Array{Complex}, evaluate_matrix(B, b))
     left = M * inv(BEvalA) * P
     right = N * inv(BEvalB) * Q
     # println("M * inv(BEvalA) * P = $left")
