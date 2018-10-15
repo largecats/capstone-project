@@ -293,7 +293,11 @@ function check_vectorBoundaryForm_input(U::VectorBoundaryForm)
         throw(StructDefinitionError(:"M, N dimensions do not match"))
     elseif size(M)[1] != size(M)[2]
         throw(StructDefinitionError(:"M, N should be square matrices"))
+<<<<<<< HEAD
     elseif rank(hcat(M, N)) != size(M)[1] # rank() throws weird "InexactError()" when taking some complex matrices
+=======
+    elseif rank(hcat(M, N)) != size(M)[1] # rank() only works for real matrices
+>>>>>>> master
         throw(StructDefinitionError(:"Boundary operators not linearly independent"))
     else
         return true
