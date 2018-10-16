@@ -30,7 +30,7 @@ function set_tol(x::Number, y::Number)
 end
 
 # Set an appropriate tolerance when checking whether M \approx N
-function set_tol_matrix(A::Array{Number}, B::Array{Number})
+function set_tol_matrix(A::Array, B::Array)
     if size(A) != size(B)
         throw(error("Matrix dimensions do not match"))
     end
@@ -294,12 +294,6 @@ function check_vectorBoundaryForm_input(U::VectorBoundaryForm)
     # Avoid Inexact() error when taking rank()
     M = convert(Array{Complex}, U.M)
     N = convert(Array{Complex}, U.N)
-    for i = 1:length(U.M)
-        M[i] = U.M[i]
-    end
-    for i = 1:length(U.N)
-        N[i] = U.N[i]
-    end
     if !(check_all(U.M, x -> isa(x, Number)) && check_all(U.N, x -> isa(x, Number)))
         throw(StructDefinitionError(:"Entries of M, N should be Number"))
     elseif size(U.M) != size(U.N)
@@ -318,9 +312,10 @@ end
 #############################################################################
 # Calculate the rank of U, i.e., rank(M:N)
 function rank_of_U(U::VectorBoundaryForm)
-    M, N = U.M, U.N
-    # Avoid InexactError() when taking rank()
-    MHcatN = convert(Array{Complex}, hcat(M, N))
+    # Avoid InexactError() when taking hcat() and rank()
+    M = convert(Array{Complex}, U.M)
+    N = convert(Array{Complex}, U.N)
+    MHcatN = hcat(M, N)
     return rank(MHcatN)
 end
 
@@ -329,7 +324,7 @@ function get_Uc(U::VectorBoundaryForm)
     try
         check_vectorBoundaryForm_input(U)
         n = rank_of_U(U)
-        I = convert(Array{Complex}, eye(2*n))
+        I = complex(eye(2*n))
         M, N = U.M, U.N
         MHcatN = hcat(M, N)
         # Avoid InexactError() when taking rank()
@@ -351,8 +346,8 @@ end
 
 # Construct H from M, N, Mc, Nc
 function get_H(U::VectorBoundaryForm, Uc::VectorBoundaryForm)
-    MHcatN = hcat(U.M, U.N)
-    McHcatNc = hcat(Uc.M, Uc.N)
+    MHcatN = hcat(convert(Array{Complex}, U.M), convert(Array{Complex}, U.N))
+    McHcatNc = hcat(convert(Array{Complex}, Uc.M), convert(Array{Complex}, Uc.N))
     H = vcat(MHcatN, McHcatNc)
     return H
 end
@@ -487,7 +482,7 @@ end
 function get_BHat(L::LinearDifferentialOperator, B::Array)
     pFunctions, (a,b) = L.pFunctions, L.interval
     n = length(pFunctions)-1
-    BHat = Array{Number}(2n,2n)
+    BHat = Array{Complex}(2n,2n)
     BEvalA = evaluate_matrix(B, a)
     BEvalB = evaluate_matrix(B, b)
     BHat[1:n,1:n] = -BEvalA
@@ -502,12 +497,14 @@ function get_J(BHat, H)
     n = size(H)[1]
     H = convert(Array{Complex}, H)
     J = (BHat * inv(H))'
+    # J = convert(Array{Complex}, J)
     return J
 end
 
 # Construct U+
 function get_adjoint(J)
     n = convert(Int, size(J)[1]/2)
+    J = convert(Array{Complex}, J)
     PStar = J[(n+1):2n,1:n]
     QStar = J[(n+1):2n, (n+1):2n]
     adjoint = VectorBoundaryForm(PStar, QStar)
