@@ -29,11 +29,16 @@ in Julia via the Fokas transform method}
 \tableofcontents
 \newpage
 \section{Introduction}
-Solving evolution partial differential equations (PDEs) typically requires ad-hoc methods and special treatments. The recently discovered ``Fokas method''\cite{Smith2016}\cite{Kesici2016} allows solving many of these equations algorithmically. The first goal of this project concerns implementing the Fokas method in the Julia mathematical programming language. The first steps in the implementation involves constructing a valid adjoint boundary condition from a given homogeneous boundary condition.
+Solving evolution partial differential equations typically requires ad-hoc methods and special treatments. The recently discovered ``Fokas method''\cite{Smith2016}\cite{Kesici2016} allows solving many of these equations algorithmically. The first goal of the project concerns implementing the Fokas method in the Julia mathematical programming language. The first steps in the implementation involves constructing a valid adjoint boundary condition from a given homogeneous boundary condition. 
 
-Recall from linear algebra that for a linear map $T$ from vector spaces $V$ to $W$ (denoted as $T\in\mathcal{L}(V,W)$), the adjoint of $T$ is the function $T^\star:W\to V$ with $\langle Tv, w\rangle = \langle v, T^\star w\rangle$ for $v\in V$, $w\in W$\cite{Axler1997}. We will see that a similar notion exists for linear differential operators and boundary value problems. In general, the ``adjoint'' problem mirrors certain properties of the original problem. These properties are important to the project in that solutions of an adjoint problem are related to those of the original problem in valuable ways.
+Given a linear map $T$ from vector spaces $V$ to $W$ (denoted as $T\in\mathcal{L}(V,W)$), the adjoint of $T$ is the function $T^\star:W\to V$ with
+\begin{equation}\label{eq:linear map adjoint}
+    \langle Tv, w\rangle = \langle v, T^\star w\rangle
+\end{equation}
+for $v\in V$, $w\in W$, where $\langle \cdot \rangle$ is an inner product defined on $V$ \cite[p.204]{Axler1997}. The ``adjoint'' mentioned in the first paragraph is an analogous notion defined for boundary value problems. Importantly, the adjoint problem mirrors many properties of the original problem. In particular, we may gain insights into a boundary value problem by solving its adjoint. The Fokas method makes use of this feature of the adjoint. Thus, the first step in implementing it is to find out how to characterize the adjoint problem from the original problem. 
 
-We have devised an algorithm to construct a valid adjoint from a homogeneous boundary condition. The report will focus on the algorithm's development and implementation. We begin by introducing the preliminary materials on which the construction algorithm depends. In the spirit of making the report self-contained, referenced definitions, theorems, and proofs are included in the report, with frequent supplies of the student's own remarks and proofs so as to make the results relevant to the construction algorithm\footnote{Most of the references are taken from \textit{Theory of Ordinary Differential Equations}\cite{CoddingtonLevinson}, as reflected by the citation in the section title of ``Preliminaries.'' The preliminaries section is essentially a review of the textbook material with the student's notes, tailored to the purpose of developing the construction algorithm. A version where the student's notes are highlighted separately is also available, if needed.}. 
+To this end, an algorithm to construct adjoint boundary conditions has been created. The report will focus on the algorithm's development and implementation. We begin by introducing the preliminary materials on which the algorithm depends. To make the report self-contained, referenced definitions, theorems, and proofs are included in the report, with frequent supplies of the student's own remarks and proofs so as to make the results relevant to the construction algorithm. 
+%\footnote{The preliminaries section is essentially a review of the book material mixed with the student's notes, tailored to the purpose of developing the construction algorithm. Because the contents are mixed, citations in the section body are omitted and are represented by the citation in the section title. A version where the student's notes are highlighted separately is also available, if needed.}
 
 We then present an outline of the construction algorithm, referencing definitions and theorems introduced in the preliminaries section. The outline is in higher-level, abstract form, with occasional pseudo-code illustrations when deemed necessary. 
 
@@ -41,20 +46,20 @@ After that, we briefly discuss the implementation of the algorithm in Julia. The
 
 We will conclude the report with a summary of the progress so far with respect to the plan in the project proposal. This will be followed by a brief discussion of plans for the next steps.
 
-\section{Preliminaries\cite{CoddingtonLevinson}}
-
-The construction algorithm depends on two important results, namely Green's formula and boundary-form formula. Generally speaking, Green's formula allows characterizing a form, which, when used in the boundary-form formula, gives rise to the desired construction. 
-
-We begin with the Green's formula.
-
-\subsection{Green's formula}
-\begin{defn}\label{defn:linear differential operator}
+\section{Preliminaries}
+\begin{defn}\cite[p.81]{CoddingtonLevinson}\label{defn:linear differential operator}
     A \textbf{linear differential operator} $L$ of order $n$ ($n>1$) on interval $[a,b]$ is defined by
     \[Lx = p_0x^{(n)} + p_1x^{(n-1)} + \cdots + p_{n-1}x' + p_nx,\]
-    where the $p_k$ are complex-valued functions of class $C^{n-k}$ on a closed bounded interval $[a,b]$ (i.e., derivatives $p_k, p'_k, \ldots, p^{(n-k)}_k$ exist on $[a,b]$ and are continuous) and $p_0(t)\neq 0$ on $[a,b]$.
+    where the $p_k$ are complex-valued functions of class $C^{n-k}$ on $[a,b]$ and $p_0(t)\neq 0$ on $[a,b]$.
 \end{defn}
 
-\begin{defn}\label{defn:homogeneous boundary conditions}
+\begin{defn}\cite[p.84]{CoddingtonLevinson}\label{defn:adjoint linear differential operator}
+    Given a linear differential operator $L$ of order $n$ as in Definition \ref{defn:linear differential operator}, the operator $L^+$ given by
+    \[L^+x = (-1)^n (\bar{p}_0 x)^{(n)} + (-1)^{n-1}(\bar{p}_1 x)^{(n-1)} +\cdots +\bar{p}_nx\]
+    is the \textbf{adjoint} of $L$.
+\end{defn}
+
+\begin{defn}\cite[p.284]{CoddingtonLevinson}\label{defn:homogeneous boundary conditions}
     \textbf{Homogeneous boundary conditions} refer to a set of equations of the type
     \begin{equation}\label{eq:homogeneous boundary conditions}
         \sum_{k=1}^n (M_{jk}x^{(k-1)}(a) + N_{jk}x^{(k-1)}(b))=0 \quad (j=1,\ldots,m) 
@@ -62,18 +67,19 @@ We begin with the Green's formula.
     where $M_{jk}, N_{jk}$ are complex constants.
 \end{defn}
 
-\begin{defn}\label{defn:homogeneous boundary value problem}
+\begin{defn}\cite[p.284]{CoddingtonLevinson}\label{defn:homogeneous boundary value problem}
     A \textbf{homogeneous boundary value problem} concerns finding the solutions of 
     \[Lx=0\] on some interval $[a,b]$ which satisfy some homogeneous boundary conditions (Definition \ref{defn:homogeneous boundary conditions}).
 \end{defn}
 
-For any homogeneous boundary value problem, an \textbf{adjoint problem} refers to the problem of finding the solutions of
-\[L^{+}x:=(-1)^n(\bar{p}_0x)^{(n)}+(-1)^{n-1}(\bar{p}_1x)^{(n-1)}+\cdots+\bar{p}_nx=0\]
-on $[a,b]$ which satisfy some homogeneous boundary conditions that correspond to the conditions associated with the solutions of $Lx=0$ in interesting ways. We seek to characterize these boundary conditions in the following sections.
+For a homogeneous boundary value problem $\pi$ with linear differential operator $L$ and some (homogeneous) boundary conditions, an adjoint problem $\pi^+$ involves the adjoint linear differential operator $L^+$ and some (homogeneous) adjoint boundary conditions. The adjoint boundary conditions are such that an equation similar to (\ref{eq:linear map adjoint}) exists for solutions of $\pi$ and those of $\pi^+$, with the inner product $(\cdot)$ defined as $(u,v) := \int_a^b u\bar{v}\,dt$ for $u, v\in C^n$ on $[a,b]$. In the following sections, we seek to characterize the adjoint boundary conditions and describe an algorithm to construct them.
 
-With these definitions, we are ready to introduce Green's formula, the first important result the construction depends on.
+The construction algorithm depends on two important results, namely Green's formula and boundary-form formula. Generally speaking, Green's formula allows characterizing a form, which, when used in the boundary-form formula, gives rise to the desired construction. 
 
-\begin{thm}{(Green's formula)}\label{thm:green's formula}
+We begin with the Green's formula.
+
+\subsection{Green's formula}
+\begin{thm}\cite[p.284]{CoddingtonLevinson}{(Green's formula)}\label{thm:green's formula}
     For $u, v\in C^n$ on $[a,b]$,
     \begin{equation}\label{eq:green's formula}
         \int_{t_1}^{t_2}(Lu)\bar{v}\,dt - \int_{t_1}^{t_2}u(\overline{L^+v})\,dt = [uv](t_2) - [uv](t_1) 
@@ -83,7 +89,6 @@ With these definitions, we are ready to introduce Green's formula, the first imp
         [uv](t)=\sum_{m=1}^n\sum_{j+k=m-1}(-1)^j u^{(k)}(t)(p_{n-m}\bar{v})^{(j)}(t)
     \end{equation}
 \end{thm}
-
 Using the form $[uv](t)$, we define an important $n\times n$ matrix $B$ whose entries $B_{jk}$ satisfy
 \begin{equation}\label{eq:[uv](t) in B matrix}
     \begin{split}
@@ -127,13 +132,13 @@ We note that because $p_0(t)\neq 0$ on $[a,b]$ (as required in Definition \ref{d
 
 Now we seek another matrix $\hat{B}$ that embodies both the characteristics of $B$ and those of the interval $[a,b]$. This concerns writing an equation of $[uv](t)$ in matrix form. We begin by introducing the following definitions.
 
-\begin{defn}\label{defn:f cdot g}
+\begin{defn}\cite[p.285]{CoddingtonLevinson}\label{defn:f cdot g}
     For vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$, define the product
     \[f\cdot g:=\sum_{i=1}^k f_i\bar{g}_i.\]
-    Note that $f\cdot g = g^*f$.
+    Note that $f\cdot g = g^*f$ where $^*$ denotes conjugate transpose.
 \end{defn}
 
-\begin{defn}
+\begin{defn}\cite[p.285]{CoddingtonLevinson}\label{defn:semibilinear form}
     A \textbf{semibilinear form} is a complex-valued function $\mathcal{S}$ defined for pairs of vectors $f=(f_1,\ldots,f_k)$, $g=(g_1,\ldots,g_k)$ satisfying
     \begin{align*}
         \mathcal{S}(\alpha f+\beta g, h)&=\alpha\mathcal{S}(f,h) + \beta\mathcal{S}(g,h)\\
@@ -330,7 +335,7 @@ To recapitulate, given a linear differential operator $L$ which involves functio
 \subsection{Boundary-form formula}
 Before introducing the boundary-form formula, we need a set of definitions and results concerning boundary conditions.
 
-\begin{defn}\label{defn:boundary form}
+\begin{defn}\cite[p.286]{CoddingtonLevinson}\label{defn:boundary form}
     Given any set of $2mn$ complex constants $M_{ij}, N_{ij}$ ($i=1,\ldots, m;\,j=1,\ldots,n$), define $m$ \textbf{boundary operators (boundary forms)} $U_1,\ldots,U_m$ for functions $x$ on $[a,b]$, for which $x^{(j)}$ ($j=1,\ldots,n-1$) exists at $a$ and $b$, by
     \begin{equation}\label{eq:U_i defn}
         U_i x = \sum_{j=1}^n (M_{ij}x^{(j-1)}(a) + N_{ij}x^{(j-1)}(b))\quad\mbox{($i=1,\ldots,m$)} 
@@ -340,7 +345,7 @@ Before introducing the boundary-form formula, we need a set of definitions and r
     for all $x\in C^{n-1}$ on $[a,b]$ is $c_1=c_2=\cdots =c_m=0$.
 \end{defn}
 
-\begin{defn}\label{defn:vectory boundary form}
+\begin{defn}\cite[p.286]{CoddingtonLevinson}\label{defn:vectory boundary form}
     A \textbf{vectory boundary form} $U=(U_1,\ldots,U_m)$ is a vector whose components are boundary forms (Definition \ref{defn:boundary form}). When $U_1,\ldots,U_m$ are linearly independent, we say that $U$ has rank $m$. We assume $U$ has full rank below.
 \end{defn}
 
@@ -428,7 +433,7 @@ Moreover, $Ux$ can also be written as
 
 Having proposed a compact way to represent a set of homogeneous boundary conditions, we begin building our way to characterizing the notion of adjoint boundary condition. First, we need the notion of a complementary boundary form.
 
-\begin{defn}\label{defn:complementary boundary form}
+\begin{defn}\cite[p.287]{CoddingtonLevinson}\label{defn:complementary boundary form}
     If $U=(U_1,\ldots, U_m)$ is any boundary form with $\rank(U)=m$ and $U_c=(U_{m+1},\ldots,U_{2n})$ any form with $\rank(U_c)=2n-m$ such that $(U_1,\ldots, U_{2n})$ has rank $2n$, then $U$ and $U_c$ are \textbf{complementary boundary forms}. 
     
     Note that extending $U_{1},\ldots, U_{m}$ to $U_1,\ldots,U_{2n}$ is equivalent to imbedding the matrix $(M:N)$ in a $2n\times 2n$ nonsingular matrix (recall that a square matrix is nonsingular if and only if it has full rank).
@@ -436,7 +441,7 @@ Having proposed a compact way to represent a set of homogeneous boundary conditi
 
 The characterization of adjoint boundary conditions is given by the boundary-form formula. The boundary-form formula is motivated by writing the right-hand side of Green's formula \eqref{eq:green's formula} as the linear combination of a boundary form $U$ and a complementary form $U_c$. Before finally getting to it, we need the following propositions.
 
-\begin{prop}
+\begin{prop}\cite[p.287]{CoddingtonLevinson}
     In the context of the semibilinear form \eqref{eq:semibilinear form}, we have
     \begin{equation}\label{eq:semibilinear adjoint}
         Sf\cdot g = f\cdot S^*g, 
@@ -474,7 +479,7 @@ The characterization of adjoint boundary conditions is given by the boundary-for
     \end{align*}
 \end{proof}
 
-\begin{prop}\label{prop:unique nonsingular G in semibilinear form}
+\begin{prop}\cite[p.287]{CoddingtonLevinson}\label{prop:unique nonsingular G in semibilinear form}
     Let $\mathcal{S}$ be the semibilinear form associated with a nonsingular matrix $S$. Suppose $\bar{f}:=Ff$ where $F$ is a nonsingular matrix. Then there exists a unique nonsingular matrix $G$ such that if $\bar{g}=Gg$, then $\mathcal{S}(f,g)=\bar{f}\cdot \bar{g}$ for all $f, g$.
 \end{prop}
 \begin{proof}
@@ -491,7 +496,7 @@ The characterization of adjoint boundary conditions is given by the boundary-for
     To see that $G$ is nonsingular, note that $\det G = \det((\overline{SF^{-1}})^T) = \det(\overline{SF^{-1}}) = \overline{\det(SF^{-1})} = \overline{\det(S)\det(F)^{-1}}\neq 0$ since $S, F$ are nonsingular.
 \end{proof}
 
-\begin{prop}\label{prop:last k-j components linear combination}
+\begin{prop}\cite[p.287]{CoddingtonLevinson}\label{prop:last k-j components linear combination}
     Suppose $\mathcal{S}$ is associated with the unit matrix $E$, i.e., $\mathcal{S}(f,g)=f\cdot g$. Let $F$ be a nonsingular matrix such that the first $j$ ($1\leq j<k$) components of $\bar{f}=Ff$ are the same as those of $f$. Then the unique nonsingular matrix $G$ such that $\bar{g}=Gg$ and $\bar{f}\cdot \bar{g}=f\cdot g$ (as in Proposition \ref{prop:unique nonsingular G in semibilinear form}) is such that the last $k-j$ components of $\bar{g}$ are linear combinations of the last $k-j$ components of $g$ with nonsingular coefficient matrix.
 \end{prop}
 \begin{proof}
@@ -542,7 +547,7 @@ where $G_{k-j}$ is the nonsingular coefficient matrix such that
 
 We are finally ready to introduce the boundary-form formula, the theorem central to the construction of adjoint boundary condition.
 
-\begin{thm}{(Boundary-form formula)}\label{thm:boundary form formula}
+\begin{thm}\cite[p.288]{CoddingtonLevinson}{(Boundary-form formula)}\label{thm:boundary form formula}
     Given any boundary form $U$ of rank $m$ (Definition \ref{defn:boundary form}), and any complementary form $U_c$ (Definition \ref{defn:complementary boundary form}), there exist unique boundary forms $U_c^+$, $U^+$ of rank $m$ and $2n-m$, respectively, such that
     \begin{equation}\label{eq:boundary form formula}
         [xy](b)-[xy](a) = Ux\cdot U_c^+y + U_{c}x\cdot U^+y.
@@ -557,6 +562,8 @@ We are finally ready to introduce the boundary-form formula, the theorem central
     $U^+$ is the key object which will be defined later as an adjoint boundary condition to $U$.
 
     Note that the existence of $[xy](t)$ implies that a linear differential operator is involved (see (\ref{eq:[uv](t) defn})). The matrices $\hat{B}$ and $B$ in the proof also depend on this linear differential operator.
+
+    Also note that the second statement in the theorem implies that adjoint boundary conditions are unique up to linear transformation. This is why we always use ``an'' instead of ``the'' when referring to adjoint boundary condition.
 \end{rmk}
 \begin{proof}
     Recall from \eqref{eq:green's formula in semibilinear form} that the left hand side of \eqref{eq:boundary form formula} can be considered as a semibilinear form $\mathcal{S}(f,g)=\hat{B}f\cdot g$ for vectors
@@ -609,9 +616,9 @@ We are finally ready to introduce the boundary-form formula, the theorem central
 \end{proof}
 
 \subsection{Homogeneous boundary value problem and its adjoint}
-The boundary-form formula allows characterizing the notion of ``adjoint'' for boundary value problems, whose significance is briefly discussed in the introduction section. In this section, we define the notions of ``adjoint'' for boundary condition and boundary value problem. We then explore some properties of these adjoints as relevant to the construction algorithm.
+With the boundary-form formula, we are now able to fully characterize the notion of ``adjoint'' for boundary value problems. In this section, we begin by defining adjoint boundary condition and adjoint boundary value problem. We then explore some properties of these adjoints as relevant to the construction algorithm.
 
-\begin{defn}\label{defn:adjoint boundary condition}
+\begin{defn}\cite[p.288-89]{CoddingtonLevinson}\label{defn:adjoint boundary condition}
     For any boundary form $U$ of rank $m$ there is associated the homogeneous boundary condition
     \begin{equation}\label{eq:homogeneous boundary condition}
         Ux=0
@@ -623,10 +630,20 @@ The boundary-form formula allows characterizing the notion of ``adjoint'' for bo
     is an \textbf{adjoint boundary condition} to (\ref{eq:homogeneous boundary condition}).
 \end{defn}
 
-In connection with the notion of adjoint problem introduced after Definition \ref{defn:homogeneous boundary value problem}, we have the following property of adjoint linear differential operator that mirrors the adjoint of a linear map mentioned in the introduction section.
+Putting together $L, L^+$ and $U, U^+$, we have the definition of adjoint boundary value problem.
+
+\begin{defn}\cite[p.291]{CoddingtonLevinson}\label{defn:adjoint boundary value problem}
+    If $U$ is a boundary form of rank $m$, the problem of finding solutions of
+    \[\pi_m:\,Lx=0\quad Ux=0\]
+    on $[a,b]$ is a \textbf{homogeneous boundary value problem of rank $m$}. The problem
+    \[\pi_{2n-m}^+:\,L^+x=0\quad U^+x=0\]
+    on $[a,b]$ is the \textbf{adjoint boundary value problem to $\pi_m$}.
+\end{defn}
+
+In connection with the notion of adjoint problem introduced after Definition \ref{defn:homogeneous boundary value problem}, we now have the following property of the adjoint analogous to (\ref{eq:linear map adjoint}).
 
 \begin{prop}\label{prop:(Lu,v)=(u,L^+v)}
-    By Green's formula \eqref{eq:green's formula} and the boundary-form formula \eqref{eq:boundary form formula}, for $(u,v):=\int_a^b u\bar{v}\,dt$, 
+    By Green's formula \eqref{eq:green's formula} and the boundary-form formula \eqref{eq:boundary form formula}, 
     \[(Lu, v) = (u, L^+v)\]
     for all $u\in C^n$ on $[a,b]$ satisfying \eqref{eq:homogeneous boundary condition} and all $v\in C^n$ on $[a,b]$ satisfying \eqref{eq:adjoint boundary condition}.
 \end{prop}
@@ -642,15 +659,9 @@ In connection with the notion of adjoint problem introduced after Definition \re
     \end{equation}
 \end{proof}
 
-Putting together $L, L^+$ and $U, U^+$, we have the definition of adjoint boundary value problem.
+In some cases, the above result is treated as the definition of the adjoint problem. Here, we treat it as a property of the adjoint after defining $L^+$ and constructing $U^+$. Yet we can still appreciate the motivation behind defining the notion of adjoint for boundary value problems.
 
-\begin{defn}\label{defn:adjoint boundary value problem}
-    If $U$ is a boundary form of rank $m$, the problem of finding solutions of
-    \[\pi_m:\,Lx=0\quad Ux=0\]
-    on $[a,b]$ is a \textbf{homogeneous boundary value problem of rank $m$}. The problem
-    \[\pi_{2n-m}^+:\,L^+x=0\quad U^+x=0\]
-    on $[a,b]$ is the \textbf{adjoint boundary value problem to $\pi_m$}.
-\end{defn}
+Now, we turn to one last result that would help us in the last step of the construction algorithm, namely checking whether an adjoint boundary condition is valid.
 
 Just like how $U$ is associated with two $m\times n$ matrices $M, N$, $U^+$ is associated with two $n\times (2n-m)$ matrices $P, Q$ such that $(P^*:Q^*)$ has rank $2n-m$ and
 \begin{equation}\label{eq:U^+x in P* Q*}
@@ -667,14 +678,14 @@ Just like how $U$ is associated with two $m\times n$ matrices $M, N$, $U^+$ is a
 %     \end{bmatrix},
 % \end{align*}
 % which is a $2n\times 2n$ matrix of full rank.
-The following theorem is motivated by characterizing the adjoint condition \eqref{eq:adjoint boundary condition} in terms of the matrices $M, N, P, Q$. For our purpose, it provides a way to check whether a boundary condition is indeed a valid adjoint to a given homogeneous boundary condition using the matrices $M, N, P, Q$.
+The following theorem is motivated by characterizing the adjoint condition \eqref{eq:adjoint boundary condition} in terms of the matrices $M, N, P, Q$. For our purpose, it provides a way to check whether the adjoint boundary condition found by the algorithm is indeed valid using the matrices $M, N, P, Q$.
 
-\begin{thm}\label{thm:condition iff adjoint}
+\begin{thm}\cite[p.289]{CoddingtonLevinson}\label{thm:condition iff adjoint}
     The boundary condition $U^+x=0$ is adjoint to $Ux=0$ if and only if
     \begin{equation}\label{eq:condition iff adjoint}
         MB^{-1}(a)P = NB^{-1}(b)Q
     \end{equation}
-    where $B(t)$ is the $n\times n$ matrix associated with the form $[xy](t)$ (\eqref{B(t)}).
+    where $B(t)$ is the $n\times n$ matrix associated with the form $[xy](t)$ (\ref{eq:B(t)}).
 \end{thm}
 \begin{proof}
     Let $\eta := (y, y', \ldots, y^{(n-1)})$,
@@ -751,7 +762,7 @@ The following theorem is motivated by characterizing the adjoint condition \eqre
     \end{equation}
     holds.
 
-    By the fundamental theorem of linear maps\cite{Axler1997}, if $V$ is finite-dimensional and $T\in\mathcal{L}(V, W)$, then $\dim\ker T = \dim V - \dim \range T$. Suppose $A$ is a $n\times k$ matrix, then $A\in\mathcal{L}(\R^n, \R^k)$. Thus, in a homogeneous system of linear equations $Ax=0$, we have $\dim \ker A = \dim A - \dim \range A$. That is, the dimension of solution space $\ker A$ is the difference between the number of unknown variables and the rank of the coefficient matrix, or $\dim\range A$. Therefore, letting $u$ be a $2n\times 1$ vector, there exist exactly $2n-m$ linearly independent solutions of the homogeneous linear system $(M:N)_{m\times 2n}u=0$. By \eqref{eq:condition iff adjoint converse},
+    By the fundamental theorem of linear maps \cite[p.63]{Axler1997}, if $V$ is finite-dimensional and $T\in\mathcal{L}(V, W)$, then $\dim\ker T = \dim V - \dim \range T$. Suppose $A$ is a $n\times k$ matrix, then $A\in\mathcal{L}(\R^n, \R^k)$. Thus, in a homogeneous system of linear equations $Ax=0$, we have $\dim \ker A = \dim A - \dim \range A$. That is, the dimension of solution space $\ker A$ is the difference between the number of unknown variables and the rank of the coefficient matrix, or $\dim\range A$. Therefore, letting $u$ be a $2n\times 1$ vector, there exist exactly $2n-m$ linearly independent solutions of the homogeneous linear system $(M:N)_{m\times 2n}u=0$. By \eqref{eq:condition iff adjoint converse},
     \[MB^{-1}(a)P_1 - NB^{-1}(b)Q=0,\]
     and thus
     \[(M:N)_{m\times 2n}\begin{bmatrix}
@@ -790,15 +801,15 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \end{align*}
     or $P_1=PA$, $Q_1=QA$. Thus, 
     \[U_1^+y = P_1^*\eta(a) + Q_1^*\eta(b) = A^*P^*\eta(a) + A^*Q^*\eta(b)= A^* U^+y.\]
-    Since $A^\star$ is a linear map, $U^+y=0$ implies $A^*U^+y=0$. This implies that $U_1^+y=0$ is an adjoint boundary condition to $Ux=0$.
+    Since $A^\star$ is a linear map, $U^+y=0$ implies $U_1^+y=A^*U^+y=0$. Since $A^\star$ is nonsingular, $A^{\star^{-1}}$ is also a linear map, and $A^{\star^{-1}}U_1^+y = U^+y$. Thus, $U_1^+y=0$ implies $U^+y=A^{\star^{-1}}U_1^+y=0$. Therefore, $U^+y=0$ if and only if $U_1^+y=0$. This means that $U_1^+y=0$ is an adjoint boundary condition to $Ux=0$.
 \end{proof}
 
-To recapitulate, the boundary-form formula (Theorem \ref{thm:boundary form formula}) gives us the existence and construction of adjoint boundary condition, and Theorem \ref{thm:condition iff adjoint} gives us a way to check whether a proposed adjoint boundary condition is valid. Now, we are ready to describe an algorithm to construct a valid adjoint given a homogeneous boundary condition.
+To recapitulate, the boundary-form formula (Theorem \ref{thm:boundary form formula}) gives us the existence and construction of adjoint boundary condition, and Theorem \ref{thm:condition iff adjoint} gives us a way to check whether a proposed adjoint boundary condition is valid. Now, we are ready to propose a construction algorithm.
 
 \section{Algorithm outline}
-Suppose we are given a homogeneous boundary value problem on $[a,b]$
-\[Lx=0\quad Ux=0\]
-where $L$ is a linear differential operator with order $n$ (Definition \ref{defn:linear differential operator}) and $U$ is a vector boundary form $U=(U_1,\ldots, U_n)$ (Definition \ref{defn:vectory boundary form}). For the purpose of the project, we are only interested in cases where $m=n$. We seek to construct a valid adjoint boundary condition $U^+x=0$ (Definition \ref{defn:adjoint boundary condition}). 
+Suppose we are given a homogeneous boundary value problem on $[a,b]$,
+\[Lx=0\quad Ux=0,\]
+where $L$ is a linear differential operator with order $n$ (Definition \ref{defn:linear differential operator}) and $U$ is a vector boundary form $U=(U_1,\ldots, U_n)$ (Definition \ref{defn:vectory boundary form}). (For the purpose of the project, we are only interested in cases where $m=n$.) We seek to construct a valid adjoint boundary condition $U^+x=0$ (Definition \ref{defn:adjoint boundary condition}). 
 
 \subsection{Check input}
 We first check that $U_1,\ldots, U_n$ are linearly independent. As noted in a previous discussion, write
@@ -815,7 +826,7 @@ Recall from Definition \ref{defn:complementary boundary form} that extending $U_
     \Begin{
         mat $\longleftarrow$ $(M:N)$\;
         \For{i in range(nrow(E))}{
-            mat1 $\longleftarrow$ vcat(mat, E[i,]) \Comment*[r]{vcat := vertical concatenation}\
+            mat1 $\longleftarrow$ vcat(mat, E[i,]) \Comment*[r]{vcat := vertical concatenation, or joining two matrices vertically}\
             \If{rank(mat1) == rank(mat)+1}{
                 mat $\longleftarrow$ mat1
             }
@@ -829,16 +840,16 @@ Recall from Definition \ref{defn:complementary boundary form} that extending $U_
 
 The output from the above algorithm is a $2n\times 2n$ matrix of the form
 \[\begin{bmatrix}M & N\\ E' & E''\end{bmatrix}\]
-where $E', E''$ are the first $n$ entries and the last $n$ entries of the retained rows of $E_{2n}$, respectively. We identify this matrix with the matrix
+where the rows of $E', E''$ are the first $n$ entries and the last $n$ entries of the retained rows of $E_{2n}$, respectively. We identify this matrix with the matrix
 \[H = \begin{bmatrix}M&N\\ \tilde{M} & \tilde{N}\end{bmatrix}\]
 in Theorem \ref{thm:boundary form formula} (where $\tilde{M}, \tilde{N}$ are associated with the complementary boundary form $U_c x = \tilde{M}\xi(a) + \tilde{N}\xi(b)$).
 
 Recall that the linear differential operator $L$ is characterized by the functions $p_0,\ldots,p_n$ and the interval $[a,b]$. Let $B$ be as in (\ref{eq:B(t)}) which depends on $p_0,\ldots,p_n$. Construct $\hat{B}$ from $B$ and $[a,b]$ as in Theorem \ref{thm:boundary form formula}. Let $J:=(\hat{B}H^{-1})^*$. By Theorem \ref{thm:boundary form formula} and Proposition \ref{prop:unique nonsingular G in semibilinear form}, the matrix $J$ is of the form
 \[J=\begin{bmatrix}M' & N'\\ \tilde{M}' & \tilde{N}'\end{bmatrix}\]
 where $\tilde{M}', \tilde{N}'$ are associated with an adjoint $U^+$ and $M', N'$ with its complement $U_c^+$.
-Thus, we can identify $(P^\star:Q^\star)$ with the last $n$ rows of $J$. That is, identify $P^\star$ with $\tilde{M}'$, the lower-left $n\times n$ submatrix of $J$; and $Q^\star$ with $\tilde{N}'$, the lower-right $n\times n$ submatrix of $J$. Define $U^+$ by
-\[U^+x = P^\star \xi(a) + Q^\star \xi(b).\]
-Then we have found an adjoint $U^+$ to $U$.
+Thus, we can identify $(P^\star:Q^\star)$ with the last $n$ rows of $J$. That is, identify $P^\star$ with $\tilde{M}'$, the lower-left $n\times n$ submatrix of $J$, and $Q^\star$ with $\tilde{N}'$, the lower-right $n\times n$ submatrix of $J$. Define $U^+$ by
+\[U^+x = P^\star \xi(a) + Q^\star \xi(b),\]
+then we have found an adjoint $U^+$ to $U$.
 
 \subsection{Check $U^+$}
 By Theorem \ref{thm:condition iff adjoint}, with
@@ -848,21 +859,22 @@ we can check whether the $U^+$ found above is indeed a valid adjoint to $U$ by c
 where $B$ is as in (\ref{eq:B(t)}).
 
 \section{Implementation}
-The above construction algorithm is currently implemented in Julia 0.6.4. The main functions and unit tests currently occupy $600$ lines of code each. Key structs (or types, objects as in more traditional object-oriented programming languages) include linear differential operator and vector boundary form. A linear differential operator (Definition \ref{defn:linear differential operator}) is characterized by a list of functions $p_0,\ldots, p_n$ satisfying some conditions and a tuple $(a,b)$, where $a, b$ are the endpoints of the interval $[a,b]$. A vector boundary form (Definition \ref{defn:vectory boundary form}) is characterized by two $n\times n$ matrices $M, N$ such that $\rank(M:N)=n$. Appropriate tests are implemented to ensure the validity of these objects that would be defined by the user.
+The above construction algorithm has been implemented in Julia 0.6.4. The main functions and unit tests currently occupy $600$ lines of code each. Key structs (or types, objects as in more traditional object-oriented programming languages) include linear differential operator and vector boundary form. A linear differential operator (Definition \ref{defn:linear differential operator}) is characterized by a list of functions $p_0,\ldots, p_n$ satisfying some conditions and a tuple $(a,b)$, where $a, b$ are the endpoints of the interval $[a,b]$. A vector boundary form (Definition \ref{defn:vectory boundary form}) is characterized by two $n\times n$ matrices $M, N$ satisfying $\rank(M:N)=n$. Since these objects are user-defined, appropriate internal checks have been implemented to ensure the validity of user input.
 
-In order to enhance workflow transparency and user experience, the implementation also comes with a symbolic math feature, which allows the user to keep track of the various functions in the form of symbolic expression. Without this feature, a function defined as $f(x)=x+1$ will be displayed as a general method $f$ in Julia without information for the user as to what it actually is. With symbolic expression, $f$ will be displayed as $x+1$, verbatim. The workflow of symbolic expressions is parallel to that of Julia functions, ensuring that the user is able to view the symbolic expression of any output whenever desired.
+Systematic unit tests have been written for the algorithm. They examine whether the algorithm can correctly construct the objects (e.g., linear differential operators, vector boundary forms, and adjoint boundary conditions) when inputs are valid and correctly throw the pre-defined errors when inputs are invalid. For each order $n$ of the linear differential operator $L$ where $n$ ranges from $1$ to $10$, each main functionality of the algorithm is subjected to $10$ tests with randomized conditions. The algorithm has passed all tests written so far.
 
-Finding a valid adjoint boundary condition is as simple as calling one function that takes a linear differential operator, a vector boundary form $U$ corresponding to a homogeneous boundary condition, and a matrix containing derivatives of the functions $p_0,\ldots, p_n$. Yet in the spirit of maximizing workflow transparency, the implementation also contains a set of smaller functions that cover all outputs of each step in the algorithm.
+To use the algorithm, the user would first need to define a linear differential operator $L$, a vector boundary form $U$, and a matrix containing derivatives of the functions $p_0,\ldots, p_n$ in the definition of $L$. Then, finding a valid adjoint boundary condition is as simple as passing these objects to a function. To maximize workflow transparency, the implementation also contains many other functions that output various objects involved in the algorithm.
 
-Systematic unit tests have been written to test the definitions of the structs mentioned above and the functions involved in the construction algorithm. The unit tests include constructing valid linear differential operators from polynomials with random complex coefficients, constructing valid vector boundary forms from square matrices with random complex entries, and correctly throwing the pre-defined errors when necessary. Each test is repeated $10$ times for each order $n$ of the linear differential operator with $n$ ranging from $1$ to $10$. The algorithm has passed all current tests.
+To enhance user experience, the implementation also comes with a symbolic math feature, which allows the user to keep track of various functions in the form of symbolic expression. Without this feature, a function defined as $f(x)=10.52x^3 + 3.7x + 1$ will be displayed as a general method $f$ in Julia without information for the user as to what it actually is. With symbolic expression, $f$ will be displayed as $10.52x^3 + 3.7x + 1$, verbatim. The workflow involving symbolic expressions is parallel to that of Julia functions, ensuring that the user is able to view the symbolic expression of any output whenever desired.
 
 \section{Next steps}
 With regard to the semester 1 plan in the project proposal, the progress has been on track so far. The only difference being that literature review turns out to be proceeding simultaneously with algorithm implementation, instead of sequentially, as suggested in the plan.
 
-The next steps in the project would be to implement a non-classical transform pair ($2.15a$ to $2.16b$ in \cite{Smith2016}) that can be used to solve (complicated) initial-boundary value problems for which there does not exist a classical transform pair. Looking further ahead, when features associated with calculations are in place, we will begin implementing visualization features informed by what would be interesting to see in researches on partial differential equations.
+The next steps in the project would be to implement a non-classical transform pair ($2.15a$ to $2.16b$ in \cite[p.10]{Smith2016}) that can be used to solve (complicated) initial-boundary value problems for which there does not exist a classical transform pair. Looking further ahead, when features associated with calculations are in place, we will begin implementing graphics features that allow users to visualize objects of interest.
 
 \newpage
 \bibliographystyle{unsrt}
+% \bibliographystyle{alpha}
 \bibliography{C:/Bibtex/Capstone}
 \end{document}
 
