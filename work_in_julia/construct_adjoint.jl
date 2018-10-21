@@ -310,6 +310,27 @@ end
 #############################################################################
 # Functions
 #############################################################################
+# Construct L from symL by turning symPFunctions to Julia Function objects
+function get_L(symL::SymLinearDifferentialOperator)
+    symPFunctions, (a,b), t = symL.symPFunctions, symL.interval, symL.t
+    pFunctions = Array{Union{Function, Number}}(1,length(symPFunctions))
+    for i =1:length(symPFunctions)
+        symPFunc = symPFunctions[i]
+        if isa(symPFunc, SymPy.Sym) # if symPFunc is a SymPy.Sym object
+            if t in free_symbols(symPFunc)
+                pFunc = lambdify(symPFunc)
+            else
+                pFunc = N(symPFunc)
+            end
+        else # symPFunc could be a Number object
+            pFunc = symPFunc
+        end
+        pFunctions[i] = pFunc
+    end
+    L = LinearDifferentialOperator(pFunctions, (a,b), symL)
+    return L
+end
+
 # Calculate the rank of U, i.e., rank(M:N)
 function rank_of_U(U::VectorBoundaryForm)
     # Avoid InexactError() when taking hcat() and rank()

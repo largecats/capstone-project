@@ -801,7 +801,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \end{align*}
     or $P_1=PA$, $Q_1=QA$. Thus, 
     \[U_1^+y = P_1^*\eta(a) + Q_1^*\eta(b) = A^*P^*\eta(a) + A^*Q^*\eta(b)= A^* U^+y.\]
-    Since $A^\star$ is a linear map, $U^+y=0$ implies $U_1^+y=A^*U^+y=0$. Since $A^\star$ is nonsingular, $A^{\star^{-1}}$ is also a linear map, and $A^{\star^{-1}}U_1^+y = U^+y$. Thus, $U_1^+y=0$ implies $U^+y=A^{\star^{-1}}U_1^+y=0$. Therefore, $U^+y=0$ if and only if $U_1^+y=0$. This means that $U_1^+y=0$ is an adjoint boundary condition to $Ux=0$.
+    Since $A^\star$ is a linear map, $U^+y=0$ implies $U_1^+y=A^*U^+y=0$. Since $A^\star$ is nonsingular, $A^{\star^{-1}}$ is also a linear map, and $A^{\star^{-1}}U_1^+y = U^+y$. Thus, $U_1^+y=0$ implies $U^+y=A^{\star^{-1}}U_1^+y=0$. Therefore, $U^+y=0$ if and only if $U_1^+y=0$. Since $U^+y=0$ is adjoint to $Ux=0$, $U_1^+y=0$ is adjoint to $Ux=0$.
 \end{proof}
 
 To recapitulate, the boundary-form formula (Theorem \ref{thm:boundary form formula}) gives us the existence and construction of adjoint boundary condition, and Theorem \ref{thm:condition iff adjoint} gives us a way to check whether a proposed adjoint boundary condition is valid. Now, we are ready to propose a construction algorithm.

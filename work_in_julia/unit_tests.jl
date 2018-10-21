@@ -644,3 +644,47 @@ end
 # for n = 1:10
 #     println(test_vectorBoundaryFormDef(n, 10))
 # end
+
+# Test get_L(), which wraps a symL into L
+function test_get_L(n, k)
+    global results = [true]
+    global t = symbols("t")
+    global (a,b) = (0,1)
+
+    for counter = 1:k
+        println("Testing $counter")
+        # Variable p_k
+        println("Testing get_L(): p_k are Function")
+        (pFunctions, symPFunctions, pDerivMatrix) = generate_pFunctionsAndSymPFunctions(n; random = false, constant = false)
+        symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
+        L = LinearDifferentialOperator(pFunctions, (a,b), symL)
+        L1 = get_L(symL)
+        passed = false
+        if L == L1
+            passed = true
+        end
+        if passed
+            println("Passed!")
+        end
+        append!(results, passed)
+
+        # Constant coefficients
+        println("Testing get_L(): p_k are Constants")
+        (pFunctions, symPFunctions, pDerivMatrix) = generate_pFunctionsAndSymPFunctions(n; random = false, constant = true)
+        symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
+        L = LinearDifferentialOperator(pFunctions, (a,b), symL)
+        L1 = get_L(symL)
+        passed = false
+        if L == L1
+            passed = true
+        end
+        if passed
+            println("Passed!")
+        end
+        append!(results, passed)
+    end
+    return all(results)
+end
+# for n = 1:10
+#     println(test_get_L(n, 10))
+# end
