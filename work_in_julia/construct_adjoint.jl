@@ -1,19 +1,19 @@
-#############################################################################
+##########################################################################################################################################################
 # Course: YSC4103 MCS Capstone
 # Date created: 2018/10/07
 # Name: Linfan XIAO
 # Description: Algorithm to construct a valid adjoint boundary condition from a given (homogeneous) boundary condition based on Chapter 11 in Theory of Ordinary Differential Equations (Coddington & Levinson). The implementation uses Julia functions as main objects but supports symbolic expressions in the form of Julia struct attributes. If a function can produce both symbolic and non-symbolic outputs, the output type is controlled by get_output(...; symbolic = true/false). If a function produces only symbolic outputs, it is usually called get_symOutput().
-#############################################################################
+##########################################################################################################################################################
 # Importing packages
-#############################################################################
+##########################################################################################################################################################
 using SymPy
 # using Roots
 using Distributions
 using IntervalArithmetic
 using IntervalRootFinding
-#############################################################################
+##########################################################################################################################################################
 # Helper functions
-#############################################################################
+##########################################################################################################################################################
 # Check whether all elements in a not necessarily homogeneous array satisfy a given condition.
 function check_all(array, condition)
     for x in array
@@ -159,9 +159,9 @@ function get_polynomialDeriv(coeffList::Array, k::Int)
     end
     return get_polynomial(newCoeffList)
 end
-#############################################################################
+##########################################################################################################################################################
 # Structs
-#############################################################################
+##########################################################################################################################################################
 # A struct definition error type is the class of all errors in a struct definition
 struct StructDefinitionError <: Exception
     msg::String
@@ -307,9 +307,9 @@ function check_vectorBoundaryForm_input(U::VectorBoundaryForm)
     end
 end
 
-#############################################################################
+##########################################################################################################################################################
 # Functions
-#############################################################################
+##########################################################################################################################################################
 # Construct L from symL by turning symPFunctions to Julia Function objects
 function get_L(symL::SymLinearDifferentialOperator)
     symPFunctions, (a,b), t = symL.symPFunctions, symL.interval, symL.t
@@ -528,8 +528,8 @@ function get_adjoint(J)
     J = convert(Array{Complex}, J)
     PStar = J[(n+1):2n,1:n]
     QStar = J[(n+1):2n, (n+1):2n]
-    adjoint = VectorBoundaryForm(PStar, QStar)
-    return adjoint
+    adjointU = VectorBoundaryForm(PStar, QStar)
+    return adjointU
 end
 
 # Construct the symbolic expression of \xi = [x; x'; x''; ...], an n x 1 vector of derivatives of x(t)

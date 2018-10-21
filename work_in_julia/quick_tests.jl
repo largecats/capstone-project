@@ -1,9 +1,13 @@
-#############################################################################
+##########################################################################################################################################################
 # Date created: 2018/10/06
 # Description: Quick tests along the way.
-#############################################################################
+##########################################################################################################################################################
+# Import packages
+##########################################################################################################################################################
 using SymPy
-
+##########################################################################################################################################################
+# construct_adjoint.jl
+##########################################################################################################################################################
 t = symbols("t")
 symL = SymLinearDifferentialOperator([t+1 t+1 t+1], (0,1), t)
 L = LinearDifferentialOperator([t->t+1, t->t+1, t->t+1], (0,1), symL)
@@ -139,3 +143,29 @@ NCand = NCandRe + NCandIm*im
 U = VectorBoundaryForm(MCand, NCand)
 pDerivMatrix = [t->t+im t->t; t->t*im t->im]
 construct_validAdjoint(L, U, pDerivMatrix)
+
+##########################################################################################################################################################
+# transformPairs.jl
+##########################################################################################################################################################
+t = symbols("t")
+(a,b) = (0,1)
+symPFunctions = [t+im t*im t]
+pFunctions = [t->t+im t->t*im t->t]
+symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
+L = LinearDifferentialOperator(pFunctions, (a,b), symL)
+n = 2
+MCandRe = rand(Uniform(1.0,10.0), n, n)
+MCandIm = rand(Uniform(1.0,10.0), n, n)
+MCand = MCandRe + MCandIm*im
+NCandRe = rand(Uniform(1.0,10.0), n, n)
+NCandIm = rand(Uniform(1.0,10.0), n, n)
+NCand = NCandRe + NCandIm*im
+U = VectorBoundaryForm(MCand, NCand)
+pDerivMatrix = [t->t+im t->t; t->t*im t->im]
+adjointU = construct_validAdjoint(L, U, pDerivMatrix)
+
+lambda = 1.5
+(MPlus, MMinus) = get_MPlusMinus(adjointU, lambda)
+M = get_M(adjointU, lambda)
+f(x) = x
+(FPlus, FMinus) = get_FPlusMinus(adjointU, f, lambda)
