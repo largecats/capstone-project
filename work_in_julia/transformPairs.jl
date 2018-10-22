@@ -23,7 +23,7 @@ using HCubature
 function get_MPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
     bStar, betaStar = adjointU.M, adjointU.N
     n = size(bStar)[1]
-    alpha = e^(2pi*im/n) # shouldn't this be 1.0?
+    alpha = e^(2pi*im/n)
     MPlus = Array{Number}(n,n)
     MMinus = Array{Number}(n,n)
     for k = 1:n
