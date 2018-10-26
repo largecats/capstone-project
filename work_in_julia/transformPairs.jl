@@ -10,7 +10,6 @@ using SymPy
 # using QuadGK
 # using HCubature
 using ApproxFun
-
 include("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\construct_adjoint.jl")
 ##########################################################################################################################################################
 # Helper functions
@@ -151,42 +150,95 @@ end
 # Get the nth term in the Chebyshev series
 # The three values in xRange correspond to cases where x in [-1,1], x<-1, and x>1
 # https://en.wikipedia.org/wiki/Chebyshev_polynomials
-function get_ChebyshevSeriesTerm(n::Int64; xRange = "=", symbolic = true)
+# function get_ChebyshevSeriesTerm(n::Int64; xRange = "=", symbolic = true)
+#     if symbolic
+#         x = symbols("x")
+#         if xRange == "=" # |x| <= 1
+#             return cos(n*acos(x))
+#         elseif xRange == "<" # x < -1
+#             return (-1)^n * cosh(n*acosh(-x))
+#         elseif xRange == ">" # x > 1
+#             return cosh(n*acosh(x))
+#         end
+#     else
+#         if xRange == "="
+#             return x -> cos(n*acos(x))
+#         elseif xRange == "<"
+#             return x-> (-1)^n * cosh(n*acosh(-x))
+#         elseif xRange == ">"
+#             return x -> cosh(n*acosh(x))
+#         end
+#     end
+# end
+
+function get_ChebyshevSeriesTerm(n::Int64; xRange = "<=", symbolic = true)
     if symbolic
         x = symbols("x")
-        if xRange == "="
+        if xRange == "<=" # |x|<=1
             return cos(n*acos(x))
-        elseif xRange == "<"
-            return (-1)^n * cosh(n*acosh(-x))
-        elseif xRange == ">"
-            return cosh(n*acosh(x))
+        elseif xRange == ">" # |x| > 1
+            return 1/2*((x-sqrt(x^2-1))^n + (x+sqrt(x^2-1))^n)
+            # return 1/2*x^2*((sqrt(1-1/x^2)+1)^n + (sqrt(1-1/x^2))^n)
         end
     else
-        if xRange == "="
+        if xRange == "<="
             return x -> cos(n*acos(x))
-        elseif xRange == "<"
-            return x-> (-1)^n * cosh(n*acosh(-x))
         elseif xRange == ">"
-            return x -> cosh(n*acosh(x))
+            return x -> 1/2*((x-sqrt(x^2-1))^n + (x+sqrt(x^2-1))^n)
+            # return x -> 1/2*x^2*((sqrt(1-1/x^2)+1)^n + (sqrt(1-1/x^2))^n)
         end
     end
 end
 
 # Get the Chebyshev approximation of a function in range [a,b] as a Julia Function object or its symbolic expression
+# function get_ChebyshevApproximation(f::Function, a::Number, b::Number; symbolic = true)
+#     fCheb = ApproxFun.Fun(f, a..b) # Approximate f on [a,b] using chebyshev polynomials
+#     chebCoefficients = ApproxFun.coefficients(fCheb) # get coefficients of the Chebyshev polynomial
+#     n = length(chebCoefficients)
+#     if symbolic
+#         equal, smaller, greater = 0, 0, 0
+#         for i = 1:n
+#             chebCoefficient = chebCoefficients[i]
+#             equal += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "=", symbolic = symbolic)
+#             smaller += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "<", symbolic = symbolic)
+#             greater += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic)
+#         end
+#         # An array containing the symbolic expression of fChebApprox on [-1,1], (-\infty, -1), and (1, \infty)
+#         fChebApproxSymArray = [smaller, equal, greater]
+#         return fChebApproxSymArray
+#     else
+#         function fChebApprox(x)
+#             sum = 0
+#             for i = 1:n
+#                 chebCoefficient = chebCoefficients[i]
+#                 if x <= 1 && x >= -1
+#                     summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "=", symbolic = symbolic))
+#                 elseif x <= -1
+#                     summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "<", symbolic = symbolic))
+#                 elseif x >= 1
+#                     summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic))
+#                 end
+#                 sum = add_func(sum, summand)
+#             end
+#             return sum(x)
+#         end
+#         return fChebApprox
+#     end
+# end
+
 function get_ChebyshevApproximation(f::Function, a::Number, b::Number; symbolic = true)
     fCheb = ApproxFun.Fun(f, a..b) # Approximate f on [a,b] using chebyshev polynomials
     chebCoefficients = ApproxFun.coefficients(fCheb) # get coefficients of the Chebyshev polynomial
     n = length(chebCoefficients)
     if symbolic
-        equal, smaller, greater = 0, 0, 0
+        in, out = 0, 0 # |x| <= 1 or |x| > 1
         for i = 1:n
             chebCoefficient = chebCoefficients[i]
-            equal += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "=", symbolic = symbolic)
-            smaller += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "<", symbolic = symbolic)
-            greater += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic)
+            in += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "<=", symbolic = symbolic)
+            out += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic)
         end
-        # An array containing the symbolic expression of fChebApprox on [-1,1], (-\infty, -1), and (1, \infty)
-        fChebApproxSymArray = [smaller, equal, greater]
+        # An array containing the symbolic expression of fChebApprox on [-1,1] and (-\infty, -1) U (1, \infty)
+        fChebApproxSymArray = [in, out]
         return fChebApproxSymArray
     else
         function fChebApprox(x)
@@ -194,10 +246,8 @@ function get_ChebyshevApproximation(f::Function, a::Number, b::Number; symbolic 
             for i = 1:n
                 chebCoefficient = chebCoefficients[i]
                 if x <= 1 && x >= -1
-                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "=", symbolic = symbolic))
-                elseif x < -1
-                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "<", symbolic = symbolic))
-                elseif x > 1
+                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "<=", symbolic = symbolic))
+                else
                     summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic))
                 end
                 sum = add_func(sum, summand)
