@@ -169,3 +169,19 @@ lambda = 1.5
 M = get_M(adjointU, lambda)
 f(x) = x
 (FPlus, FMinus) = get_FPlusMinus(adjointU, f, lambda)
+
+f(x) = exp(-im*x)*(3x^2+cos(x)+1)
+fChebApproxSym = get_ChebyshevApproximation(f, 0, 1; symbolic = true)
+(subs(fChebApproxSym[1], free_symbols(fChebApproxSym[1]), 0))(0)
+fChebApprox = get_ChebyshevApproximation(f, 0, 1; symbolic = false)
+fChebApprox(0)
+
+
+integrate(t^2 * exp(t) * cos(t), t)
+integrate(exp(-im*t)*(3t^2+cos(t)+1), t)
+integrate(exp(-im*t)*(3t^2+cos(t)+1), (t,0,1))
+SymPy.integrate(exp(-im*t)*(3t^2+cos(t)+1), (t,0,im))
+6*e^(-im) - 2*im*e^(-im) + (e^(-im)*sin(1))/2 + (e^(-im)*cos(1))/2 + (im*e^(-im)*sin(1))/2 + 5*im
+g(x) = e^(-im*x)*(3x^2+cos(x)+1)
+quadgk(g, 0, 1)
+quadgk(g, 0, im)

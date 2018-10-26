@@ -1,3 +1,35 @@
+# f(x) = e^(-im*x)
+f(x)=x+im
+f(x) = x
+cF = Fun(f, 0..1) # Chebyshev approximation of f on [0,1]
+# Fun(Chebyshev(【0.0,1.0】),[0.5, 0.5]) means that f can be approximated by a Chebyshev polynomial with coefficients 0.5, 0.5
+# get coefficients of x as an array
+coefficients(cF)
+Fun(x->x, Chebyshev())
+g = Fun(Chebyshev(),[1,2,3]) # represents 1*1 + 2*x + 3*cos2arccosx
+l(x) = 1+2*x+3*cos(2*acos(x))
+l(0)
+g(0)
+using Gadfly
+plot(g, -1, 1)
+h = im*x-x
+roots(h)
+
+integrate(t^2 * exp(t) * cos(t), t)
+integrate(exp(-im*t)*(3t^2+cos(t)+1), t)
+integrate(exp(-im*t)*(3t^2+cos(t)+1), (t,0,1))
+SymPy.integrate(exp(-im*t)*(3t^2+cos(t)+1), (t,0,im))
+6*e^(-im) - 2*im*e^(-im) + (e^(-im)*sin(1))/2 + (e^(-im)*cos(1))/2 + (im*e^(-im)*sin(1))/2 + 5*im
+
+using NumericalMath
+using HCubature
+g(x) = exp(-im*x)*(3x^2+cos(x)+1)
+g(x) = e^(-im*x)*(3x^2+cos(x)+1)
+quadgk(g, 0, 1)
+quadgk(g, 0, im)
+# points = [0+0im, 1+0im]
+# line_integral(fz, points)
+
 t = symbols("t")
 p = SymFunction("p")(t)
 for counter = 2:6

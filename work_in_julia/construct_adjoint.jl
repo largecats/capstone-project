@@ -9,8 +9,9 @@
 using SymPy
 # using Roots
 using Distributions
-using IntervalArithmetic
-using IntervalRootFinding
+# using IntervalArithmetic
+# using IntervalRootFinding
+using ApproxFun
 ##########################################################################################################################################################
 # Helper functions
 ##########################################################################################################################################################
@@ -254,8 +255,9 @@ end
 function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
     pFunctions, (a,b), symL = L.pFunctions, L.interval, L.symL
     symPFunctions, t = symL.symPFunctions, symL.t
-    domainC = Complex(a..b, 0..0) # Domain [a,b] represented in the complex plane
+    # domainC = Complex(a..b, 0..0) # Domain [a,b] represented in the complex plane
     p0 = pFunctions[1]
+    # p0Chebyshev = Fun(p0, a..b) # Chebysev polynomial approximation of p0 on [a,b]
     if !check_all(pFunctions, pFunc -> (isa(pFunc, Function) || isa(pFunc, Number)))
         throw(StructDefinitionError(:"p_k should be Function or Number"))
     elseif length(pFunctions) != length(symPFunctions)
@@ -264,7 +266,8 @@ function check_linearDifferentialOperator_input(L::LinearDifferentialOperator)
         throw(StructDefinitionError(:"Intervals of L and symL do not match"))
     # # Assume p_k are in C^{n-k}. Check whether p0 vanishes on [a,b]. 
     # # roots() in IntervalRootFinding doesn't work if p0 is sth like t*im - 2*im. Neither does find_zero() in Roots.
-    # elseif (isa(p0, Function) && (!isempty(roots(p0, domainC, Newton)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
+    # # ApproxFun.roots() 
+    # elseif (isa(p0, Function) && (!isempty(roots(p0Chebyshev)) || all(x->x>b, roots(p0Chebyshev)) || all(x->x<b, roots(p0Chebyshev)) || p0(a) == 0 || p0(b) == 0)) || p0 == 0 
     #     throw(StructDefinitionError(:"p0 vanishes on [a,b]"))
     elseif !all(i -> check_func_sym_equal(pFunctions[i], symPFunctions[i], (a,b), t), 1:length(pFunctions))
         # throw(StructDefinitionError(:"symP_k does not agree with p_k on [a,b]"))
