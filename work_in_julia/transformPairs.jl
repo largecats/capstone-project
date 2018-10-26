@@ -157,17 +157,17 @@ function get_ChebyshevSeriesTerm(n::Int64; xRange = "=", symbolic = true)
         if xRange == "="
             return cos(n*acos(x))
         elseif xRange == "<"
-            return cosh(n*acosh(x))
-        elseif xRange == ">"
             return (-1)^n * cosh(n*acosh(-x))
+        elseif xRange == ">"
+            return cosh(n*acosh(x))
         end
     else
         if xRange == "="
             return x -> cos(n*acos(x))
-        elseif xRrange == "<"
-            return x-> cosh(n*acosh(x))
+        elseif xRange == "<"
+            return x-> (-1)^n * cosh(n*acosh(-x))
         elseif xRange == ">"
-            return x -> (-1)^n * cosh(n*acosh(-x))
+            return x -> cosh(n*acosh(x))
         end
     end
 end
@@ -176,14 +176,14 @@ end
 function get_ChebyshevApproximation(f::Function, a::Number, b::Number; symbolic = true)
     fCheb = ApproxFun.Fun(f, a..b) # Approximate f on [a,b] using chebyshev polynomials
     chebCoefficients = ApproxFun.coefficients(fCheb) # get coefficients of the Chebyshev polynomial
-    n = length(coefficients)
+    n = length(chebCoefficients)
     if symbolic
         equal, smaller, greater = 0, 0, 0
         for i = 1:n
             chebCoefficient = chebCoefficients[i]
-            equal += chebCoefficient * get_ChebyshevSeriesTerm(i; xRange = "=", symbolic = symbolic)
-            smaller += chebCoefficient * get_ChebyshevSeriesTerm(i; xRange = "<", symbolic = symbolic)
-            greater += chebCoefficient * get_ChebyshevSeriesTerm(i; xRange = ">", symbolic = symbolic)
+            equal += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "=", symbolic = symbolic)
+            smaller += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = "<", symbolic = symbolic)
+            greater += chebCoefficient * get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic)
         end
         # An array containing the symbolic expression of fChebApprox on [-1,1], (-\infty, -1), and (1, \infty)
         fChebApproxSymArray = [smaller, equal, greater]
@@ -193,16 +193,15 @@ function get_ChebyshevApproximation(f::Function, a::Number, b::Number; symbolic 
             sum = 0
             for i = 1:n
                 chebCoefficient = chebCoefficients[i]
-                if x <= 1 || x >= -1
-                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i; xRange = "=", symbolic = symbolic))
+                if x <= 1 && x >= -1
+                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "=", symbolic = symbolic))
                 elseif x < -1
-                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i; xRange = "<", symbolic = symbolic))
-                else # x > 1
-                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i; xRange = ">", symbolic = symbolic))
+                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "<", symbolic = symbolic))
+                elseif x > 1
+                    summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic))
                 end
                 sum = add_func(sum, summand)
             end
-            println(typeof(sum(x)))
             return sum(x)
         end
         return fChebApprox

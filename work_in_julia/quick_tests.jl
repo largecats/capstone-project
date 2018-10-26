@@ -185,3 +185,37 @@ SymPy.integrate(exp(-im*t)*(3t^2+cos(t)+1), (t,0,im))
 g(x) = e^(-im*x)*(3x^2+cos(x)+1)
 quadgk(g, 0, 1)
 quadgk(g, 0, im)
+
+f(x) = e^(-im*x)*(3x^2+cos(x)+1)
+cF = Fun(f, 0..1)
+cF(1)
+fChebApproxSym = get_ChebyshevApproximation(f, 0, 1; symbolic = true)
+fChebApproxSym[2]
+N(fChebApproxSym[2](1))
+fChebApprox = get_ChebyshevApproximation(f, 0, 1; symbolic = false)
+fChebApprox(1)
+
+cF = Fun(f, (-1)..1)
+cF(0)
+fChebApproxSym = get_ChebyshevApproximation(f, -1, 1; symbolic = true)
+fChebApproxSym[2]
+N(fChebApproxSym[2](0))
+fChebApprox = get_ChebyshevApproximation(f, -1, 1; symbolic = false)
+fChebApprox(0)
+
+
+cF = Fun(f, 2..3)
+cF(2)
+fChebApproxSym = get_ChebyshevApproximation(f, 2, 3; symbolic = true)
+fChebApproxSym[3]
+N(fChebApproxSym[3](2))
+fChebApprox = get_ChebyshevApproximation(f, 2, 3; symbolic = false)
+fChebApprox(2)
+
+cF = Fun(f, (-2)..(-1))
+cF(-1)
+fChebApproxSym = get_ChebyshevApproximation(f, -2, -1; symbolic = true)
+fChebApproxSym[1]
+N(fChebApproxSym[1](-1))
+fChebApprox = get_ChebyshevApproximation(f, -2, -1; symbolic = false)
+fChebApprox(-1)
