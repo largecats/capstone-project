@@ -245,7 +245,8 @@ function get_ChebyshevApproximation(f::Function, a::Number, b::Number; symbolic 
             sum = 0
             for i = 1:n
                 chebCoefficient = chebCoefficients[i]
-                if x <= 1 && x >= -1
+                # if x <= 1 && x >= -1
+                if abs(x) <= 1
                     summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = "<=", symbolic = symbolic))
                 else
                     summand = mult_func(chebCoefficient, get_ChebyshevSeriesTerm(i-1; xRange = ">", symbolic = symbolic))

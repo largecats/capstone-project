@@ -201,8 +201,8 @@ plot([f, cF, fChebApprox], -2, 2)
 cF = Fun(f, (-1)..1)
 cF(0)
 fChebApproxSym = get_ChebyshevApproximation(f, -1, 1; symbolic = true)
-fChebApproxSym[2]
-N(fChebApproxSym[2](0))
+fChebApproxSym[1]
+N(fChebApproxSym[1](0))
 fChebApprox = get_ChebyshevApproximation(f, -1, 1; symbolic = false)
 fChebApprox(0)
 plot([f, cF, fChebApprox], -2, 2)
@@ -210,8 +210,8 @@ plot([f, cF, fChebApprox], -2, 2)
 cF = Fun(f, 2..3)
 cF(2)
 fChebApproxSym = get_ChebyshevApproximation(f, 2, 3; symbolic = true)
-fChebApproxSym[3]
-N(fChebApproxSym[3](2))
+fChebApproxSym[2]
+N(fChebApproxSym[2](2))
 fChebApprox = get_ChebyshevApproximation(f, 2, 3; symbolic = false)
 fChebApprox(2)
 plot([f, cF, fChebApprox], 1, 4) # Why???
@@ -219,8 +219,8 @@ plot([f, cF, fChebApprox], 1, 4) # Why???
 cF = Fun(f, (-2)..(-1))
 cF(-1)
 fChebApproxSym = get_ChebyshevApproximation(f, -2, -1; symbolic = true)
-fChebApproxSym[1]
-N(fChebApproxSym[1](-1))
+fChebApproxSym[2]
+N(fChebApproxSym[2](-1))
 fChebApprox = get_ChebyshevApproximation(f, -2, -1; symbolic = false)
 fChebApprox(-1)
 plot([f, cF, fChebApprox], -2, 2) # Why???
