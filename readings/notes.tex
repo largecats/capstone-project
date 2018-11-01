@@ -1564,9 +1564,34 @@ Following the steps in the previous section gives $U^+$.
 \newpage
 \section{Smith-Fokas paper}
 \subsection{Implement the Fokas transform pairs (2.15a, 2.16a)}
-To compute the integral in 2.16a, 2.16b, we assume $f$ is a finite sum of Chebyshev polynomials. Then,
-\begin{align*}
-    \int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx &= 
-\end{align*}
+\subsubsection{Chebyshev polynomial approximation of functions on intervals}
+The Chebyshev polynomials are given by
+\[
+    T_n(x) =
+\begin{cases}
+    \cos(n\cdot \arccos(x))&\quad\mbox{$|x|\leq 1$}\\
+    \frac{1}{2}\left((x-\sqrt{x^2-1})^n + (x+\sqrt{x^2-1})^n\right)&\quad\mbox{$|x|>1$}.
+\end{cases}    
+\]
+Given a function $f$ on the interval $[a,b]$, we approximate $f$ using Chebyshev polynomial expansion. The Chebyshev approximation is best on $[-1,1]$. Thus, we scale $[a,b]$ to $[-1,1]$ say via $g:[a,b]\to [-1,1]$, obtain the Chebyshev coefficients $(a_n)_{n=0}^N$ there, and write the approximation of $f$ on $[a,b]$ as
+\[f\sim \sum_{n=0}^N a_n\cdot T_n(g(x)).\]
+
+\subsubsection{Contour tracing}
+Given a complex constant $a=r_a e^{i\theta_a}$, we find the boundary of
+\[\{\lambda\in\C: \real(a\lambda^n)>0\}.\]
+Suppose $\lambda=r_\lambda e^{i\theta_\lambda}$. Then
+\[a\lambda^n = r_ae^{i\theta_a}\cdot r_\lambda^n e^{ni\theta_\lambda} = r_a r_\lambda^n e^{i(\theta_a+n\theta_\lambda)} = r_ar_\lambda^n(\cos(\theta_a+n\theta_\lambda) + i\sin(\theta_a+n\theta_\lambda)).\]
+Thus,
+\[\real(a\lambda^n) = r_ar_\lambda^n \cos(\theta_a+n\theta_\lambda),\]
+where
+\[\real(a\lambda^n)>0 \iff \cos(\theta_a+n\theta_\lambda)>0.\]
+But
+\[\cos(\theta_a+n\theta_\lambda)>0 \iff \theta_a+n\theta_\lambda\in \bigcup_{k\in\Z}(2\pi k -\frac{\pi}{2},\,2\pi k + \frac{\pi}{2}),\]
+and so
+\[\theta_\lambda\in \bigcup_{k\in\Z}\left(\frac{2\pi k -\frac{\pi}{2}-\theta_a}{n},\,\frac{2\pi k + \frac{\pi}{2}-\theta_a}{n}\right).\]
+For example, when $a=-i$ and $n=3$,
+\[\theta_\lambda\in \bigcup_{k\in\Z}\left(\frac{2\pi k -\frac{\pi}{2}-(-\frac{\pi}{2})}{3},\,\frac{2\pi k + \frac{\pi}{2}-(-\frac{\pi}{2})}{3}\right) = \bigcup_{k\in\Z}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right).\]
+Thus, in $[0,2\pi)$,
+\[\theta_\lambda=\arg(\lambda)\in \bigcup_{k\in\{0,1,2\}}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right) = (0,\frac{\pi}{3})\cup (\frac{2\pi}{3}, \pi)\cup (\frac{4\pi}{3}, \frac{5\pi}{3}).\]
 \end{document}
 

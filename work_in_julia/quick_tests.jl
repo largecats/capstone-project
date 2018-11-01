@@ -220,3 +220,24 @@ fChebApprox = get_ChebyshevApproximation(f, (a,b); symbolic = false)
 fChebApprox(a)
 fChebApprox(b)
 plot([f, cF, fChebApprox], -3,0)
+
+using Gadfly
+function contour_tracing(a, n, sampleSize)
+    lambdaVec = []
+    for counter = 1:sampleSize
+        x = rand(Uniform(-10.0,10.0), 1, 1)[1]
+        y = rand(Uniform(-10.0,10.0), 1, 1)[1]
+        lambda = x + y*im
+        # if real(a*lambda^n)>0
+        # if cos(angle(a*lambda^n))>0
+        # if cos(angle(a) + n*angle(lambda))>0
+        # if cos(angle(a))*cos(n*angle(lambda)) > sin(angle(a))*sin(n*angle(lambda))
+            append!(lambdaVec, lambda)
+        end
+    end
+    plot(x=real(lambdaVec), y=imag(lambdaVec), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10))
+end
+sampleSize = 10000
+contour_tracing(-im, 3, sampleSize)
+contour_tracing(-im, 4, sampleSize)
+contour_tracing(-im, 5, sampleSize)
