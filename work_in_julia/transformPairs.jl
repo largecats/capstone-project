@@ -213,3 +213,59 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
         return finalChebApprox
     end
 end
+
+# Find the angles of the lines characterizing the boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0}
+# Where is a and S in L?
+# Improper integral?
+function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
+    thetaA = angle(a)
+    thetaStartList = Array{Number}(n,1) # List of where domain sectors start
+    thetaEndList = Array{Number}(n,1) # List of where domain sectors end
+    if symbolic
+        k = symbols("k")
+        counter = 0
+        while N(subs((2pi*k + pi/2 - thetaA)/n, k, counter)) < 2pi
+            theta1 = subs((2PI*k - PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
+            theta2 = subs((2PI*k + PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
+            counter += 1
+            thetaStartList[counter] = theta1
+            thetaEndList[counter] = theta2
+        end
+    else
+        k = 0
+        while (2pi*k + pi/2 - thetaA)/n < 2pi
+            theta1 = (2pi*k - pi/2 - thetaA)/n
+            theta2 = (2pi*k + pi/2 - thetaA)/n
+            k += 1
+            thetaStartList[k] = theta1
+            thetaEndList[k] = theta2
+        end
+    end
+    return (thetaStartList, thetaEndList)
+end
+
+function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, epsilon::Number; symbolic = true)
+    (thetaStartList, thetaEndList) = find_lambdaDomainBoundaryLineAngles(a, n; symbolic = symbolic)
+    boundary = []
+    for zero in zeroList
+        if any(i -> isapprox(zero, thetaStartList[i]) || isapprox(zero, thetaEndList[i]), 1:n) # If zero is on the boundary of some sector
+            # avoid it (normal vector, triangle?)
+            x0, y0 = real(zero), imag(zero)
+            k = y0/x0 # slope of l1: the line passing the origin and (x0, y0)
+            b = y0 + 1/k*x0 # intercept of the line l2 perpendicular to l1 and passes through (x0, y0)
+            f(x) = sqrt((x-x0)^2 + (-1/k*x + b - y0)^2)-epsilon
+            (x1, x2) = find_zeros(f, x0-epsilon, x0+epsilon)
+            y1, y2 = -1/k*x1 + b, -1/k*x2 + b
+            z1, z2 = x1 + im*y1, x2 + im*y2 # two points on l2 with distance epsilon to (x0, y0)
+            if any(i -> arg(z1)>thetaStartList[i] && arg(z1)<thetaEndList[i], 1:n) # if z1 is interior to the sector
+                # include z1 in the contour approximation
+            else
+                # include z2 in the contour approximation
+            end
+        # elseif any(i -> arg(zero)>thetaStartList[i] && arg(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors
+        #     # ignore it
+        elseif all(i -> arg(zero)<thetaStartList[i] || arg(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors
+            # avoid it
+        end
+    end
+end

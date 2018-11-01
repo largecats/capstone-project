@@ -228,7 +228,7 @@ function contour_tracing(a, n, sampleSize)
         x = rand(Uniform(-10.0,10.0), 1, 1)[1]
         y = rand(Uniform(-10.0,10.0), 1, 1)[1]
         lambda = x + y*im
-        # if real(a*lambda^n)>0
+        if real(a*lambda^n)>0
         # if cos(angle(a*lambda^n))>0
         # if cos(angle(a) + n*angle(lambda))>0
         # if cos(angle(a))*cos(n*angle(lambda)) > sin(angle(a))*sin(n*angle(lambda))
@@ -241,3 +241,8 @@ sampleSize = 10000
 contour_tracing(-im, 3, sampleSize)
 contour_tracing(-im, 4, sampleSize)
 contour_tracing(-im, 5, sampleSize)
+
+a =-im
+n = 3
+find_lambdaDomainBoundaryLineAngles(a, n; symbolic = true)
+find_lambdaDomainBoundaryLineAngles(a, n; symbolic = false)
