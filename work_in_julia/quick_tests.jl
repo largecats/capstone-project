@@ -246,3 +246,20 @@ a =-im
 n = 3
 find_lambdaDomainBoundaryLineAngles(a, n; symbolic = true)
 find_lambdaDomainBoundaryLineAngles(a, n; symbolic = false)
+
+theta = pi/2
+e^(im*theta)
+cos(theta) + im*sin(theta)
+
+quadgk(integrand, 0, 1)
+fz(z::Complex) = 1 ./ z
+points = [-1.0-1.0im, 1.0-1.0im, 1.0+0im, -1.0+1.0im, -1.0-1.0im]
+QuadGK.quadgk(fz, points)
+quadgk(fz, points[1], points[2], points[3], points[4], points[5])[1]
+using Gadfly
+plot(x->imag(e^(im*x)), 0,100)
+
+squareAroundZero = draw_squareAroundZero(3+1*im, 1)
+plot(x=real(squareAroundZero), y=imag(squareAroundZero), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+squareAroundZero = draw_squareAroundZero(3+1*im, 1/2)
+plot(x=real(squareAroundZero), y=imag(squareAroundZero), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))

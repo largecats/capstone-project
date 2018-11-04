@@ -7,9 +7,10 @@
 # Importing packages and modules
 ##########################################################################################################################################################
 using SymPy
-# using QuadGK
+using QuadGK
 # using HCubature
 using ApproxFun
+using Roots
 include("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\construct_adjoint.jl")
 ##########################################################################################################################################################
 # Helper functions
@@ -244,19 +245,40 @@ function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
     return (thetaStartList, thetaEndList)
 end
 
+# Returns an array of four complex numbers representing the vertices of a square around the zero; each vertex is of distance epsilon from the zero.
+function draw_squareAroundZero(zero::Number, epsilon::Number)
+    x0, y0 = real(zero), imag(zero)
+    # slope of l1: the line passing the origin and (x0, y0)
+    k = y0/x0 
+    if !isapprox(k,0)
+        # intercept of the line l2, which is perpendicular to l1 and passes through (x0, y0)
+        b = y0 + 1/k*x0
+        # Find (x1,y1), (x2,y2) on l2 with distance epsilon from (x0,y0)
+        f = x -> sqrt((x-x0)^2 + (-1/k*x + b - y0)^2)-epsilon
+        (x1, x2) = find_zeros(f, x0-2*epsilon, x0+2*epsilon)
+        y1, y2 = -1/k*x1 + b, -1/k*x2 + b
+    else # if k = 0
+        x1, x2 = x0, x0
+        y1, y2 = epsilon, -epsilon
+    end
+    # Find (x3,y3), (x4,y4) on l2 with distance epsilon from (x0,y0)
+    f = x -> sqrt((x-x0)^2 + (k*x-y0)^2)-epsilon
+    (x3, x4) = find_zeros(f, x0-2*epsilon, x0+2*epsilon)
+    y3, y4 = k*x3, k*x4
+    squareAroundZero = [x1+im*y1, x2+im*y2, x3+im*y3, x4+im*y4] 
+    return squareAroundZero
+end
+
 function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, epsilon::Number; symbolic = true)
     (thetaStartList, thetaEndList) = find_lambdaDomainBoundaryLineAngles(a, n; symbolic = symbolic)
-    boundary = []
+    gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus = [], [], [], []
+    # for i in 1:n
+    #     append!(gammaAPlus, )
+    # end
     for zero in zeroList
         if any(i -> isapprox(zero, thetaStartList[i]) || isapprox(zero, thetaEndList[i]), 1:n) # If zero is on the boundary of some sector
-            # avoid it (normal vector, triangle?)
-            x0, y0 = real(zero), imag(zero)
-            k = y0/x0 # slope of l1: the line passing the origin and (x0, y0)
-            b = y0 + 1/k*x0 # intercept of the line l2 perpendicular to l1 and passes through (x0, y0)
-            f(x) = sqrt((x-x0)^2 + (-1/k*x + b - y0)^2)-epsilon
-            (x1, x2) = find_zeros(f, x0-epsilon, x0+epsilon)
-            y1, y2 = -1/k*x1 + b, -1/k*x2 + b
-            z1, z2 = x1 + im*y1, x2 + im*y2 # two points on l2 with distance epsilon to (x0, y0)
+            # avoid it
+            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z3, z4 are on the sector boundary, z1, z2 are on the interior or exterior
             if any(i -> arg(z1)>thetaStartList[i] && arg(z1)<thetaEndList[i], 1:n) # if z1 is interior to the sector
                 # include z1 in the contour approximation
             else
