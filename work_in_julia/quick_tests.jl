@@ -263,3 +263,11 @@ squareAroundZero = draw_squareAroundZero(3+1*im, 1)
 plot(x=real(squareAroundZero), y=imag(squareAroundZero), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 squareAroundZero = draw_squareAroundZero(3+1*im, 1/2)
 plot(x=real(squareAroundZero), y=imag(squareAroundZero), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+f(x) = x*im - 2*im
+roots(f)
+fChebApprox = get_ChebyshevApproximation(f, (0,5); symbolic = false)
+roots(fChebApprox)
+using Gadfly
+plot(x = collect(0:.1:2), y=imag([fChebApprox(x) for x in collect(0:.1:2)]))
+plot(x = collect(0:.1:2), y = collect(0:.1:2))
