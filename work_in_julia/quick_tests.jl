@@ -241,6 +241,8 @@ sampleSize = 10000
 contour_tracing(-im, 3, sampleSize)
 contour_tracing(-im, 4, sampleSize)
 contour_tracing(-im, 5, sampleSize)
+contour_tracing(-im, 6, sampleSize)
+contour_tracing(-im, 7, sampleSize)
 
 a =-im
 n = 3
@@ -259,7 +261,7 @@ quadgk(fz, points[1], points[2], points[3], points[4], points[5])[1]
 using Gadfly
 plot(x->imag(e^(im*x)), 0,100)
 
-squareAroundZero = draw_squareAroundZero(3+1*im, 1)
+squareAroundZero = draw_squareAroundZero(-1+1*im, 1)
 plot(x=real(squareAroundZero), y=imag(squareAroundZero), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 squareAroundZero = draw_squareAroundZero(3+1*im, 1/2)
 plot(x=real(squareAroundZero), y=imag(squareAroundZero), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
@@ -271,3 +273,7 @@ roots(fChebApprox)
 using Gadfly
 plot(x = collect(0:.1:2), y=imag([fChebApprox(x) for x in collect(0:.1:2)]))
 plot(x = collect(0:.1:2), y = collect(0:.1:2))
+
+plot(x=real(gammaAPlus), y=imag(gammaAPlus), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+plot(x=real(gammaAMinus), y=imag(gammaAMinus), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))

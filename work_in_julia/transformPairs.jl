@@ -216,8 +216,6 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
 end
 
 # Find the angles of the lines characterizing the boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0}
-# Where is a and S in L?
-# Improper integral?
 function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
     thetaA = angle(a)
     thetaStartList = Array{Number}(n,1) # List of where domain sectors start
@@ -245,48 +243,120 @@ function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
     return (thetaStartList, thetaEndList)
 end
 
-# Returns an array of four complex numbers representing the vertices of a square around the zero; each vertex is of distance epsilon from the zero.
-function draw_squareAroundZero(zero::Number, epsilon::Number)
-    x0, y0 = real(zero), imag(zero)
-    # slope of l1: the line passing the origin and (x0, y0)
-    k = y0/x0 
-    if !isapprox(k,0)
-        # intercept of the line l2, which is perpendicular to l1 and passes through (x0, y0)
-        b = y0 + 1/k*x0
-        # Find (x1,y1), (x2,y2) on l2 with distance epsilon from (x0,y0)
-        f = x -> sqrt((x-x0)^2 + (-1/k*x + b - y0)^2)-epsilon
-        (x1, x2) = find_zeros(f, x0-2*epsilon, x0+2*epsilon)
-        y1, y2 = -1/k*x1 + b, -1/k*x2 + b
-    else # if k = 0
-        x1, x2 = x0, x0
-        y1, y2 = epsilon, -epsilon
+# Returns the minimum of the pairwise distances between zeroes in zeroList
+function get_epsilon(zeroList::Array)
+    if length(zeroList)>1
+        pairwiseDistance = [abs(z1-z2) for z1 in zeroList for z2 in zeroList]
+        pairwiseDistance = pairwiseDistance[pairwiseDistance.>0]
+        epsilon = minimum(pairwiseDistance)/3
+    else
+        epsilon = 1
     end
-    # Find (x3,y3), (x4,y4) on l2 with distance epsilon from (x0,y0)
-    f = x -> sqrt((x-x0)^2 + (k*x-y0)^2)-epsilon
-    (x3, x4) = find_zeros(f, x0-2*epsilon, x0+2*epsilon)
-    y3, y4 = k*x3, k*x4
-    squareAroundZero = [x1+im*y1, x2+im*y2, x3+im*y3, x4+im*y4] 
-    return squareAroundZero
+    return epsilon
 end
 
-function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, epsilon::Number; symbolic = true)
+# Returns an array of four complex numbers representing the vertices of a square around the zero; each vertex is of distance epsilon from the zero.
+function draw_squareAroundZero(zero::Number, epsilon::Number)
+    z = zero
+    theta = angle(zero)
+    z1 = z - epsilon*e^(im*theta)
+    z2 = z + epsilon*e^(im*(theta+pi/2))
+    z3 = z + epsilon*e^(im*theta)
+    z4 = z + epsilon*e^(im*(theta-pi/2))
+    return [z1, z2, z3, z4] # The four vertices of the square in clockwise order
+end
+
+function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity::Number; symbolic = true)
     (thetaStartList, thetaEndList) = find_lambdaDomainBoundaryLineAngles(a, n; symbolic = symbolic)
     gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus = [], [], [], []
-    # for i in 1:n
-    #     append!(gammaAPlus, )
-    # end
+    epsilon = get_epsilon(zeroList)
+    for i in 1:n
+        thetaStart = thetaStartList[i]
+        thetaEnd = thetaEndList[i]
+        initialPath = [infinity*e^(im*thetaEnd), 0+0*im, infinity*e^(im*thetaStart)]
+        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane
+            push!(gammaAPlus, initialPath) # list of lists
+        else
+            push!(gammaAMinus, initialPath)
+        end
+    end
     for zero in zeroList
-        if any(i -> isapprox(zero, thetaStartList[i]) || isapprox(zero, thetaEndList[i]), 1:n) # If zero is on the boundary of some sector
-            # avoid it
-            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z3, z4 are on the sector boundary, z1, z2 are on the interior or exterior
-            if any(i -> arg(z1)>thetaStartList[i] && arg(z1)<thetaEndList[i], 1:n) # if z1 is interior to the sector
-                # include z1 in the contour approximation
-            else
-                # include z2 in the contour approximation
+        if any(i -> isapprox(angle(zero), thetaStartList[i]) || isapprox(angle(zero), thetaEndList[i]), 1:n) # If zero is on the boundary of some sector
+            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
+            if any(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n) # if z2 is interior to any sector, include z4 in the contour approximation
+                # Find which sector z2 is in
+                index = find(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n)[1]
+                squarePath = [z1, z4, z3]
+                thetaStart = thetaStartList[index]
+                thetaEnd = thetaEndList[index]
+                # If this sector is in the upper half plane, deform gamma_a+
+                if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
+                    deformedPath = gammaAPlus[index]
+                    if any(i -> isapprox(zero, thetaStartList[i])) # if zero is on the starting boundary, insert the square path before 0+0*im
+                        splice!(deformedPath, 2:1, squarePath)
+                    else # if zero is on the ending boundary, insert the square path after 0+0*im
+                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                    end
+                    gammaAPlus[index] = deformedPath
+                else # if sector is in the lower half plane, deform gamma_a-
+                    deformedPath = gammaAMinus[index]
+                    if any(i -> isapprox(angle(zero), thetaStartList[i])) # if zero is on the starting boundary, insert the square path before 0+0*im
+                        splice!(deformedPath, 2:1, squarePath)
+                    else # if zero is on the ending boundary, insert the square path after 0+0*im
+                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                    end
+                    gammaAMinus[index] = deformedPath
+                end
+            else # if z2 is exterior, include z2 in the contour approximation
+                # Find which sector z4 is in
+                index = find(i -> angle(z4)>thetaStartList[i] && angle(z4)<thetaEndList[i], 1:n)[1]
+                squarePath = [z1, z2, z3]
+                thetaStart = thetaStartList[index]
+                thetaEnd = thetaEndList[index]
+                # If this sector is in the upper half plane, deform gamma_a+
+                if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
+                    deformedPath = gammaAPlus[index]
+                    if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
+                        splice!(deformedPath, 2:1, squarePath)
+                    else # if zero is on the ending boundary, insert the square path after 0+0*im
+                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                    end
+                    gammaAPlus[index] = deformedPath
+                else # if sector is in the lower half plane, deform gamma_a-
+                    deformedPath = gammaAMinus[index]
+                    if any(i -> isapprox(zero, thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
+                        splice!(deformedPath, 2:1, squarePath)
+                    else # if zero is on the ending boundary, insert the square path after 0+0*im
+                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                    end
+                    gammaAMinus[index] = deformedPath
+                end
             end
-        # elseif any(i -> arg(zero)>thetaStartList[i] && arg(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors
+            # Sort each sector's path in the order in which they are integrated over
+            gammaAs = [gammaAPlus, gammaAMinus]
+            for j = 1:length(gammaAs)
+                gammaA = gammaAs[j]
+                for k = 1:length(gammaA)
+                    inOutPath = gammaA[k]
+                    originIndex = find(x->x==0+0*im, inOutPath)[1]
+                    inwardPath = inOutPath[1:(originIndex-1)]
+                    outwardPath = inOutPath[(originIndex+1):length(inOutPath)]
+                    # Sort the inward path and outward path by the real part of the points in them
+                    if length(inwardPath) > 0
+                        inwardPath = sort(inwardPath, lt=(x,y)->isless(real(x), real(y)))
+                    end
+                    if length(outwardPath) > 0
+                        outwardPath = sort(outwardPath, lt=(x,y)->isless(real(x), real(y)))
+                    end
+                    inOutPath = vcat(inwardPath, 0+0*im, outwardPath)
+                    gammaA[k] = inOutPath
+                end
+                gammaAs[j] = gammaA 
+            end
+            gammaAPlus, gammaAMinus = gammaAs[1], gammaAs[2]
+        # elseif any(i -> angle(zero)>thetaStartList[i] && angle(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors
         #     # ignore it
-        elseif all(i -> arg(zero)<thetaStartList[i] || arg(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors
+        elseif all(i -> angle(zero)<thetaStartList[i] || angle(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors
             # avoid it
         end
     end
