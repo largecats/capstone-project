@@ -246,7 +246,7 @@ end
 # Returns the minimum of the pairwise distances between zeroes in zeroList
 function get_epsilon(zeroList::Array)
     if length(zeroList)>1
-        pairwiseDistance = [abs(z1-z2) for z1 in zeroList for z2 in zeroList]
+        pairwiseDistance = [norm(z1-z2) for z1 in zeroList for z2 in zeroList]
         pairwiseDistance = pairwiseDistance[pairwiseDistance.>0]
         epsilon = minimum(pairwiseDistance)/3
     else
@@ -341,12 +341,12 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                     originIndex = find(x->x==0+0*im, inOutPath)[1]
                     inwardPath = inOutPath[1:(originIndex-1)]
                     outwardPath = inOutPath[(originIndex+1):length(inOutPath)]
-                    # Sort the inward path and outward path by the real part of the points in them
+                    # Sort the inward path and outward path
                     if length(inwardPath) > 0
-                        inwardPath = sort(inwardPath, lt=(x,y)->isless(real(x), real(y)))
+                        inwardPath = sort(inwardPath, lt=(x,y)->!isless(norm(x), norm(y)))
                     end
                     if length(outwardPath) > 0
-                        outwardPath = sort(outwardPath, lt=(x,y)->isless(real(x), real(y)))
+                        outwardPath = sort(outwardPath, lt=(x,y)->isless(norm(x), norm(y)))
                     end
                     inOutPath = vcat(inwardPath, 0+0*im, outwardPath)
                     gammaA[k] = inOutPath
