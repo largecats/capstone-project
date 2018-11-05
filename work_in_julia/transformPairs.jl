@@ -292,7 +292,7 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                 # If this sector is in the upper half plane, deform gamma_a+
                 if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
                     deformedPath = gammaAPlus[index]
-                    if any(i -> isapprox(zero, thetaStartList[i])) # if zero is on the starting boundary, insert the square path before 0+0*im
+                    if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
                         splice!(deformedPath, 2:1, squarePath)
                     else # if zero is on the ending boundary, insert the square path after 0+0*im
                         splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
@@ -300,7 +300,7 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                     gammaAPlus[index] = deformedPath
                 else # if sector is in the lower half plane, deform gamma_a-
                     deformedPath = gammaAMinus[index]
-                    if any(i -> isapprox(angle(zero), thetaStartList[i])) # if zero is on the starting boundary, insert the square path before 0+0*im
+                    if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
                         splice!(deformedPath, 2:1, squarePath)
                     else # if zero is on the ending boundary, insert the square path after 0+0*im
                         splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)

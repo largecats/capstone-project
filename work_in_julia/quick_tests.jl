@@ -276,4 +276,16 @@ plot(x = collect(0:.1:2), y = collect(0:.1:2))
 
 plot(x=real(gammaAPlus), y=imag(gammaAPlus), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 plot(x=real(gammaAMinus), y=imag(gammaAMinus), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+a = -im
+n = 3
+symbolic = false
+infinity = 10
+zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im]
+plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+zeroList = [1+0*im, 1+sqrt(3)*im]
+plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+zeroList = [1+0*im, 1+sqrt(3)*im]
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
