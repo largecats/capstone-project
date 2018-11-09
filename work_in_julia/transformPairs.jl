@@ -11,6 +11,7 @@ using QuadGK
 # using HCubature
 using ApproxFun
 using Roots
+using Gadfly
 include("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\construct_adjoint.jl")
 ##########################################################################################################################################################
 # Helper functions
@@ -220,8 +221,8 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
     end
 end
 
-# Find the angles of the lines characterizing the boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [0, 2pi)
-function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
+# Find the angles of the lines characterizing gammaA, boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [0, 2pi)
+function find_gammaAAngles(a::Number, n::Int; symbolic = true)
     # thetaA = argument(a)
     thetaA = angle(a)
     thetaStartList = Array{Number}(n,1) # List of where domain sectors start
@@ -249,8 +250,22 @@ function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
     return (thetaStartList, thetaEndList)
 end
 
+# Plot the contour sectors by sampling points
+function contour_tracing(a::Number, n::Int, sampleSize::Int)
+    lambdaVec = []
+    for counter = 1:sampleSize
+        x = rand(Uniform(-10.0,10.0), 1, 1)[1]
+        y = rand(Uniform(-10.0,10.0), 1, 1)[1]
+        lambda = x + y*im
+        if real(a*lambda^n)>0
+            append!(lambdaVec, lambda)
+        end
+    end
+    plot(x=real(lambdaVec), y=imag(lambdaVec), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10))
+end
+
 # Find the argument of a complex number in [0,2pi)
-function argument(z)
+function argument(z::Number)
     if angle(z) >= 0
         return angle(z)
     else # Shift from (-pi, pi] to [0,2pi)
@@ -263,20 +278,50 @@ function argument(z)
     end
 end
 
-# Returns the minimum of the pairwise distances between zeroes in zeroList
-function get_epsilon(zeroList::Array)
-    if length(zeroList)>1
-        pairwiseDistance = [norm(z1-z2) for z1 in zeroList for z2 in zeroList]
-        pairwiseDistance = pairwiseDistance[pairwiseDistance.>0]
-        epsilon = minimum(pairwiseDistance)/3
+# Finds distance between a complex number and a line (given by an angle in [0,2pi)
+function find_distancePointLine(z::Number, theta::Number)
+    if theta >= 2pi && theta < 0
+        throw(error("Theta must be in [0,2pi)"))
     else
-        epsilon = 1
+        if isapprox(argument(z), theta)
+            return 0
+        else
+            x0, y0 = real(z), imag(z)
+            if isapprox(theta, pi/2) || isapprox(theta, 3pi/2)
+                return abs(x0)
+            elseif isapprox(theta, 0) || isapprox(theta, 2pi)
+                return abs(y0)
+            else
+                k = tan(theta)
+                x = (y0+1/k*x0)/(k+1/k)
+                y = k*x
+                distance = norm(z-(x+im*y))
+                return distance
+            end
+        end
     end
+end
+
+# Returns the minimum of the pairwise distances between zeroes in zeroList
+function find_epsilon(zeroList::Array, a::Number, n::Int)
+    (thetaStartList, thetaEndList) = find_gammaAAngles(a, n, symbolic = false)
+    # List of distances between each zero and each sector boundary
+    pointLineDistances = [find_distancePointLine(z, theta) for z in zeroList for theta in collect(Iterators.flatten([thetaStartList, thetaEndList]))]
+    pointLineDistances = pointLineDistances[pointLineDistances.>0]
+    if length(zeroList)>1
+        # List of distance between every two zeroes
+        pairwiseDistances = [norm(z1-z2) for z1 in zeroList for z2 in zeroList]
+        pairwiseDistances = pairwiseDistances[pairwiseDistances.>0]
+    else
+        pairwiseDistances = []
+    end
+    distances = collect(Iterators.flatten([pairwiseDistances, pointLineDistances]))
+    epsilon = minimum(distances)/2
     return epsilon
 end
 
 # Returns an array of four complex numbers representing the vertices of a square around the zero; each vertex is of distance epsilon from the zero.
-function draw_squareAroundZero(zero::Number, epsilon::Number)
+function draw_squareAroundZero(zero::Number, epsilon::Number, a::Number, n::Int)
     z = zero
     theta = argument(zero)
     z1 = z - epsilon*e^(im*theta)
@@ -286,10 +331,11 @@ function draw_squareAroundZero(zero::Number, epsilon::Number)
     return [z1, z2, z3, z4] # The four vertices of the square in clockwise order
 end
 
-function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity::Number; symbolic = true)
-    (thetaStartList, thetaEndList) = find_lambdaDomainBoundaryLineAngles(a, n; symbolic = symbolic)
+# Find the contours gamma_a+, gamma_a-, gamma_0+, gamma_0-
+function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
+    (thetaStartList, thetaEndList) = find_gammaAAngles(a, n; symbolic = false)
     gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus = [], [], [], []
-    epsilon = get_epsilon(zeroList)
+    epsilon = find_epsilon(zeroList, a, n)
     for i in 1:n
         thetaStart = thetaStartList[i]
         thetaEnd = thetaEndList[i]
@@ -307,7 +353,7 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
         # If zero is not at the origin
         if !isapprox(zero, 0+0*im)
             # Draw a square around it
-            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
+            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon, a, n) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
             # If zero is on the boundary of some sector
             if any(i -> isapprox(argument(zero), thetaStartList[i]) || isapprox(argument(zero), thetaEndList[i]), 1:n)
                 # if z2 is interior to any sector, include z4 in the contour approximation
@@ -327,13 +373,13 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                         end
                         gammaAPlus[index] = deformedPath
                     else # if sector is in the lower half plane, deform gamma_a-
-                        deformedPath = gammaAMinus[index]
+                        deformedPath = gammaAMinus[index-length(gammaAPlus)]
                         if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
                         else # if zero is on the ending boundary, insert the square path before 0+0*im
                             splice!(deformedPath, 2:1, squarePath) 
                         end
-                        gammaAMinus[index] = deformedPath
+                        gammaAMinus[index-length(gammaAPlus)] = deformedPath
                     end
                 else # if z2 is exterior, include z2 in the contour approximation
                     # Find which sector z4 is in
@@ -351,13 +397,13 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                         end
                         gammaAPlus[index] = deformedPath
                     else # if sector is in the lower half plane, deform gamma_a-
-                        deformedPath = gammaAMinus[index]
+                        deformedPath = gammaAMinus[index-length(gammaAPlus)]
                         if any(i -> isapprox(zero, thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
                         else # if zero is on the ending boundary, insert the square path before 0+0*im
                             splice!(deformedPath, 2:1, squarePath)
                         end
-                        gammaAMinus[index] = deformedPath
+                        gammaAMinus[index-length(gammaAPlus)] = deformedPath
                     end
                 end
                 # Sort each sector's path in the order in which they are integrated over
@@ -424,4 +470,17 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
             end
         end
     end
+    return (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus)
+end
+
+# Visualize gamma contour
+function plot_contour(gamma)
+    sectorPathList = Array{Any}(length(gamma),1)
+    for i = 1:length(gamma)
+        # For each sector path in the gamma contour, plot the points in the path and connect them in the order in which they appear in the path
+        sectorPath = gamma[i]
+        sectorPathList[i] = layer(x = real(sectorPath), y = imag(sectorPath), Geom.line(preserve_order=true))
+    end
+    coord = Coord.cartesian(xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0, fixed=true)
+    plot(coord, sectorList...)
 end

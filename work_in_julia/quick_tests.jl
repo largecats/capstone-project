@@ -289,7 +289,7 @@ plot(x = real(gammaAPlusPoints), y = imag(gammaAPlusPoints), Coord.Cartesian(ymi
 plot(x = real(gammaAPlusPoints), y = imag(gammaAPlusPoints), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true), Geom.line(preserve_order=true))
 
 a = -im
-n = 3
+n = 4
 symbolic = false
 infinity = 10
 zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
@@ -302,8 +302,9 @@ function plot_contour(contour)
     coord = Coord.cartesian(xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0, fixed=true)
     plot(coord, sectorList...)
 end
-gammaA = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
-plot_contour(gammaA)
+(gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
+gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
+plot_contour(gamma)
 
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
