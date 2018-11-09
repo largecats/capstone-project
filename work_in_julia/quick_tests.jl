@@ -257,6 +257,7 @@ quadgk(integrand, 0, 1)
 fz(z::Complex) = 1 ./ z
 points = [-1.0-1.0im, 1.0-1.0im, 1.0+0im, -1.0+1.0im, -1.0-1.0im]
 QuadGK.quadgk(fz, points)
+quadgk(fz, points...)[1]
 quadgk(fz, points[1], points[2], points[3], points[4], points[5])[1]
 using Gadfly
 plot(x->imag(e^(im*x)), 0,100)
@@ -315,3 +316,29 @@ plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax
 
 zeroList = [1+0*im, 1+sqrt(3)*im]
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+t = symbols("t")
+(a,b) = (0,1)
+symPFunctions = [t+im t*im t]
+pFunctions = [t->t+im t->t*im t->t]
+symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
+L = LinearDifferentialOperator(pFunctions, (a,b), symL)
+n = 2
+MCandRe = rand(Uniform(1.0,10.0), n, n)
+MCandIm = rand(Uniform(1.0,10.0), n, n)
+MCand = MCandRe + MCandIm*im
+NCandRe = rand(Uniform(1.0,10.0), n, n)
+NCandIm = rand(Uniform(1.0,10.0), n, n)
+NCand = NCandRe + NCandIm*im
+U = VectorBoundaryForm(MCand, NCand)
+pDerivMatrix = [t->t+im t->t; t->t*im t->im]
+adjointU = construct_validAdjoint(L, U, pDerivMatrix)
+lambda = 1.5
+(MPlus, MMinus) = get_MPlusMinus(adjointU)
+M = get_M(adjointU)
+f(x) = x
+(FPlus, FMinus) = get_FPlusMinus(adjointU, lambda)
+delta = get_delta(adjointU)
+delta(lambda)
+deltaChebApprox = Fun(delta, 0..1)
+roots(deltaChebApprox)

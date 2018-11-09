@@ -67,92 +67,126 @@ end
 ##########################################################################################################################################################
 # Functions
 ##########################################################################################################################################################
-# Get M+, M- in (2.13a), (2.13b)
-function get_MPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
+# Get M+, M- in (2.13a), (2.13b) as functions of lambda (for fixed adjointU)
+function get_MPlusMinus(adjointU::VectorBoundaryForm)
     bStar, betaStar = adjointU.M, adjointU.N
     n = size(bStar)[1]
     alpha = e^(2pi*im/n)
-    MPlus = Array{Number}(n,n)
-    MMinus = Array{Number}(n,n)
-    for k = 1:n
-        for j = 1:n
-            sumPlus, sumMinus = 0, 0
-            for r = 0:(n-1)
-                summandPlus = (-im*alpha^(k-1)*lambda)^r * bStar[j,r+1]
-                summandMinus = (-im*alpha^(k-1)*lambda)^r * betaStar[j,r+1]
-                sumPlus += summandPlus
-                sumMinus += summandMinus
+    function MPlus(lambda::Number)
+        MPlusMat = Array{Number}(n,n)
+        for k = 1:n
+            for j = 1:n
+                sumPlus = 0
+                for r = 0:(n-1)
+                    summandPlus = (-im*alpha^(k-1)*lambda)^r * bStar[j,r+1]
+                    sumPlus += summandPlus
+                end
+                MPlusMat[k,j] = sumPlus
             end
-            MPlus[k,j] = sumPlus
-            MMinus[k,j] = sumMinus
         end
+        return MPlusMat
+    end
+    function MMinus(lambda::Number)
+        MMinusMat = Array{Number}(n,n)
+        for k = 1:n
+            for j = 1:n
+                sumMinus = 0
+                for r = 0:(n-1)
+                    summandMinus = (-im*alpha^(k-1)*lambda)^r * betaStar[j,r+1]
+                    sumMinus += summandMinus
+                end
+                MMinusMat[k,j] = sumMinus
+            end
+        end
+        return MMinusMat
     end
     return (MPlus, MMinus)
 end
 
-# Get M in (2.14)
-function get_M(adjointU::VectorBoundaryForm, lambda::Number)
+# Get M in (2.14) as a function of lambda (for fixed adjointU)
+function get_M(adjointU::VectorBoundaryForm)
     bStar, betaStar = adjointU.M, adjointU.N
     n = size(bStar)[1]
     alpha = e^(2pi*im/n)
-    (MPlus, MMinus) = get_MPlusMinus(adjointU, lambda)
-    M = Array{Number}(n,n)
-    for k = 1:n
-        for j = 1:n
-            M[k,j] = MPlus[k,j] + MMinus[k,j] * e^(-im*alpha^(k-1)*lambda) # M+ is just M+(lambda)
+    function M(lambda::Number)
+        (MPlus, MMinus) = get_MPlusMinus(adjointU)
+        MPlusLambda, MMinusLambda = MPlus(lambda), MMinus(lambda)
+        MLambda = Array{Number}(n,n)
+        for k = 1:n
+            for j = 1:n
+                MLambda[k,j] = MPlusLambda[k,j] + MMinusLambda[k,j] * e^(-im*alpha^(k-1)*lambda)
+            end
         end
+        return MLambda
     end
     return M
 end
 
-# Get Xlj, which is the (n-1)*(n-1) submatrix of M with (1,1) entry the (l + 1, j + 1) entry of M
-function get_Xlj(adjointU::VectorBoundaryForm, M::Array, lambda::Number, l::Number, j::Number)
+# Get delta := det(M) as a function of M(lambda) (for fixed adjointU)
+function get_delta(adjointU::VectorBoundaryForm)
+    function delta(lambda::Number)
+        M = get_M(adjointU)
+        MLambda = convert(Array{Complex}, M(lambda))
+        return det(MLambda)
+    end
+    return delta
+end
+
+# Get Xlj, which is the (n-1)*(n-1) submatrix of M(lambda) with (1,1) entry the (l + 1, j + 1) entry of M(lambda), as a function of lambda (for fixed adjointU, M, l, j)
+function get_Xlj(adjointU::VectorBoundaryForm, M::Function, l::Number, j::Number)
     bStar, betaStar = adjointU.M, adjointU.N
     n = size(bStar)[1]
-    M = get_M(adjointU, lambda)
-    MBlock = [M M; M M]
-    Xlj = MBlock[(l+1):(l+1+n-2), (j+1):(j+1+n-2)]
+    M = get_M(adjointU)
+    function Xlj(lambda::Number)
+        MLambda = M(lambda)
+        MLambdaBlock = [MLambda MLambda; MLambda MLambda]
+        XljLambda = MLambdaBlock[(l+1):(l+1+n-2), (j+1):(j+1+n-2)]
+        return XljLambda
+    end
     return Xlj
 end
 
-# Get F+, F- in (2.16a), (2.16b)
-function get_FPlusMinus(adjointU::VectorBoundaryForm, f::Union{Function, Number}, lambda::Number)
+# Get F+, F- in (2.16a), (2.16b) as a function of f
+function get_FPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
     bStar, betaStar = adjointU.M, adjointU.N
     n = size(bStar)[1]
     alpha = e^(2pi*im/n)
-    (MPlus, MMinus) = get_MPlusMinus(adjointU, lambda)
-    M = get_M(adjointU, lambda)
-    M = convert(Array{Complex}, M)
-    delta = det(M)
-    sumPlus, sumMinus = 0, 0
-    for l = 1:n
-        summandPlus, summandMinus = 0, 0
-        for j = 1:n
-            Xlj = get_Xlj(adjointU, M, lambda, l, j)
-            Xlj = convert(Array{Complex}, Xlj)
-            g(x) = e^(-im*alpha^(l-1)*lambda*x)
-            integrand = mult_func(g, f) # Assume f is a finite sum of Chebyshev polynomials
-            summandPlus = (-1)^((n-1)*(l+j)) * det(Xlj) * MPlus[1,j] * (quadgk(integrand, 0, 1)[1])
-            summandMinus = (-1)^((n-1)*(l+j)) * det(Xlj) * MMinus[1,j] * (quadgk(integrand, 0, 1)[1])
+    (MPlus, MMinus) = get_MPlusMinus(adjointU)
+    MPlusLambda, MMinusLambda = MPlus(lambda), MMinus(lambda)
+    M = get_M(adjointU)
+    MLambda = convert(Array{Complex}, M(lambda))
+    deltaLambda = det(MLambda) # or deltaLambda = (get_delta(adjointU))(lambda)
+    function FPlus(f)
+        sumPlus = 0
+        for l = 1:n
+            summandPlus = 0
+            for j = 1:n
+                Xlj = get_Xlj(adjointU, M, l, j)
+                XljLambda = convert(Array{Complex}, Xlj(lambda))
+                g(x) = e^(-im*alpha^(l-1)*lambda*x)
+                integrand = mult_func(g, f) # Assume f is a finite sum of Chebyshev polynomials
+                summandPlus = (-1)^((n-1)*(l+j)) * det(XljLambda) * MPlusLambda[1,j] * (quadgk(integrand, 0, 1)[1])
+            end
+            sumPlus += summandPlus
         end
-        sumPlus += summandPlus
-        sumMinus += summandMinus
+        return 1/(2pi*deltaLambda)*sumPlus
     end
-    FPlus = 1/(2pi*delta)*sumPlus
-    FMinus = (-e^(-im*lambda))/(2pi*delta)*sumMinus
+    function FMinus(f)
+        sumMinus = 0
+        for l = 1:n
+            summandMinus = 0
+            for j = 1:n
+                Xlj = get_Xlj(adjointU, M, l, j)
+                XljLambda = convert(Array{Complex}, Xlj(lambda))
+                g(x) = e^(-im*alpha^(l-1)*lambda*x)
+                integrand = mult_func(g, f) # Assume f is a finite sum of Chebyshev polynomials
+                summandMinus = (-1)^((n-1)*(l+j)) * det(XljLambda) * MMinusLambda[1,j] * (quadgk(integrand, 0, 1)[1])
+            end
+            sumMinus += summandMinus
+        end
+        return (-e^(-im*lambda))/(2pi*deltaLambda)*sumMinus
+    end
     return (FPlus, FMinus)
-end
-
-# Get F in (2.15a)
-function get_F(adjointU::VectorBoundaryForm, f::Union{Function, Number}, lambda::Number)
-    (FPlus, FMinus) = get_FPlusMinus(adjointU, f, lambda)
-    # if lambda in GammaPlusDomain return FPlus else return FMinus
-end
-
-# Get f in (2.15b)
-function get_f(Gamma)
-    f(x) = e^(im*lambda*x) # * integral(Gamma, F(lambda))
-    return f
 end
 
 # Returns a function that shifts a point in the interval [a,b] to a corresponding point in [-1,1]
@@ -483,4 +517,37 @@ function plot_contour(gamma)
     end
     coord = Coord.cartesian(xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0, fixed=true)
     plot(coord, sectorList...)
+end
+
+
+# Get F in (2.15a) as a function of f
+function get_F(adjointU::VectorBoundaryForm, lambda::Number, a::Number, n::Number, zeroList::Array, infinity::Number)
+    (FPlus, FMinus) = get_FPlusMinus(adjointU, lambda)
+    (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
+    function F(f)
+        # if lambda in gamma+ return FPlus(f); if lambda in gamma- return FMinus(f)
+        if lambda in gammaAPlus || lambda in gamma0Plus
+            return FPlus(f)
+        elseif lambda in gammaAMinus || lambda in gamma0Minus
+            return FMinus(f)
+        end
+    end
+    return F
+end
+
+# Get f in (2.15b)
+function get_f(gamma::Array, F::Function)
+    function f(x)
+        if x <= 1 && x >= 0
+            return quadgk(e^(im*lambda*x)*F(lambda), gamma...)[1]
+        else
+            return 0
+        end
+    end
+    return f
+end
+
+# Function to find (approximately) zeroes of delta(lambda)
+function get_zeroList(delta::Function, infinity::Number)
+    # deltaChebApprox = Fun(delta, ) # domain of lambda is the complex plane, approximated by the circle of radius infinity
 end
