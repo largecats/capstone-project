@@ -52,12 +52,6 @@ function evaluate(func::Union{Function,Number}, x::Number, t=nothing)
     end
 end
 
-# Assign string as variable name
-function assign(s::AbstractString, v::Any)
-    s=Symbol(s)
-    @eval (($s) = ($v))
-end
-
 # Generate two-integer partitions of n
 function partition(n::Int)
     output = []

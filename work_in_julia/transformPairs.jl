@@ -14,6 +14,11 @@ using Roots
 include("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\construct_adjoint.jl")
 ##########################################################################################################################################################
 # Helper functions
+# Assign string as variable name
+function assign(s::AbstractString, v::Any)
+    s=Symbol(s)
+    @eval (($s) = ($v))
+end
 ##########################################################################################################################################################
 # Function addition (f + g)(x) := f(x) + g(x)
 function add_func(f::Union{Number, Function}, g::Union{Number, Function})
@@ -215,8 +220,9 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
     end
 end
 
-# Find the angles of the lines characterizing the boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0}
+# Find the angles of the lines characterizing the boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [0, 2pi)
 function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
+    # thetaA = argument(a)
     thetaA = angle(a)
     thetaStartList = Array{Number}(n,1) # List of where domain sectors start
     thetaEndList = Array{Number}(n,1) # List of where domain sectors end
@@ -243,6 +249,20 @@ function find_lambdaDomainBoundaryLineAngles(a::Number, n::Int; symbolic = true)
     return (thetaStartList, thetaEndList)
 end
 
+# Find the argument of a complex number in [0,2pi)
+function argument(z)
+    if angle(z) >= 0
+        return angle(z)
+    else # Shift from (-pi, pi] to [0,2pi)
+        argument = 2pi + angle(z) # This is in (0,2pi]
+        if isapprox(argument, 2pi)
+            return 0
+        else
+            return argument
+        end
+    end
+end
+
 # Returns the minimum of the pairwise distances between zeroes in zeroList
 function get_epsilon(zeroList::Array)
     if length(zeroList)>1
@@ -258,7 +278,7 @@ end
 # Returns an array of four complex numbers representing the vertices of a square around the zero; each vertex is of distance epsilon from the zero.
 function draw_squareAroundZero(zero::Number, epsilon::Number)
     z = zero
-    theta = angle(zero)
+    theta = argument(zero)
     z1 = z - epsilon*e^(im*theta)
     z2 = z + epsilon*e^(im*(theta+pi/2))
     z3 = z + epsilon*e^(im*theta)
@@ -286,20 +306,21 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
     for zero in zeroList
         # If zero is not at the origin
         if !isapprox(zero, 0+0*im)
+            # Draw a square around it
+            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
             # If zero is on the boundary of some sector
-            if any(i -> isapprox(angle(zero), thetaStartList[i]) || isapprox(angle(zero), thetaEndList[i]), 1:n)
-                (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
+            if any(i -> isapprox(argument(zero), thetaStartList[i]) || isapprox(argument(zero), thetaEndList[i]), 1:n)
                 # if z2 is interior to any sector, include z4 in the contour approximation
-                if any(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n)
+                if any(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)
                     # Find which sector z2 is in
-                    index = find(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n)[1]
+                    index = find(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)[1]
                     squarePath = [z1, z4, z3]
                     thetaStart = thetaStartList[index]
                     thetaEnd = thetaEndList[index]
                     # If this sector is in the upper half plane, deform gamma_a+
                     if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
                         deformedPath = gammaAPlus[index]
-                        if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                        if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
                         else # if zero is on the ending boundary, insert the square path before 0+0*im
                             splice!(deformedPath, 2:1, squarePath)
@@ -307,7 +328,7 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                         gammaAPlus[index] = deformedPath
                     else # if sector is in the lower half plane, deform gamma_a-
                         deformedPath = gammaAMinus[index]
-                        if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                        if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
                         else # if zero is on the ending boundary, insert the square path before 0+0*im
                             splice!(deformedPath, 2:1, squarePath) 
@@ -316,14 +337,14 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                     end
                 else # if z2 is exterior, include z2 in the contour approximation
                     # Find which sector z4 is in
-                    index = find(i -> angle(z4)>thetaStartList[i] && angle(z4)<thetaEndList[i], 1:n)[1]
+                    index = find(i -> argument(z4)>thetaStartList[i] && argument(z4)<thetaEndList[i], 1:n)[1]
                     squarePath = [z1, z2, z3]
                     thetaStart = thetaStartList[index]
                     thetaEnd = thetaEndList[index]
                     # If this sector is in the upper half plane, deform gamma_a+
                     if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
                         deformedPath = gammaAPlus[index]
-                        if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                        if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
                         else # if zero is on the ending boundary, insert the square path before 0+0*im
                             splice!(deformedPath, 2:1, squarePath)
@@ -361,10 +382,15 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                     gammaAs[j] = gammaA 
                 end
                 gammaAPlus, gammaAMinus = gammaAs[1], gammaAs[2]
-            # elseif any(i -> angle(zero)>thetaStartList[i] && angle(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors
-            #     # ignore it
-            elseif all(i -> angle(zero)<thetaStartList[i] || angle(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors
-                # avoid it
+            # elseif any(i -> argument(zero)>thetaStartList[i] && argument(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors, ignore it
+            elseif all(i -> argument(zero)<thetaStartList[i] || argument(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors, avoid it
+                squarePath = [z1, z2, z3, z4, z1] # counterclockwise
+                # If zero is in the upper half plane, add squarePath to gamma_0+
+                if argument(zero) >= 0 && argument(zero) <= pi
+                    push!(gamma0Plus, squarePath)
+                else # If zero is in the lower half plane, add squarePath to gamma_0-
+                    push!(gamma0Minus, squarePath)
+                end
             end
         else # If zero is at the origin, we deform all sectors
             # deform each sector in gamma_a+
@@ -378,7 +404,7 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                     index = index[1]
                 end
                 # create a path around zero (origin); the origin will not be the first or the last point in any sector boundary because it was initialized to be in the middle, and only insertions are performed. Moreover, the boundary path has already been sorted into the order in which they will be integrated over, so squarePath defined below has deformedPath[index-1], deformedPath[index+1] in the correct order.
-                squarePath = [epsilon*e^(im*angle(deformedPath[index-1])), epsilon*e^(im*angle(deformedPath[index+1]))]
+                squarePath = [epsilon*e^(im*argument(deformedPath[index-1])), epsilon*e^(im*argument(deformedPath[index+1]))]
                 # replace the zero with the deformed path
                 deleteat!(deformedPath, index) # delete the origin
                 splice!(deformedPath, index:(index-1), squarePath) # insert squarePath into where the origin was at
@@ -391,12 +417,11 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
                 else
                     index = index[1]
                 end
-                squarePath = [epsilon*e^(im*angle(deformedPath[index-1])), epsilon*e^(im*angle(deformedPath[index+1]))]
+                squarePath = [epsilon*e^(im*argument(deformedPath[index-1])), epsilon*e^(im*argument(deformedPath[index+1]))]
                 deleteat!(deformedPath, index)
                 splice!(deformedPath, index:(index-1), squarePath)
                 gammaAMinus[i] = deformedPath
             end
         end
-        
     end
 end

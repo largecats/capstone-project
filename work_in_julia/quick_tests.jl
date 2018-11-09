@@ -245,7 +245,7 @@ contour_tracing(-im, 6, sampleSize)
 contour_tracing(-im, 7, sampleSize)
 
 a =-im
-n = 3
+n = 4
 find_lambdaDomainBoundaryLineAngles(a, n; symbolic = true)
 find_lambdaDomainBoundaryLineAngles(a, n; symbolic = false)
 
@@ -281,7 +281,30 @@ a = -im
 n = 3
 symbolic = false
 infinity = 10
-zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im]
+zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
+gammaAPlusPoints = collect(Iterators.flatten([list for list in gammaAPlus]))
+# Draw points
+plot(x = real(gammaAPlusPoints), y = imag(gammaAPlusPoints), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+# Draw line
+plot(x = real(gammaAPlusPoints), y = imag(gammaAPlusPoints), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true), Geom.line(preserve_order=true))
+
+a = -im
+n = 3
+symbolic = false
+infinity = 10
+zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
+function plot_contour(contour)
+    sectorList = Array{Any}(length(contour),1)
+    for i = 1:length(contour)
+        sector = contour[i]
+        sectorList[i] = layer(x = real(sector), y = imag(sector), Geom.line(preserve_order=true))
+    end
+    coord = Coord.cartesian(xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0, fixed=true)
+    plot(coord, sectorList...)
+end
+gammaA = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
+plot_contour(gammaA)
+
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 
