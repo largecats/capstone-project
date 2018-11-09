@@ -273,91 +273,130 @@ function find_lambdaDomainBoundary(a::Number, n::Int, zeroList::Array, infinity:
     for i in 1:n
         thetaStart = thetaStartList[i]
         thetaEnd = thetaEndList[i]
+        # Initialize the boundary of each sector with the ending boundary, the origin, and the starting boundary (start and end boundaries refer to the order in which the boundaries are passed if tracked counterclockwise)
         initialPath = [infinity*e^(im*thetaEnd), 0+0*im, infinity*e^(im*thetaStart)]
-        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane
+        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane, push the boundary path to gamma_a+
             push!(gammaAPlus, initialPath) # list of lists
-        else
+        else # if in the lower half plane, push the boundary path to gamma_a-
             push!(gammaAMinus, initialPath)
         end
     end
+    # Sort the zeroList by norm, so that possible zero at the origin comes last. We need to leave the origin in the initial path unchanged until we have finished dealing with all non-origin zeros because we use the origin in the initial path as a reference point to decide where to insert the deformed path
+    zeroList = sort(zeroList, lt=(x,y)->!isless(norm(x), norm(y)))
     for zero in zeroList
-        if any(i -> isapprox(angle(zero), thetaStartList[i]) || isapprox(angle(zero), thetaEndList[i]), 1:n) # If zero is on the boundary of some sector
-            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
-            if any(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n) # if z2 is interior to any sector, include z4 in the contour approximation
-                # Find which sector z2 is in
-                index = find(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n)[1]
-                squarePath = [z1, z4, z3]
-                thetaStart = thetaStartList[index]
-                thetaEnd = thetaEndList[index]
-                # If this sector is in the upper half plane, deform gamma_a+
-                if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
-                    deformedPath = gammaAPlus[index]
-                    if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
-                        splice!(deformedPath, 2:1, squarePath)
-                    else # if zero is on the ending boundary, insert the square path after 0+0*im
-                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+        # If zero is not at the origin
+        if !isapprox(zero, 0+0*im)
+            # If zero is on the boundary of some sector
+            if any(i -> isapprox(angle(zero), thetaStartList[i]) || isapprox(angle(zero), thetaEndList[i]), 1:n)
+                (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
+                # if z2 is interior to any sector, include z4 in the contour approximation
+                if any(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n)
+                    # Find which sector z2 is in
+                    index = find(i -> angle(z2)>thetaStartList[i] && angle(z2)<thetaEndList[i], 1:n)[1]
+                    squarePath = [z1, z4, z3]
+                    thetaStart = thetaStartList[index]
+                    thetaEnd = thetaEndList[index]
+                    # If this sector is in the upper half plane, deform gamma_a+
+                    if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
+                        deformedPath = gammaAPlus[index]
+                        if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                        else # if zero is on the ending boundary, insert the square path before 0+0*im
+                            splice!(deformedPath, 2:1, squarePath)
+                        end
+                        gammaAPlus[index] = deformedPath
+                    else # if sector is in the lower half plane, deform gamma_a-
+                        deformedPath = gammaAMinus[index]
+                        if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                        else # if zero is on the ending boundary, insert the square path before 0+0*im
+                            splice!(deformedPath, 2:1, squarePath) 
+                        end
+                        gammaAMinus[index] = deformedPath
                     end
-                    gammaAPlus[index] = deformedPath
-                else # if sector is in the lower half plane, deform gamma_a-
-                    deformedPath = gammaAMinus[index]
-                    if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
-                        splice!(deformedPath, 2:1, squarePath)
-                    else # if zero is on the ending boundary, insert the square path after 0+0*im
-                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                else # if z2 is exterior, include z2 in the contour approximation
+                    # Find which sector z4 is in
+                    index = find(i -> angle(z4)>thetaStartList[i] && angle(z4)<thetaEndList[i], 1:n)[1]
+                    squarePath = [z1, z2, z3]
+                    thetaStart = thetaStartList[index]
+                    thetaEnd = thetaEndList[index]
+                    # If this sector is in the upper half plane, deform gamma_a+
+                    if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
+                        deformedPath = gammaAPlus[index]
+                        if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                        else # if zero is on the ending boundary, insert the square path before 0+0*im
+                            splice!(deformedPath, 2:1, squarePath)
+                        end
+                        gammaAPlus[index] = deformedPath
+                    else # if sector is in the lower half plane, deform gamma_a-
+                        deformedPath = gammaAMinus[index]
+                        if any(i -> isapprox(zero, thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
+                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                        else # if zero is on the ending boundary, insert the square path before 0+0*im
+                            splice!(deformedPath, 2:1, squarePath)
+                        end
+                        gammaAMinus[index] = deformedPath
                     end
-                    gammaAMinus[index] = deformedPath
                 end
-            else # if z2 is exterior, include z2 in the contour approximation
-                # Find which sector z4 is in
-                index = find(i -> angle(z4)>thetaStartList[i] && angle(z4)<thetaEndList[i], 1:n)[1]
-                squarePath = [z1, z2, z3]
-                thetaStart = thetaStartList[index]
-                thetaEnd = thetaEndList[index]
-                # If this sector is in the upper half plane, deform gamma_a+
-                if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
-                    deformedPath = gammaAPlus[index]
-                    if any(i -> isapprox(angle(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
-                        splice!(deformedPath, 2:1, squarePath)
-                    else # if zero is on the ending boundary, insert the square path after 0+0*im
-                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
+                # Sort each sector's path in the order in which they are integrated over
+                gammaAs = [gammaAPlus, gammaAMinus]
+                for j = 1:length(gammaAs)
+                    gammaA = gammaAs[j]
+                    for k = 1:length(gammaA)
+                        inOutPath = gammaA[k]
+                        originIndex = find(x->x==0+0*im, inOutPath)[1]
+                        inwardPath = inOutPath[1:(originIndex-1)]
+                        outwardPath = inOutPath[(originIndex+1):length(inOutPath)]
+                        # Sort the inward path and outward path
+                        if length(inwardPath) > 0
+                            inwardPath = sort(inwardPath, lt=(x,y)->!isless(norm(x), norm(y)))
+                        end
+                        if length(outwardPath) > 0
+                            outwardPath = sort(outwardPath, lt=(x,y)->isless(norm(x), norm(y)))
+                        end
+                        inOutPath = vcat(inwardPath, 0+0*im, outwardPath)
+                        gammaA[k] = inOutPath
                     end
-                    gammaAPlus[index] = deformedPath
-                else # if sector is in the lower half plane, deform gamma_a-
-                    deformedPath = gammaAMinus[index]
-                    if any(i -> isapprox(zero, thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path before 0+0*im
-                        splice!(deformedPath, 2:1, squarePath)
-                    else # if zero is on the ending boundary, insert the square path after 0+0*im
-                        splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
-                    end
-                    gammaAMinus[index] = deformedPath
+                    gammaAs[j] = gammaA 
                 end
+                gammaAPlus, gammaAMinus = gammaAs[1], gammaAs[2]
+            # elseif any(i -> angle(zero)>thetaStartList[i] && angle(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors
+            #     # ignore it
+            elseif all(i -> angle(zero)<thetaStartList[i] || angle(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors
+                # avoid it
             end
-            # Sort each sector's path in the order in which they are integrated over
-            gammaAs = [gammaAPlus, gammaAMinus]
-            for j = 1:length(gammaAs)
-                gammaA = gammaAs[j]
-                for k = 1:length(gammaA)
-                    inOutPath = gammaA[k]
-                    originIndex = find(x->x==0+0*im, inOutPath)[1]
-                    inwardPath = inOutPath[1:(originIndex-1)]
-                    outwardPath = inOutPath[(originIndex+1):length(inOutPath)]
-                    # Sort the inward path and outward path
-                    if length(inwardPath) > 0
-                        inwardPath = sort(inwardPath, lt=(x,y)->!isless(norm(x), norm(y)))
-                    end
-                    if length(outwardPath) > 0
-                        outwardPath = sort(outwardPath, lt=(x,y)->isless(norm(x), norm(y)))
-                    end
-                    inOutPath = vcat(inwardPath, 0+0*im, outwardPath)
-                    gammaA[k] = inOutPath
+        else # If zero is at the origin, we deform all sectors
+            # deform each sector in gamma_a+
+            for i = 1:length(gammaAPlus)
+                deformedPath = gammaAPlus[i]
+                # find the index of the zero at origin in the sector boundary path
+                index = find(j -> isapprox(deformedPath[j], 0+0*im), 1:length(deformedPath))
+                # If the origin is not in the path, then it has already been bypassed
+                if isempty(index)
+                else # If not, find its index
+                    index = index[1]
                 end
-                gammaAs[j] = gammaA 
+                # create a path around zero (origin); the origin will not be the first or the last point in any sector boundary because it was initialized to be in the middle, and only insertions are performed. Moreover, the boundary path has already been sorted into the order in which they will be integrated over, so squarePath defined below has deformedPath[index-1], deformedPath[index+1] in the correct order.
+                squarePath = [epsilon*e^(im*angle(deformedPath[index-1])), epsilon*e^(im*angle(deformedPath[index+1]))]
+                # replace the zero with the deformed path
+                deleteat!(deformedPath, index) # delete the origin
+                splice!(deformedPath, index:(index-1), squarePath) # insert squarePath into where the origin was at
+                gammaAPlus[i] = deformedPath
             end
-            gammaAPlus, gammaAMinus = gammaAs[1], gammaAs[2]
-        # elseif any(i -> angle(zero)>thetaStartList[i] && angle(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors
-        #     # ignore it
-        elseif all(i -> angle(zero)<thetaStartList[i] || angle(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors
-            # avoid it
+            # deform each sector in gamma_a-
+            for i = 1:length(gammaAMinus)
+                deformedPath = gammaAMinus[i]
+                if isempty(index)
+                else
+                    index = index[1]
+                end
+                squarePath = [epsilon*e^(im*angle(deformedPath[index-1])), epsilon*e^(im*angle(deformedPath[index+1]))]
+                deleteat!(deformedPath, index)
+                splice!(deformedPath, index:(index-1), squarePath)
+                gammaAMinus[i] = deformedPath
+            end
         end
+        
     end
 end
