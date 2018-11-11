@@ -238,11 +238,14 @@ function contour_tracing(a, n, sampleSize)
     plot(x=real(lambdaVec), y=imag(lambdaVec), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10))
 end
 sampleSize = 10000
-contour_tracing(-im, 3, sampleSize)
-contour_tracing(-im, 4, sampleSize)
-contour_tracing(-im, 5, sampleSize)
-contour_tracing(-im, 6, sampleSize)
-contour_tracing(-im, 7, sampleSize)
+# a = 1-im
+a = -im
+myPlot = contour_tracing(a, 5, 10, sampleSize)
+draw(PDF("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\contourTracingPlot.pdf"), myPlot)
+contour_tracing(a, 4, 10, sampleSize)
+contour_tracing(a, 5, 10, sampleSize)
+contour_tracing(a, 6, 10, sampleSize)
+contour_tracing(a, 7, 10, sampleSize)
 
 a =-im
 n = 4
@@ -290,7 +293,7 @@ plot(x = real(gammaAPlusPoints), y = imag(gammaAPlusPoints), Coord.Cartesian(ymi
 plot(x = real(gammaAPlusPoints), y = imag(gammaAPlusPoints), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true), Geom.line(preserve_order=true))
 
 a = -im
-n = 4
+n = 3
 symbolic = false
 infinity = 10
 zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
@@ -305,7 +308,8 @@ function plot_contour(contour)
 end
 (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
 gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
-plot_contour(gamma)
+myPlot = plot_contour(gamma, 10)
+draw(PDF("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\contourPlot.pdf"), myPlot)
 
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))

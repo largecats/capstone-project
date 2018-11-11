@@ -146,8 +146,8 @@ function get_Xlj(adjointU::VectorBoundaryForm, M::Function, l::Number, j::Number
     return Xlj
 end
 
-# Get F+, F- in (2.16a), (2.16b) as a function of f
-function get_FPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
+# Get F+_\lambda, F-_\lambda in (2.16a), (2.16b) as a function of f
+function get_FPlusMinusLambda(adjointU::VectorBoundaryForm, lambda::Number)
     bStar, betaStar = adjointU.M, adjointU.N
     n = size(bStar)[1]
     alpha = e^(2pi*im/n)
@@ -156,7 +156,7 @@ function get_FPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
     M = get_M(adjointU)
     MLambda = convert(Array{Complex}, M(lambda))
     deltaLambda = det(MLambda) # or deltaLambda = (get_delta(adjointU))(lambda)
-    function FPlus(f)
+    function FPlusLambda(f)
         sumPlus = 0
         for l = 1:n
             summandPlus = 0
@@ -171,7 +171,7 @@ function get_FPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
         end
         return 1/(2pi*deltaLambda)*sumPlus
     end
-    function FMinus(f)
+    function FMinusLambda(f)
         sumMinus = 0
         for l = 1:n
             summandMinus = 0
@@ -186,7 +186,7 @@ function get_FPlusMinus(adjointU::VectorBoundaryForm, lambda::Number)
         end
         return (-e^(-im*lambda))/(2pi*deltaLambda)*sumMinus
     end
-    return (FPlus, FMinus)
+    return (FPlusLambda, FMinusLambda)
 end
 
 # Returns a function that shifts a point in the interval [a,b] to a corresponding point in [-1,1]
@@ -255,7 +255,7 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
     end
 end
 
-# Find the angles of the lines characterizing gammaA, boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [0, 2pi)
+# Find the angles of the lines characterizing gammaA, boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [-2pi, 2pi). We make the interval like this to ensure that [z is in a sector] <=> [angle(z) >= sectorStart && angle(z) <= sectorEnd]
 function find_gammaAAngles(a::Number, n::Int; symbolic = true)
     # thetaA = argument(a)
     thetaA = angle(a)
@@ -279,32 +279,34 @@ function find_gammaAAngles(a::Number, n::Int; symbolic = true)
             k += 1
             thetaStartList[k] = theta1
             thetaEndList[k] = theta2
+            # thetaStartList[k] = argument(e^(im*theta1))
+            # thetaEndList[k] = argument(e^(im*theta2))
         end
     end
     return (thetaStartList, thetaEndList)
 end
 
 # Plot the contour sectors by sampling points
-function contour_tracing(a::Number, n::Int, sampleSize::Int)
+function contour_tracing(a::Number, n::Int, infinity::Number, sampleSize::Int)
     lambdaVec = []
     for counter = 1:sampleSize
-        x = rand(Uniform(-10.0,10.0), 1, 1)[1]
-        y = rand(Uniform(-10.0,10.0), 1, 1)[1]
+        x = rand(Uniform(-infinity,infinity), 1, 1)[1]
+        y = rand(Uniform(-infinity,infinity), 1, 1)[1]
         lambda = x + y*im
         if real(a*lambda^n)>0
             append!(lambdaVec, lambda)
         end
     end
-    plot(x=real(lambdaVec), y=imag(lambdaVec), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10))
+    plot(x=real(lambdaVec), y=imag(lambdaVec), Coord.Cartesian(ymin=-infinity,ymax=infinity, xmin=-infinity, xmax=infinity, fixed = true))
 end
 
 # Find the argument of a complex number in [0,2pi)
 function argument(z::Number)
-    if angle(z) >= 0
+    if angle(z) >= 0 # in [0,pi]
         return angle(z)
-    else # Shift from (-pi, pi] to [0,2pi)
-        argument = 2pi + angle(z) # This is in (0,2pi]
-        if isapprox(argument, 2pi)
+    else # Shift from (-pi, 0] to [pi,2pi)
+        argument = 2pi + angle(z) # This is in (pi,2pi]
+        if isapprox(argument, 2pi) # Change to [pi,2pi)
             return 0
         else
             return argument
@@ -336,20 +338,28 @@ function find_distancePointLine(z::Number, theta::Number)
     end
 end
 
-# Returns the minimum of the pairwise distances between zeroes in zeroList
+# Returns the minimum of the pairwise distances between zeroes in zeroList that are not interior to any sector (since interior zeroes would not matter in any way)
 function find_epsilon(zeroList::Array, a::Number, n::Int)
     (thetaStartList, thetaEndList) = find_gammaAAngles(a, n, symbolic = false)
-    # List of distances between each zero and each sector boundary
-    pointLineDistances = [find_distancePointLine(z, theta) for z in zeroList for theta in collect(Iterators.flatten([thetaStartList, thetaEndList]))]
-    pointLineDistances = pointLineDistances[pointLineDistances.>0]
-    if length(zeroList)>1
+    thetaStartEndList = collect(Iterators.flatten([thetaStartList, thetaEndList]))
+    truncZeroList = []
+    for zero in zeroList
+        # If zero is interior to any sector, discard it
+        if any(i -> pointInSector(zero, (thetaStartList[i], thetaEndList[i])), 1:n)
+        else # If not, append it to truncZeroList
+            append!(truncZeroList, zero)
+        end
+    end
+    pointLineDistances = [find_distancePointLine(z, theta) for z in zeroList for theta in thetaStartEndList]
+    if length(truncZeroList)>1
         # List of distance between every two zeroes
-        pairwiseDistances = [norm(z1-z2) for z1 in zeroList for z2 in zeroList]
-        pairwiseDistances = pairwiseDistances[pairwiseDistances.>0]
+        pairwiseDistances = [norm(z1-z2) for z1 in zeroList for z2 in truncZeroList]
     else
         pairwiseDistances = []
     end
     distances = collect(Iterators.flatten([pairwiseDistances, pointLineDistances]))
+    # Distances of nearly 0 could be instances where the zero is actually on some sector boundary
+    distances = filter(x -> !isapprox(x, 0; atol = 1e-10), distances)
     epsilon = minimum(distances)/2
     return epsilon
 end
@@ -358,11 +368,19 @@ end
 function draw_squareAroundZero(zero::Number, epsilon::Number, a::Number, n::Int)
     z = zero
     theta = argument(zero)
+    # theta = angle(zero)
     z1 = z - epsilon*e^(im*theta)
     z2 = z + epsilon*e^(im*(theta+pi/2))
     z3 = z + epsilon*e^(im*theta)
     z4 = z + epsilon*e^(im*(theta-pi/2))
     return [z1, z2, z3, z4] # The four vertices of the square in clockwise order
+end
+
+# Determine whether a point z is in a sector characterized by a start angle and an end angle
+function pointInSector(z::Number, sectorAngles::Tuple{Number, Number})
+    (startAngle, endAngle) = sectorAngles
+    # angle(z) would work if it's in the sector with positive real parts and both positive and negative imaginary parts; argument(z) would work if it's in the sector with negative real parts and both positive and negative imaginary parts
+    return (angle(z) >= startAngle && angle(z) <= endAngle) || (argument(z) >= startAngle && argument(z) <= endAngle)
 end
 
 # Find the contours gamma_a+, gamma_a-, gamma_0+, gamma_0-
@@ -375,7 +393,7 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
         thetaEnd = thetaEndList[i]
         # Initialize the boundary of each sector with the ending boundary, the origin, and the starting boundary (start and end boundaries refer to the order in which the boundaries are passed if tracked counterclockwise)
         initialPath = [infinity*e^(im*thetaEnd), 0+0*im, infinity*e^(im*thetaStart)]
-        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane, push the boundary path to gamma_a+
+        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane, push the boundary path to gamma_a+; this wouldn't make sense if the sector spanns both the upper half and the lower half plane
             push!(gammaAPlus, initialPath) # list of lists
         else # if in the lower half plane, push the boundary path to gamma_a-
             push!(gammaAMinus, initialPath)
@@ -384,14 +402,16 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
     # Sort the zeroList by norm, so that possible zero at the origin comes last. We need to leave the origin in the initial path unchanged until we have finished dealing with all non-origin zeros because we use the origin in the initial path as a reference point to decide where to insert the deformed path
     zeroList = sort(zeroList, lt=(x,y)->!isless(norm(x), norm(y)))
     for zero in zeroList
+        println(zero)
         # If zero is not at the origin
         if !isapprox(zero, 0+0*im)
             # Draw a square around it
             (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon, a, n) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
             # If zero is on the boundary of some sector
             if any(i -> isapprox(argument(zero), thetaStartList[i]) || isapprox(argument(zero), thetaEndList[i]), 1:n)
+                # if any(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)
                 # if z2 is interior to any sector, include z4 in the contour approximation
-                if any(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)
+                if any(i -> pointInSector(z2, (thetaStartList[i], thetaEndList[i])), 1:n)
                     # Find which sector z2 is in
                     index = find(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)[1]
                     squarePath = [z1, z4, z3]
@@ -462,8 +482,11 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
                     gammaAs[j] = gammaA 
                 end
                 gammaAPlus, gammaAMinus = gammaAs[1], gammaAs[2]
-            # elseif any(i -> argument(zero)>thetaStartList[i] && argument(zero)<thetaEndList[i], 1:n) # If zero is in any of the sectors, ignore it
-            elseif all(i -> argument(zero)<thetaStartList[i] || argument(zero)>thetaEndList[i], 1:n) # If zero is exterior to the sectors, avoid it
+            # If zero is in any of the sectors, ignore it
+            # elseif any(i -> argument(zero)>thetaStartList[i] && argument(zero)<thetaEndList[i], 1:n)
+            # elseif all(i -> argument(zero)<thetaStartList[i] || argument(zero)>thetaEndList[i], 1:n)
+            # If zero is exterior to the sectors, avoid it
+            elseif all(i -> !pointInSector(zero, (thetaStartList[i], thetaEndList[i])), 1:n)
                 squarePath = [z1, z2, z3, z4, z1] # counterclockwise
                 # If zero is in the upper half plane, add squarePath to gamma_0+
                 if argument(zero) >= 0 && argument(zero) <= pi
@@ -508,40 +531,42 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
 end
 
 # Visualize gamma contour
-function plot_contour(gamma)
+function plot_contour(gamma::Array, infinity::Number)
     sectorPathList = Array{Any}(length(gamma),1)
     for i = 1:length(gamma)
         # For each sector path in the gamma contour, plot the points in the path and connect them in the order in which they appear in the path
         sectorPath = gamma[i]
         sectorPathList[i] = layer(x = real(sectorPath), y = imag(sectorPath), Geom.line(preserve_order=true))
     end
-    coord = Coord.cartesian(xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0, fixed=true)
-    plot(coord, sectorList...)
+    coord = Coord.cartesian(xmin=-infinity, xmax=infinity, ymin=-infinity, ymax=infinity, fixed=true)
+    plot(coord, sectorPathList...)
 end
 
 
-# Get F in (2.15a) as a function of f
-function get_F(adjointU::VectorBoundaryForm, lambda::Number, a::Number, n::Number, zeroList::Array, infinity::Number)
-    (FPlus, FMinus) = get_FPlusMinus(adjointU, lambda)
+# Get F in (2.15a) as a function of lambda
+function get_F(f::Function, adjointU::VectorBoundaryForm, a::Number, n::Number, zeroList::Array, infinity::Number)
     (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
-    function F(f)
-        # if lambda in gamma+ return FPlus(f); if lambda in gamma- return FMinus(f)
+    function F(lambda::Number)
+        (FPlusLambda, FMinusLambda) = get_FPlusMinusLambda(adjointU, lambda)
+        # if lambda in gamma+ return FPlusLambda(f); if lambda in gamma- return FMinusLambda(f)
         if lambda in gammaAPlus || lambda in gamma0Plus
-            return FPlus(f)
+            return FPlusLambda(f)
         elseif lambda in gammaAMinus || lambda in gamma0Minus
-            return FMinus(f)
+            return FMinusLambda(f)
         end
     end
     return F
 end
 
-# Get f in (2.15b)
+# Get f in (2.15b) as a function of x. The argument gamma may be cconstructed as follows.
+# (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
+# gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
 function get_f(gamma::Array, F::Function)
-    function f(x)
+    function f(x::Number)
         if x <= 1 && x >= 0
             return quadgk(e^(im*lambda*x)*F(lambda), gamma...)[1]
         else
-            return 0
+            throw(error("f_x(F) is only defined for x in [0,1]"))
         end
     end
     return f
@@ -550,4 +575,15 @@ end
 # Function to find (approximately) zeroes of delta(lambda)
 function get_zeroList(delta::Function, infinity::Number)
     # deltaChebApprox = Fun(delta, ) # domain of lambda is the complex plane, approximated by the circle of radius infinity
+end
+
+# Function to solve a given IBVP with given L and U
+function solve_IBVP(L::LinearDifferentialOperator, U::VectorBoundaryForm, pDerivMatrix::Array, lambda::Number, a::Number, zeroList::Array, infinity::Number, f::Function) # f is given
+    n = length(L.pFunctions)-1
+    adjointU = construct_validAdjoint(L, U, pDerivMatrix)
+    F = get_F(f, adjointU, a, n, zeroList, infinity)
+    function q(x,t)
+        return f(e^(-a*lambda^n*F(lambda)))
+    end
+    return q
 end
