@@ -368,11 +368,18 @@ plot(x=real(gammaAMinus[2]), y=imag(gammaAMinus[2]), Coord.Cartesian(ymin=-10,ym
 plot(x=real(gammaAMinus[3]), y=imag(gammaAMinus[3]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 
-a = -im
-n = 4
+# a = -im
+a = 1
+n = 3
 infinity = 10
-zeroList = [3+3*sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
-zeroList = [3+3*sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im, 1]
+zeroList = [3+3*sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im, 3, -5, 4-4*im*sqrt(3)]
 (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity; nGon = 8)
 gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
+myPlot = plot_contour(gammaAPlus, 10)
+myPlot = plot_contour(gammaAMinus, 10)
+plot_contour(gamma0Plus, 10)
+plot_contour(gamma0Minus, 10)
 myPlot = plot_contour(gamma, 10)
+draw(PDF("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\contourPlot.pdf"), myPlot)
+
+myPlot = contour_tracing(-im, 5, 10, 10000)

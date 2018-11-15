@@ -58,7 +58,7 @@ The ``Fokas method''\cite{Fokas2008} extends the idea of transform pairs to solv
     \label{fig:non-classical_transform}
 \end{figure}
 
-To characterize this class of IBVPs that can be solved by the Fokas method\cite[p.9]{Smith2016}, we first define linearly independent boundary forms\footnote{These terms will be defined systematically in the report.} $B_j: C^\infty[0,1]\to \C$ (where $C^\infty[0,1]$ denotes the class of real-valued functions differentiable for all orders on $[0,1]$) by
+To characterize the class of IBVPs that can be solved by the Fokas method\cite[p.9]{Smith2016}, we first define linearly independent boundary forms\footnote{These terms will be defined systematically in the report.} $B_j: C^\infty[0,1]\to \C$ (where $C^\infty[0,1]$ denotes the class of real-valued functions differentiable for all orders on $[0,1]$) by
 \[B_j\phi := \sum_{k=0}^{n-1}\left(b_{jk}\phi^{(k)}(0) + \beta_{jk}\phi^{(k)}(1)\right),\, j\in\{1,2,\ldots,n\}\]
 where the boundary coefficients $b_{jk}$, $\beta_{jk}\in\R$. Furthermore, define
 \[\Phi:=\{\phi\in C^\infty[0,1]:\, B_j\phi = 0\,\forall j\in\{1,2,\ldots,n\}\}\]
@@ -69,8 +69,8 @@ Then the Fokas method allows solving any IBVP that can be written as
     q(x,0) &= q_0(x)\quad &\forall x&\in [0,1]\\
     q(\cdot, t) &\in \Phi \quad &\forall t&\in [0,T],
 \end{alignat*}
-where $a$ is a complex constant, $S$ is a spatial differential operator (i.e., a differential operator in the spatial variable $x$) of oder $n$, $(0,1)\times (0,T)$ is some domain, and $q_0\in \Phi$ is arbitrary. (For the IBVP to be well-posed, $a$ and $n$ need to satisfy certain constraints.) The first equation is a PDE relating a quantity $q$ to its temporal and spatial rates of change $\partial_t[q]$ and $aS[q]$, the second equation is an initial condition when the temporal variable $t=0$, and the third equation corresponds to boundary conditions as a function of the spatial variable $x$. 
-An example of this class of IBVPs is the linear Schr\"{o}dinger equation with zero potential, given by
+where $a$ is a complex constant, $S$ is a spatial differential operator (i.e., a differential operator in the spatial variable $x$) of oder $n$, $(0,1)\times (0,T)$ is some domain, and $q_0\in \Phi$ is arbitrary. (For the IBVP to be well-posed, $a$ and $n$ need to satisfy some additional constraints.) The first equation is a PDE relating a quantity $q$ to its temporal and spatial rates of change $\partial_t[q]$ and $aS[q]$. The second equation is the initial condition where the temporal variable $t=0$. The third equation corresponds to the spatial boundary conditions. 
+An example of such IBVPs is the linear Schr\"{o}dinger equation with zero potential, given by
 \[ih\frac{\partial w}{\partial t} + \frac{h^2}{2m}\frac{\partial^2 w}{\partial x^2} = 0,\]
 where $w(x,t)$ is the wave function, $h$ is the Planck's constant, $m$ is the mass of the particle, and $kx$ describes the potential energy of the particle in the force field. Indeed, it can be written as
 \[(\partial_t + aS)q(x,t) = 0\]
@@ -961,6 +961,8 @@ f_x:F(\lambda)&\mapsto f(x)\quad &f_x(F) &= \int_\Gamma e^{i\lambda x} F(\lambda
 \end{alignat*}
 
 \subsection{Implementation}
+The above algorithm has been implemented in Julia 0.6.4 in approximately $700$ lines of code. Systematic unit tests are yet to be written. Most of the work done so far has been dedicated to implementing the contour $\Gamma$, which will thus be the main subject in this section.
+
 We note that $\Gamma_0^+$, $\Gamma_0^-$ are the unions of $\epsilon$-circles around the zeroes of $\Delta(\lambda)$. On the other hand, $\Gamma_a^+$, $\Gamma_a^-$ are boundaries of the domains $\{\lambda\in \C^+:\,\real(a\lambda^n)>0\}$ and $\{\lambda\in \C^-:\,\real(a\lambda^n)>0\}$ avoiding the $2\epsilon$-disks around the zeroes of $\Delta(\lambda)$. The Fokas transform pair involves integrals over these contours. Thus, to implement the transform pair, we need to characterize the contours using line segments, or list of points such that, if connected in the order in which they are listed, form the line segments in the order in which they would be integrated over in the contour integrals.
 
 \subsubsection{Contour tracing}
@@ -981,40 +983,57 @@ For example, when $a=-i$ and $n=3$,
 \[\theta_\lambda\in \bigcup_{k\in\Z}\left(\frac{2\pi k -\frac{\pi}{2}-(-\frac{\pi}{2})}{3},\,\frac{2\pi k + \frac{\pi}{2}-(-\frac{\pi}{2})}{3}\right) = \bigcup_{k\in\Z}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right).\]
 Thus, in $[0,2\pi)$,
 \[\theta_\lambda=\arg(\lambda)\in \bigcup_{k\in\{0,1,2\}}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right) = (0,\frac{\pi}{3})\cup (\frac{2\pi}{3}, \pi)\cup (\frac{4\pi}{3}, \frac{5\pi}{3}).\]
-Figure \ref{fig:contourTracing} shows simulations of the domain $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$.
+Figure \ref{fig:contourTracing} shows some simulations of the domain $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$.
 \begin{figure}[htpb!]
     \minipage{0.32\textwidth}
-      \includegraphics[width=\linewidth]{contourTracingPlot1.pdf}
+      \includegraphics[width=\linewidth]{contourTracing_a=-i_n=3.pdf}
     \endminipage\hfill
     \minipage{0.32\textwidth}
-      \includegraphics[width=\linewidth]{contourTracingPlot2.pdf}
+      \includegraphics[width=\linewidth]{contourTracing_a=-i_n=4.pdf}
     \endminipage\hfill
     \minipage{0.32\textwidth}%
-      \includegraphics[width=\linewidth]{contourTracingPlot3.pdf}
+      \includegraphics[width=\linewidth]{coutourTracing_a=-i_n=5.pdf}
     \endminipage
-    \caption{Simulation of sectors in the domain $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$ by point sampling for $a=-i$ and $n=3, 4, 5$, respectively.}
+    \caption{Simulation of sectors in the domain $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$ for $a=-i$ and $n=3, 4, 5$, respectively, by point sampling.}
     \label{fig:contourTracing}
 \end{figure}
 
-Now, to find the contour $\Gamma$, suppose we have been given the (finitely many) zeroes of $\Delta(\lambda)$ (we may attempt to write a function to find the zeroes; for now, we assume they are user input). Each sector in the boundary is characterized by the angles of the two rays that mark its boundaries, the starting ray and the ending ray. The contour $\Gamma$ is built from the boundaries of these sectors with possible deformations to include the contours encircling the zeroes. Figure \ref{fig:contourPlot} shows the contour $\Gamma$ of some examples. 
+Now, to find the contour $\Gamma$, suppose we have been given the (finitely many) zeroes of $\Delta(\lambda)$ (we will attempt to approximate the zeroes algorithmically; for now, we assume they are user input). Each sector in the boundary is characterized by the angles of the two rays that mark its boundaries, the starting ray and the ending ray. The contour $\Gamma$ is built from the boundaries of these sectors with possible deformations to include the contours encircling the zeroes. Figures \ref{fig:contourPlot_a=-i} and \ref{fig:contourPlot_a=1} show the contour $\Gamma$ for some examples.
 \begin{figure}[htpb!]
     \minipage{0.32\textwidth}
-      \includegraphics[width=\linewidth]{contourPlot1.pdf}
+      \includegraphics[width=\linewidth]{contourPlot_a=-i_n=3.pdf}
     \endminipage\hfill
     \minipage{0.32\textwidth}
-      \includegraphics[width=\linewidth]{contourPlot2.pdf}
+      \includegraphics[width=\linewidth]{contourPlot_a=-i_n=4.pdf}
     \endminipage\hfill
     \minipage{0.32\textwidth}%
-      \includegraphics[width=\linewidth]{contourPlot3.pdf}
+      \includegraphics[width=\linewidth]{contourPlot_a=-i_n=5.pdf}
     \endminipage
-    \caption{Characterizing $\Gamma$ for $a=-i$ and $n=3, 4, 5$, respectively, where the zeroes are $1+\sqrt{3}i$, $2+2\sqrt{3}i$, $0+0i$, $0+5i$, $0-5i$. The contour around the origin is not yet drawn but will be added in revisions of the implementation.}
-    \label{fig:contourPlot}
+    \caption{Plots of $\Gamma$ for $a=-i$ and $n=3, 4, 5$, respectively, with zeroes of $\Delta(\lambda)$ at $3+\sqrt{3}i$, $2+2\sqrt{3}i$, $0+0i$, $0+5i$, $0-5i$, $3$, $-5$, and $4-4\sqrt{3}i$.}
+    \label{fig:contourPlot_a=-i}
 \end{figure}
 
-Let $d$ be a sufficiently large real number chosen to represent infinity. For each sector, we initialize its boundary contour by a path consisting of three points, namely a point on the starting ray with distance $d$ from the origin, the origin, and the a point on the ending ray with norm $d$ (this would be the contour if no zero of $\Delta(\lambda)$ were on the sector boundary). For each zero, if it is on the boundary of some sector in the domain, we deform its boundary contour to include a small square of radius $\epsilon$ around the zero, where $\epsilon$ is taken to be $1/2$ of the minimum of the pairwise distances between zeroes and the distances between each zero and the starting and ending rays of each sector. If the zero is exterior to all sectors, we add an $n$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out. After we have looped through all zeroes in this process, $\Gamma_a$ would contain all sector boundary contours now appropriately deformed, and $\Gamma_0$ would contain all square contours encircling isolated zeroes. Although not reflected in Figure \ref{fig:contourPlot}, care is taken to ensure that the points in $\Gamma$ are listed in the order in which the contour will be integrated over. 
+Note that each sector will be assigned to $\Gamma_a^+$ or $\Gamma_a^-$ depending on whether it belongs to the upper or lower half plane. If a sector overlaps with the real line (Figure \ref{fig:contourPlot_a=1}), we divide it into the upper/lower half planes, which can then be assigned to $\Gamma_a^+$, $\Gamma_a^-$, respectively.
+\begin{figure}[htpb!]
+    \minipage{0.32\textwidth}
+      \includegraphics[width=\linewidth]{contourPlot_a=1_n=3.pdf}
+    \endminipage\hfill
+    \minipage{0.32\textwidth}
+      \includegraphics[width=\linewidth]{contourPlot_a=1_n=3_upper.pdf}
+    \endminipage\hfill
+    \minipage{0.32\textwidth}%
+      \includegraphics[width=\linewidth]{contourPlot_a=1_n=3_lower.pdf}
+    \endminipage
+    \caption{Plots of $\Gamma$, $\Gamma_a^+$, and $\Gamma_a^-$ for $a=1$ and $n=3$, respectively, with the same zeroes as in Figure \ref{fig:contourPlot_a=-i}.}
+    \label{fig:contourPlot_a=1}
+\end{figure}
+
+Let $d$ be a sufficiently large real number chosen to represent infinity. For each sector, we initialize its boundary contour by a path consisting of three points, namely a point on the ending ray with distance $d$ from the origin, the origin, and the a point on the starting ray with norm $d$ (this would be the contour if no zero of $\Delta(\lambda)$ were on the sector boundary). For each zero, if it is on the boundary of some sector, we deform the sector's boundary contour to include a small $n$-gon of radius $\epsilon$ around the zero, where $\epsilon$ is taken to be $1/3$ of the minimum of the pairwise distances between zeroes and the distances between each zero and the starting and ending rays of each sector (since $\Delta(\lambda)$ have finitely many zeroes, $\epsilon$ exists). If the zero is exterior to all sectors, we add an $n$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out. 
+
+After we have looped through all zeroes in this process, $\Gamma_a$ would contain all sector boundary contours now appropriately deformed, and $\Gamma_0$ would contain all the $n$-gon contours encircling isolated zeroes. Although not reflected in the figures, care is taken to ensure that the points in $\Gamma$ are listed in the order in which the contour will be integrated over. 
 
 \subsubsection{Chebyshev polynomial approximation}
-As pointed out before, we may need to integrate complicated functions and find zeroes of exponential polynomials such as $\Delta(\lambda)$ at future steps in the implementation. Dealing with these complicated functions is difficult, but we may translate it into an easier problem by approximating these complicated functions on given intervals using functions we are more familiar with. To this end, we also implement a method to approximate functions using Chebyshev polynomials in preparation for future work.
+As previously mentioned, we need to integrate complicated functions and find zeroes of exponential polynomials such as $\Delta(\lambda)$ at future steps in the implementation. Dealing with these complicated functions is difficult, but we may translate it into an easier problem by approximating these complicated functions on given intervals using functions we are more familiar with. To this end, we implement a method to approximate functions using Chebyshev polynomials.
 
 The Chebyshev polynomials are given by
 \[
@@ -1024,13 +1043,12 @@ The Chebyshev polynomials are given by
     \frac{1}{2}\left((x-\sqrt{x^2-1})^n + (x+\sqrt{x^2-1})^n\right)&\quad\mbox{$|x|>1$}.
 \end{cases}    
 \]
-Given a function $f$ on the interval $[a,b]$, we approximate $f$ using Chebyshev polynomial expansion. The Chebyshev approximation is best on $[-1,1]$. Thus, we scale $[a,b]$ to $[-1,1]$ say via $g:[a,b]\to [-1,1]$, obtain the Chebyshev coefficients $(a_n)_{n=0}^N$ there, and write the approximation of $f$ on $[a,b]$ as
+Given a function $f$ on the interval $[a,b]$, we approximate $f$ using Chebyshev polynomial expansion. The Chebyshev approximation is best on $[-1,1]$. Thus, we scale $[a,b]$ to $[-1,1]$ via $g:[a,b]\to [-1,1]$ given by $g(x)=2(x-a)/(b-a)-1$, obtain the Chebyshev coefficients $(a_n)_{n=0}^N$ there, and write the approximation of $f$ on $[a,b]$ as
 \[f\sim \sum_{n=0}^N a_n\cdot T_n(g(x)),\]
 which is a finite sum of Chebyshev polynomials.
 
 \section{Next steps}
-With regard to the semester 1 plan in the project proposal, the progress has been on track so far. The immediate next steps would be to finish implementing the Fokas method (with revised contour implementation and method to find approximately the zeroes of exponential polynomials), organize the implementation into a package, and write a documentation for the package. These tasks should ideally be completed before the start of semester 2, when emphasis will be put on the second goal of the project as well as preparing project deliverables such as the thesis.
-
+With regard to the semester 1 plan in the project proposal, the progress has been on track so far. The immediate next step would be to finish implementing the Fokas method, with unit tests for contour implementation and method to approximate the zeroes of exponential polynomials. Further next steps include organizing the implementation into a package and writing a documentation for the package. These tasks should ideally be completed before the start of semester 2, when focus will be placed on the second goal of the project as well as preparing project deliverables such as the thesis.
 
 \newpage
 \bibliographystyle{unsrt}

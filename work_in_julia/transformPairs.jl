@@ -292,7 +292,7 @@ function isApproxLess(x::Number, y::Number; atol = 1e-15)
     return !isapprox(x,y; atol = atol) && x < y
 end
 
-function isApprox(x::Number, y::Number; atol = 1e-15)
+function isApprox(x::Number, y::Number; atol = 1e-10)
     return isapprox(x, y; atol = atol)
 end
 
@@ -336,7 +336,7 @@ function contour_tracing(a::Number, n::Int, infinity::Number, sampleSize::Int)
             append!(lambdaVec, lambda)
         end
     end
-    plot(x=real(lambdaVec), y=imag(lambdaVec), Coord.Cartesian(ymin=-infinity,ymax=infinity, xmin=-infinity, xmax=infinity, fixed = true))
+    plot(x=real(lambdaVec), y=imag(lambdaVec), Guide.xlabel("Re"), Guide.ylabel("Im"), Coord.Cartesian(ymin=-infinity,ymax=infinity, xmin=-infinity, xmax=infinity, fixed = true))
 end
 
 # Find the argument of a complex number in [0,2pi)
@@ -488,21 +488,25 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number; nGon =
                     nGonPath = vertices[find(vertex -> !pointInSector(vertex, (thetaStart, thetaEnd)), vertices)]
                     # If this sector is in the upper half plane, deform gamma_a+
                     if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
-                        deformedPath = gammaAPlus[index]
+                        gammaAPlusIndex = find(path -> (isApprox(argument(zero), argument(path[1])) || isApprox(argument(zero), argument(path[length(path)]))), gammaAPlus)[1]
+                        deformedPath = copy(gammaAPlus[gammaAPlusIndex])
                         if any(i -> isApprox(argument(zero), thetaStartList[i]) || isApprox(angle(zero), thetaStartList[i]), 1:nSplit) # if zero is on the starting boundary, insert the n-gon path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), nGonPath)
                         else # if zero is on the ending boundary, insert the n-gon path before 0+0*im
                             splice!(deformedPath, 2:1, nGonPath)
                         end
-                        gammaAPlus[index] = deformedPath
+                        gammaAPlus[gammaAPlusIndex] = deformedPath
                     else # if sector is in the lower half plane, deform gamma_a-
-                        deformedPath = gammaAMinus[index-length(gammaAPlus)]
+                        # # Find all vertices interior to or on the boundary of this sector, which would form the nGonPath around the zero
+                        # nGonPath = vertices[find(vertex -> !pointExSector(vertex, (thetaStart, thetaEnd)), vertices)]
+                        gammaAMinusIndex = find(path -> (isApprox(argument(zero), argument(path[1])) || isApprox(argument(zero), argument(path[length(path)]))), gammaAMinus)[1]
+                        deformedPath = copy(gammaAMinus[gammaAMinusIndex])
                         if any(i -> isApprox(argument(zero), thetaStartList[i]) || isApprox(angle(zero), thetaStartList[i]), 1:nSplit) # if zero is on the starting boundary, insert the n-gon path after 0+0*im
                             splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), nGonPath)
                         else # if zero is on the ending boundary, insert the n-gon path before 0+0*im
                             splice!(deformedPath, 2:1, nGonPath) 
                         end
-                        gammaAMinus[index-length(gammaAPlus)] = deformedPath
+                        gammaAMinus[gammaAMinusIndex] = deformedPath
                     end
                 else # If zero is on the boundary of two sectors, then it must be on the real line, and we need to deform two sectors
                     # Find out which vertices are in the lower half plane
@@ -615,7 +619,7 @@ function plot_contour(gamma::Array, infinity::Number)
         sectorPathList[i] = layer(x = real(sectorPath), y = imag(sectorPath), Geom.line(preserve_order=true))
     end
     coord = Coord.cartesian(xmin=-infinity, xmax=infinity, ymin=-infinity, ymax=infinity, fixed=true)
-    plot(coord, sectorPathList...)
+    plot(Guide.xlabel("Re"), Guide.ylabel("Im"), coord, sectorPathList...)
 end
 
 
