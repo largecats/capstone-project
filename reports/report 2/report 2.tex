@@ -32,7 +32,9 @@ in Julia via the Fokas transform method}
 \subsection{Motivation}
 Evolution partial differential equations (PDEs) relate a quantity, such as temperature, to its rates of change with respect to both time (hence ``evolution'') and position. Evolution PDEs can be used to describe or model a variety of phenomena in physics, such as wave propagation and particle motion. This project concerns solving a certain class of initial-boundary value problems (IBVP) for evolution PDEs in the finite interval\cite{Smith2016} correctly and efficiently. 
 
-To motivate the project, suppose we wish to solve some IBVPs say, to study a physics phenomenon (or produce CGI animation for a sci-fi movie that wins the Academy Award in visual effects and the Golden Raspberry Award in everything else). Certain simple IBVPs (henceforth referred to as type I problems) may be solved algorithmically via classical transform pairs such as the Fourier transform (Figure \ref{fig:classical_transform}).
+To motivate the project, suppose we wish to solve some IBVPs.
+%say, to study a physics phenomenon (or produce CGI animation for a sci-fi movie that wins the Academy Award in visual effects and the Golden Raspberry Award in everything else). 
+Certain simple IBVPs (henceforth referred to as type I problems) may be solved algorithmically via classical transform pairs such as the Fourier transform (Figure \ref{fig:classical_transform}).
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.8\textwidth]{classical_transform.png}
@@ -57,7 +59,7 @@ The ``Fokas method''\cite{Fokas2008} extends the idea of transform pairs to solv
 \end{figure}
 
 To characterize this class of IBVPs that can be solved by the Fokas method\cite[p.9]{Smith2016}, we first define linearly independent boundary forms\footnote{These terms will be defined systematically in the report.} $B_j: C^\infty[0,1]\to \C$ (where $C^\infty[0,1]$ denotes the class of real-valued functions differentiable for all orders on $[0,1]$) by
-\[B_j\phi := \sum_{k=0}^{n-1}\left(b_{jk}\phi^{(k)}(0) + \beta_{jk}\phi^{(k)}(0)\right),\, j\in\{1,2,\ldots,n\}\]
+\[B_j\phi := \sum_{k=0}^{n-1}\left(b_{jk}\phi^{(k)}(0) + \beta_{jk}\phi^{(k)}(1)\right),\, j\in\{1,2,\ldots,n\}\]
 where the boundary coefficients $b_{jk}$, $\beta_{jk}\in\R$. Furthermore, define
 \[\Phi:=\{\phi\in C^\infty[0,1]:\, B_j\phi = 0\,\forall j\in\{1,2,\ldots,n\}\}\]
 to be the set of smooth functions $\phi$ satisfying the homogeneous boundary conditions $B_j\phi=0$ for all $j\in\{1,2,\ldots,n\}$.
@@ -68,11 +70,11 @@ Then the Fokas method allows solving any IBVP that can be written as
     q(\cdot, t) &\in \Phi \quad &\forall t&\in [0,T],
 \end{alignat*}
 where $a$ is a complex constant, $S$ is a spatial differential operator (i.e., a differential operator in the spatial variable $x$) of oder $n$, $(0,1)\times (0,T)$ is some domain, and $q_0\in \Phi$ is arbitrary. (For the IBVP to be well-posed, $a$ and $n$ need to satisfy certain constraints.) The first equation is a PDE relating a quantity $q$ to its temporal and spatial rates of change $\partial_t[q]$ and $aS[q]$, the second equation is an initial condition when the temporal variable $t=0$, and the third equation corresponds to boundary conditions as a function of the spatial variable $x$. 
-% An example of this class of IBVPs is the linear Schr\"{o}dinger equation, given by
-% \[ih\frac{\partial w}{\partial t} + \frac{h^2}{2m}\frac{\partial^2 w}{\partial x^2} - kxw = 0,\]
-% where $w(x,t)$ is the wave function, $h$ is the Planck's constant, $m$ is the mass of the particle, and $kx$ describes the potential energy of the particle in the force field. Indeed, it can be written as
-% \[(\partial_t + aS)q(x,t) = 0\]
-% where $q=w$, $S = \frac{\partial^2}{\partial x^2}$, $a = \frac{h}{2mi}$, 
+An example of this class of IBVPs is the linear Schr\"{o}dinger equation with zero potential, given by
+\[ih\frac{\partial w}{\partial t} + \frac{h^2}{2m}\frac{\partial^2 w}{\partial x^2} = 0,\]
+where $w(x,t)$ is the wave function, $h$ is the Planck's constant, $m$ is the mass of the particle, and $kx$ describes the potential energy of the particle in the force field. Indeed, it can be written as
+\[(\partial_t + aS)q(x,t) = 0\]
+where $q=w$, $S = \frac{\partial^2}{\partial x^2}$, $a = \frac{h}{2mi}$. 
 
 The Fokas method allows solving the above class of IBVPs algorithmically, i.e., it provides the correct analytic solution determinisically for any IBVP that can be written in the above form. Using the Fokas method by hand, however, is laborious. Thus, the first goal of this project is to implement the Fokas method as a Julia package that allows mathematicians to quickly obtain the analytic solutions of complicated IBVPs. We choose the Julia language for its support for high-performance scientific computing as well as its popularity among the research community due to being open-source. On the other hand, solutions of complicated IBVPs usually involve infinite sums and series, and having numerical descriptions of them would help with understanding and visualizing them. Thus, the second goal of this project is to build a analytic-numerical integrator tailored to providing accurate numerical approximations of the analytic solutions of the above IBVPs.
 
@@ -714,7 +716,9 @@ In connection with the notion of adjoint problem introduced after Definition \re
     \end{equation}
 \end{proof}
 
-In some cases, the above result is treated as the definition of the adjoint problem. Here, we treat it as a property of the adjoint after defining $L^+$ and constructing $U^+$. Yet we can still appreciate the motivation behind defining the notion of adjoint for boundary value problems.
+Here, we treat the above result as a property of the adjoint after defining $L^+$ and constructing $U^+$. 
+%Yet we can still appreciate the motivation behind defining the notion of adjoint for boundary value problems.
+In some cases, it is treated as the definition of the adjoint problem, especially if the context wishes to introduce the adjoint problem using linear algebra. Historically, though, it is the adjoint problem that motivated the inner product characterization.
 
 Now, we turn to one last result that would help us in the last step of the construction algorithm, namely checking whether an adjoint boundary condition is valid.
 
@@ -923,7 +927,7 @@ To use the algorithm, the user would first need to define a linear differential 
 To enhance user experience, the implementation also comes with a symbolic math feature, which allows the user to keep track of various functions in the form of symbolic expression. Without this feature, a function defined as $f(x)=10.52x^3 + 3.7x + 1$ will be stored as a general method $f$ in Julia without information for the user as to what it actually is. With symbolic expression, $f$ will be stored as $10.52x^3 + 3.7x + 1$, verbatim. The workflow involving symbolic expressions is parallel to that of Julia functions, ensuring that the user is able to view the symbolic expression of any output whenever desired.
 
 \section{The Fokas transform pair}
-Having constructed the adjoint boundary condition, we are ready to implement the Fokas transform pair $F$ and $f$\cite[p.10]{Smith2016}. We first introduce the relevant definitions and then discuss their implementation. Compared to the algorithm to construct adjoint boundary conditions, the work involved in this section concerns more implementation than theory. The discussion in this section will focus on main ideas only; intricacies of the implementation will go into the package documentation.
+Having constructed the adjoint boundary condition, we are ready to implement the Fokas transform pair $F$ and $f$\cite[p.10]{Smith2016}. We will introduce the relevant definitions and discuss their implementation. Compared to the algorithm to construct adjoint boundary conditions, the work involved in this section concerns more implementation than theory. The discussion in this section will focus on main ideas only; intricacies of the implementation will go into the package documentation.
 
 \subsection{Preliminaries}
 Let $\alpha = e^{2\pi i/n}$. Let $M^+(\lambda)$, $M^-(\lambda)$ be the $n\times n$ matrices given by
@@ -942,9 +946,9 @@ For $\lambda\in\C$ such that $\Delta(\lambda)\neq 0$, define
 \end{align*}
 Let $5\epsilon$ be the infimum of the distances between every two zeroes of $\Delta(\lambda)$ (which exist by the theory of exponential polynomials\cite{Langer1930}). Let $\partial S$ denote boundary of set $S$. Let $\cl{S}$ denote the closure of set $S$. Let $\C^\pm$ denote the upper and lower halves of the complex plane, respectively. Define the contours
 \begin{align*}
-    \Gamma_a^{\pm} &:= \partial(\{\lambda\in\C^{\pm}:\, \real(a\lambda^n)>0\}\setminus \bigcup_{\substack{\sigma\in\C;\\\Delta(\sigma)=0}} D(\sigma, 2\epsilon)),\quad\mbox{($D$ for disk)}\\
+    \Gamma_a^{\pm} &:= \partial(\{\lambda\in\C^{\pm}:\, \real(a\lambda^n)>0\}\setminus \bigcup_{\substack{\sigma\in\C;\\\Delta(\sigma)=0}} D(\sigma, 2\epsilon))\quad\mbox{($D$ for disk)},\\
     \Gamma_a &:= \Gamma_a^+\cup \Gamma_a^-,\\
-    \Gamma_0^+ &:= \bigcup_{\substack{\sigma\in\cl\C^+;\\ \Delta(\sigma)=0}} C(\sigma, \epsilon),\quad\mbox{($C$ for circle)}\\
+    \Gamma_0^+ &:= \bigcup_{\substack{\sigma\in\cl\C^+;\\ \Delta(\sigma)=0}} C(\sigma, \epsilon)\quad\mbox{($C$ for circle)},\\
     \Gamma_0^- &:= \bigcup_{\substack{\sigma\in\C^-;\\ \Delta(\sigma)=0}} C(\sigma, \epsilon),\\
     \Gamma_0 &:= \Gamma_0^+\cup \Gamma_0^-,\\
     \Gamma &:= \Gamma_0\cup \Gamma_a.
@@ -957,12 +961,13 @@ f_x:F(\lambda)&\mapsto f(x)\quad &f_x(F) &= \int_\Gamma e^{i\lambda x} F(\lambda
 \end{alignat*}
 
 \subsection{Implementation}
-We note that $\Gamma_0^+$, $\Gamma_0^-$ are the unions of $\epsilon$-circles around the zeroes of $\Delta(\lambda)$. On the other hand, $\Gamma_a^+$, $\Gamma_a^-$ are boundaries of the domains $\{\lambda\in \C^+:\,\real(a\lambda^n)>0\}$ and $\{\lambda\in \C^-:\,\real(a\lambda^n)>0\}$ avoiding the $2\epsilon$-disks around the zeroes of $\Delta(\lambda)$. The Fokas transform pair involves integrals over these contours. Thus, to implement the transform pair, we need to characterize them using line segments, or list of points such that, if connected in the order in which they are listed, form the line segments in the order in which they would be integrated over in the contour integrals.
+We note that $\Gamma_0^+$, $\Gamma_0^-$ are the unions of $\epsilon$-circles around the zeroes of $\Delta(\lambda)$. On the other hand, $\Gamma_a^+$, $\Gamma_a^-$ are boundaries of the domains $\{\lambda\in \C^+:\,\real(a\lambda^n)>0\}$ and $\{\lambda\in \C^-:\,\real(a\lambda^n)>0\}$ avoiding the $2\epsilon$-disks around the zeroes of $\Delta(\lambda)$. The Fokas transform pair involves integrals over these contours. Thus, to implement the transform pair, we need to characterize the contours using line segments, or list of points such that, if connected in the order in which they are listed, form the line segments in the order in which they would be integrated over in the contour integrals.
 
 \subsubsection{Contour tracing}
-Given a complex constant $a=r_a e^{i\theta_a}$, we find the boundary of
+Given a complex constant $a$, we find the boundary of
 \[\{\lambda\in\C: \real(a\lambda^n)>0\}.\]
-Suppose $\lambda=r_\lambda e^{i\theta_\lambda}$. Then
+For complex number $z$, define $\theta_z:=\arg(z)$ and $r_z:=|z|$.
+Let $\lambda\in\C$. Then
 \[a\lambda^n = r_ae^{i\theta_a}\cdot r_\lambda^n e^{ni\theta_\lambda} = r_a r_\lambda^n e^{i(\theta_a+n\theta_\lambda)} = r_ar_\lambda^n(\cos(\theta_a+n\theta_\lambda) + i\sin(\theta_a+n\theta_\lambda)).\]
 Thus,
 \[\real(a\lambda^n) = r_ar_\lambda^n \cos(\theta_a+n\theta_\lambda),\]
@@ -976,7 +981,7 @@ For example, when $a=-i$ and $n=3$,
 \[\theta_\lambda\in \bigcup_{k\in\Z}\left(\frac{2\pi k -\frac{\pi}{2}-(-\frac{\pi}{2})}{3},\,\frac{2\pi k + \frac{\pi}{2}-(-\frac{\pi}{2})}{3}\right) = \bigcup_{k\in\Z}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right).\]
 Thus, in $[0,2\pi)$,
 \[\theta_\lambda=\arg(\lambda)\in \bigcup_{k\in\{0,1,2\}}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right) = (0,\frac{\pi}{3})\cup (\frac{2\pi}{3}, \pi)\cup (\frac{4\pi}{3}, \frac{5\pi}{3}).\]
-A simulation of the domain $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$ shows that this is indeed the case (Figure \ref{fig:contourTracing}).
+Figure \ref{fig:contourTracing} shows simulations of the domain $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$.
 \begin{figure}[htpb!]
     \minipage{0.32\textwidth}
       \includegraphics[width=\linewidth]{contourTracingPlot1.pdf}
@@ -1002,11 +1007,11 @@ Now, to find the contour $\Gamma$, suppose we have been given the (finitely many
     \minipage{0.32\textwidth}%
       \includegraphics[width=\linewidth]{contourPlot3.pdf}
     \endminipage
-    \caption{Characterizing $\Gamma$ for $a=-i$ and $n=3, 4, 5$, respectively, where the zeroes are $1+\sqrt{3}i$, $2+2\sqrt{3}i$, $0+0i$, $0+5i$, $0-5i$.}
+    \caption{Characterizing $\Gamma$ for $a=-i$ and $n=3, 4, 5$, respectively, where the zeroes are $1+\sqrt{3}i$, $2+2\sqrt{3}i$, $0+0i$, $0+5i$, $0-5i$. The contour around the origin is not yet drawn but will be added in revisions of the implementation.}
     \label{fig:contourPlot}
 \end{figure}
 
-For each sector, we initialize its boundary contour by a path consisting of three points, namely a point on the starting ray with distance $d$ from the origin where $d$ is a sufficiently large constant chosen to represent infinity, the origin, and the a point on the ending ray with norm $d$. For each zero, if it is on the boundary of some sector in the domain, we deform its boundary contour to include a small square of radius $\epsilon$ around the zero, where $\epsilon$ is taken to be $1/2$ of the minimum of the pairwise distances between zeroes and the distances between each zero and the starting and ending rays of each sector. If it is exterior to all sectors, we add a square contour to $\Gamma_0^{\pm}$, depending on whether it is in the upper or lower half plane. If it is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out. After we have looped through all zeroes in this process, $\Gamma_a$ would contain all sector boundary contours now appropriately deformed, and $\Gamma_0$ would contain all square contours encircling isolated zeroes. Although not reflected in Figure \ref{fig:contourPlot}, care is taken to ensure that the points in $\Gamma$ are listed in the order in which the contour will be integrated over. 
+Let $d$ be a sufficiently large real number chosen to represent infinity. For each sector, we initialize its boundary contour by a path consisting of three points, namely a point on the starting ray with distance $d$ from the origin, the origin, and the a point on the ending ray with norm $d$ (this would be the contour if no zero of $\Delta(\lambda)$ were on the sector boundary). For each zero, if it is on the boundary of some sector in the domain, we deform its boundary contour to include a small square of radius $\epsilon$ around the zero, where $\epsilon$ is taken to be $1/2$ of the minimum of the pairwise distances between zeroes and the distances between each zero and the starting and ending rays of each sector. If the zero is exterior to all sectors, we add an $n$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out. After we have looped through all zeroes in this process, $\Gamma_a$ would contain all sector boundary contours now appropriately deformed, and $\Gamma_0$ would contain all square contours encircling isolated zeroes. Although not reflected in Figure \ref{fig:contourPlot}, care is taken to ensure that the points in $\Gamma$ are listed in the order in which the contour will be integrated over. 
 
 \subsubsection{Chebyshev polynomial approximation}
 As pointed out before, we may need to integrate complicated functions and find zeroes of exponential polynomials such as $\Delta(\lambda)$ at future steps in the implementation. Dealing with these complicated functions is difficult, but we may translate it into an easier problem by approximating these complicated functions on given intervals using functions we are more familiar with. To this end, we also implement a method to approximate functions using Chebyshev polynomials in preparation for future work.
@@ -1024,7 +1029,7 @@ Given a function $f$ on the interval $[a,b]$, we approximate $f$ using Chebyshev
 which is a finite sum of Chebyshev polynomials.
 
 \section{Next steps}
-With regard to the semester 1 plan in the project proposal, the progress has been on track so far. The immediate next steps would be to finish implementing the Fokas method, organize the implementation into a package, and writing a documentation for the package. These tasks should ideally be completed before the start of semester 2, when emphasis will be put on the second goal of the project as well as preparing project deliverables such as the thesis.
+With regard to the semester 1 plan in the project proposal, the progress has been on track so far. The immediate next steps would be to finish implementing the Fokas method (with revised contour implementation and method to find approximately the zeroes of exponential polynomials), organize the implementation into a package, and write a documentation for the package. These tasks should ideally be completed before the start of semester 2, when emphasis will be put on the second goal of the project as well as preparing project deliverables such as the thesis.
 
 
 \newpage

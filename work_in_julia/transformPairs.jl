@@ -256,31 +256,70 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
 end
 
 # Find the angles of the lines characterizing gammaA, boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [-2pi, 2pi). We make the interval like this to ensure that [z is in a sector] <=> [angle(z) >= sectorStart && angle(z) <= sectorEnd]
-function find_gammaAAngles(a::Number, n::Int; symbolic = true)
+function find_gammaAAngles(a::Number, n::Int; symbolic = false)
     # thetaA = argument(a)
     thetaA = angle(a)
-    thetaStartList = Array{Number}(n,1) # List of where domain sectors start
-    thetaEndList = Array{Number}(n,1) # List of where domain sectors end
+    thetaStartList = Array{Number}(n) # List of where domain sectors start
+    thetaEndList = Array{Number}(n) # List of where domain sectors end
     if symbolic
         k = symbols("k")
         counter = 0
         while N(subs((2pi*k + pi/2 - thetaA)/n, k, counter)) < 2pi
-            theta1 = subs((2PI*k - PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
-            theta2 = subs((2PI*k + PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
+            thetaStart = subs((2PI*k - PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
+            thetaEnd = subs((2PI*k + PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
             counter += 1
-            thetaStartList[counter] = theta1
-            thetaEndList[counter] = theta2
+            thetaStartList[counter] = thetaStart
+            thetaEndList[counter] = thetaEnd
+            # append!(thetaStartList, thetaStart)
+            # append!(thetaEndList, thetaEnd)
         end
     else
         k = 0
         while (2pi*k + pi/2 - thetaA)/n < 2pi
-            theta1 = (2pi*k - pi/2 - thetaA)/n
-            theta2 = (2pi*k + pi/2 - thetaA)/n
+            thetaStart = (2pi*k - pi/2 - thetaA)/n
+            thetaEnd = (2pi*k + pi/2 - thetaA)/n
             k += 1
-            thetaStartList[k] = theta1
-            thetaEndList[k] = theta2
-            # thetaStartList[k] = argument(e^(im*theta1))
-            # thetaEndList[k] = argument(e^(im*theta2))
+            thetaStartList[k] = thetaStart
+            thetaEndList[k] = thetaEnd
+            # append!(thetaStartList, thetaStart)
+            # append!(thetaEndList, thetaEnd)
+        end
+    end
+    return (thetaStartList, thetaEndList)
+end
+
+function isApproxLess(x::Number, y::Number; atol = 1e-15)
+    return !isapprox(x,y; atol = atol) && x < y
+end
+
+function isApprox(x::Number, y::Number; atol = 1e-15)
+    return isapprox(x, y; atol = atol)
+end
+
+# Split sectors that contain the real line
+function find_gammaAAnglesSplit(a::Number, n::Int; symbolic = false)
+    (thetaStartList, thetaEndList) = find_gammaAAngles(a, n; symbolic = symbolic)
+    zeroIndex = find(i -> ((isApproxLess(thetaStartList[i], 0) && isApproxLess(0, thetaEndList[i]))), 1:n)
+    if !isempty(zeroIndex)
+        index = zeroIndex[1]
+        # Insert 0 after thetaStart
+        splice!(thetaStartList, (index+1):index, 0)
+        # Insert 0 before thetaEnd
+        splice!(thetaEndList, index:(index-1), 0)
+    end
+    piIndex = find(i -> ((isApproxLess(thetaStartList[i], pi) && isApproxLess(pi, thetaEndList[i]))), 1:n)
+    if !isempty(piIndex)
+        index = piIndex[1]
+        if symbolic
+            # Insert pi after thetaStart
+            splice!(thetaStartList, (index+1):index, PI)
+            # Insert pi before thetaEnd
+            splice!(thetaEndList, index:(index-1), PI)
+        else
+            # Insert pi after thetaStart
+            splice!(thetaStartList, (index+1):index, pi*1)
+            # Insert pi before thetaEnd
+            splice!(thetaEndList, index:(index-1), pi*1)
         end
     end
     return (thetaStartList, thetaEndList)
@@ -306,7 +345,7 @@ function argument(z::Number)
         return angle(z)
     else # Shift from (-pi, 0] to [pi,2pi)
         argument = 2pi + angle(z) # This is in (pi,2pi]
-        if isapprox(argument, 2pi) # Change to [pi,2pi)
+        if isApprox(argument, 2pi) # Change to [pi,2pi)
             return 0
         else
             return argument
@@ -314,18 +353,18 @@ function argument(z::Number)
     end
 end
 
-# Finds distance between a complex number and a line (given by an angle in [0,2pi)
+# Find distance between a complex number and a line (given by an angle in [0,2pi)
 function find_distancePointLine(z::Number, theta::Number)
     if theta >= 2pi && theta < 0
         throw(error("Theta must be in [0,2pi)"))
     else
-        if isapprox(argument(z), theta)
+        if isApprox(argument(z), theta)
             return 0
         else
             x0, y0 = real(z), imag(z)
-            if isapprox(theta, pi/2) || isapprox(theta, 3pi/2)
+            if isApprox(theta, pi/2) || isApprox(theta, 3pi/2)
                 return abs(x0)
-            elseif isapprox(theta, 0) || isapprox(theta, 2pi)
+            elseif isApprox(theta, 0) || isApprox(theta, 2pi)
                 return abs(y0)
             else
                 k = tan(theta)
@@ -340,7 +379,7 @@ end
 
 # Returns the minimum of the pairwise distances between zeroes in zeroList that are not interior to any sector (since interior zeroes would not matter in any way)
 function find_epsilon(zeroList::Array, a::Number, n::Int)
-    (thetaStartList, thetaEndList) = find_gammaAAngles(a, n, symbolic = false)
+    (thetaStartList, thetaEndList) = find_gammaAAnglesSplit(a, n; symbolic = false)
     thetaStartEndList = collect(Iterators.flatten([thetaStartList, thetaEndList]))
     truncZeroList = []
     for zero in zeroList
@@ -359,41 +398,61 @@ function find_epsilon(zeroList::Array, a::Number, n::Int)
     end
     distances = collect(Iterators.flatten([pairwiseDistances, pointLineDistances]))
     # Distances of nearly 0 could be instances where the zero is actually on some sector boundary
-    distances = filter(x -> !isapprox(x, 0; atol = 1e-10), distances)
-    epsilon = minimum(distances)/2
+    distances = filter(x -> !isApprox(x, 0), distances)
+    epsilon = minimum(distances)/3
     return epsilon
 end
 
-# Returns an array of four complex numbers representing the vertices of a square around the zero; each vertex is of distance epsilon from the zero.
-function draw_squareAroundZero(zero::Number, epsilon::Number, a::Number, n::Int)
+# Returns an array of four complex numbers representing the vertices of an n-gon around the zero; each vertex is of distance epsilon from the zero.
+function draw_nGonAroundZero(zero::Number, epsilon::Number, n::Int)
     z = zero
     theta = argument(zero)
-    # theta = angle(zero)
-    z1 = z - epsilon*e^(im*theta)
-    z2 = z + epsilon*e^(im*(theta+pi/2))
-    z3 = z + epsilon*e^(im*theta)
-    z4 = z + epsilon*e^(im*(theta-pi/2))
-    return [z1, z2, z3, z4] # The four vertices of the square in clockwise order
+    deltaAngle = 2pi/n
+    vertices = []
+    for i = 1:n
+        newAngle = pi-deltaAngle*(i-1)
+        vertex = z + epsilon*e^(im*(theta+newAngle))
+        append!(vertices, vertex)
+    end
+    # vertices = vcat(vertices, vertices[1])
+    return vertices
 end
 
-# Determine whether a point z is in a sector characterized by a start angle and an end angle
+# Determine whether a point z is on the boundary of a sector characterized by a start angle and an end angle
+function pointOnSector(z::Number, sectorAngles::Tuple{Number, Number})
+    (startAngle, endAngle) = sectorAngles
+    return isApprox(argument(z), startAngle) || isApprox(argument(z), endAngle) || isApprox(angle(z), startAngle) || isApprox(angle(z), endAngle)
+end
+
+# Determine whether a point z is in the interior of a sector characterized by a start angle and an end angle
 function pointInSector(z::Number, sectorAngles::Tuple{Number, Number})
     (startAngle, endAngle) = sectorAngles
-    # angle(z) would work if it's in the sector with positive real parts and both positive and negative imaginary parts; argument(z) would work if it's in the sector with negative real parts and both positive and negative imaginary parts
-    return (angle(z) >= startAngle && angle(z) <= endAngle) || (argument(z) >= startAngle && argument(z) <= endAngle)
+    # First check if z is on the sector boundary
+    if pointOnSector(z, sectorAngles)
+        return false
+    else
+        # angle(z) would work if it's in the sector with positive real parts and both positive and negative imaginary parts; argument(z) would work if it's in the sector with negative real parts and both positive and negative imaginary parts
+        return (angle(z) > startAngle && angle(z) < endAngle) || (argument(z) > startAngle && argument(z) < endAngle)
+    end
+end
+
+# Determine whether a point z is in the exterior of a sector characterized by a start angle and an end angle
+function pointExSector(z::Number, sectorAngles::Tuple{Number, Number})
+    return !pointOnSector(z, sectorAngles) && !pointInSector(z, sectorAngles)
 end
 
 # Find the contours gamma_a+, gamma_a-, gamma_0+, gamma_0-
-function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
-    (thetaStartList, thetaEndList) = find_gammaAAngles(a, n; symbolic = false)
+function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number; nGon = 8)
+    (thetaStartList, thetaEndList) = find_gammaAAnglesSplit(a, n; symbolic = false)
+    nSplit = length(thetaStartList)
     gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus = [], [], [], []
     epsilon = find_epsilon(zeroList, a, n)
-    for i in 1:n
+    for i in 1:nSplit
         thetaStart = thetaStartList[i]
         thetaEnd = thetaEndList[i]
         # Initialize the boundary of each sector with the ending boundary, the origin, and the starting boundary (start and end boundaries refer to the order in which the boundaries are passed if tracked counterclockwise)
         initialPath = [infinity*e^(im*thetaEnd), 0+0*im, infinity*e^(im*thetaStart)]
-        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane, push the boundary path to gamma_a+; this wouldn't make sense if the sector spanns both the upper half and the lower half plane
+        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi # if in the upper half plane, push the boundary path to gamma_a+
             push!(gammaAPlus, initialPath) # list of lists
         else # if in the lower half plane, push the boundary path to gamma_a-
             push!(gammaAMinus, initialPath)
@@ -404,60 +463,73 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
     for zero in zeroList
         println(zero)
         # If zero is not at the origin
-        if !isapprox(zero, 0+0*im)
-            # Draw a square around it
-            (z1, z2, z3, z4) = draw_squareAroundZero(zero, epsilon, a, n) # z1, z3 are on the sector boundary, z2, z4 are on the interior or exterior
+        if !isApprox(zero, 0+0*im)
+            # Draw an n-gon around it
+            vertices = draw_nGonAroundZero(zero, epsilon, nGon)
             # If zero is on the boundary of some sector
-            if any(i -> isapprox(argument(zero), thetaStartList[i]) || isapprox(argument(zero), thetaEndList[i]), 1:n)
-                # if any(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)
-                # if z2 is interior to any sector, include z4 in the contour approximation
-                if any(i -> pointInSector(z2, (thetaStartList[i], thetaEndList[i])), 1:n)
-                    # Find which sector z2 is in
-                    index = find(i -> argument(z2)>thetaStartList[i] && argument(z2)<thetaEndList[i], 1:n)[1]
-                    squarePath = [z1, z4, z3]
+            if any(i -> pointOnSector(zero, (thetaStartList[i], thetaEndList[i])), 1:nSplit)
+                # Find which sector(s) zero is on
+                indices = find(i -> pointOnSector(zero, (thetaStartList[i], thetaEndList[i])), 1:nSplit)
+                # If zero is on the boundary of one sector
+                if length(indices) == 1
+                    # if vertices[2] is interior to any sector, include vertices on the other half of the n-gon in the contour approximation
+                    z0 = vertices[2]
+                    if any(i -> pointInSector(z0, (thetaStartList[i], thetaEndList[i])), 1:nSplit)
+                        # Find which sector vertices[2] is in
+                        index = find(i -> pointInSector(z0, (thetaStartList[i], thetaEndList[i])), 1:nSplit)[1]
+                    else # if vertices[2] is exterior, include vertices on this half of the n-gon in the contour approximation
+                        # Find which sector vertices[length(vertices)] is in
+                        z1 = vertices[length(vertices)]
+                        index = find(i -> pointInSector(z1, (thetaStartList[i], thetaEndList[i])), 1:nSplit)[1]
+                    end
                     thetaStart = thetaStartList[index]
                     thetaEnd = thetaEndList[index]
+                    # Find all vertices exterior to or on the boundary of this sector, which would form the nGonPath around the zero
+                    nGonPath = vertices[find(vertex -> !pointInSector(vertex, (thetaStart, thetaEnd)), vertices)]
                     # If this sector is in the upper half plane, deform gamma_a+
                     if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
                         deformedPath = gammaAPlus[index]
-                        if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
-                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
-                        else # if zero is on the ending boundary, insert the square path before 0+0*im
-                            splice!(deformedPath, 2:1, squarePath)
+                        if any(i -> isApprox(argument(zero), thetaStartList[i]) || isApprox(angle(zero), thetaStartList[i]), 1:nSplit) # if zero is on the starting boundary, insert the n-gon path after 0+0*im
+                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), nGonPath)
+                        else # if zero is on the ending boundary, insert the n-gon path before 0+0*im
+                            splice!(deformedPath, 2:1, nGonPath)
                         end
                         gammaAPlus[index] = deformedPath
                     else # if sector is in the lower half plane, deform gamma_a-
                         deformedPath = gammaAMinus[index-length(gammaAPlus)]
-                        if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
-                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
-                        else # if zero is on the ending boundary, insert the square path before 0+0*im
-                            splice!(deformedPath, 2:1, squarePath) 
+                        if any(i -> isApprox(argument(zero), thetaStartList[i]) || isApprox(angle(zero), thetaStartList[i]), 1:nSplit) # if zero is on the starting boundary, insert the n-gon path after 0+0*im
+                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), nGonPath)
+                        else # if zero is on the ending boundary, insert the n-gon path before 0+0*im
+                            splice!(deformedPath, 2:1, nGonPath) 
                         end
                         gammaAMinus[index-length(gammaAPlus)] = deformedPath
                     end
-                else # if z2 is exterior, include z2 in the contour approximation
-                    # Find which sector z4 is in
-                    index = find(i -> argument(z4)>thetaStartList[i] && argument(z4)<thetaEndList[i], 1:n)[1]
-                    squarePath = [z1, z2, z3]
-                    thetaStart = thetaStartList[index]
-                    thetaEnd = thetaEndList[index]
-                    # If this sector is in the upper half plane, deform gamma_a+
-                    if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
-                        deformedPath = gammaAPlus[index]
-                        if any(i -> isapprox(argument(zero), thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
-                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
-                        else # if zero is on the ending boundary, insert the square path before 0+0*im
-                            splice!(deformedPath, 2:1, squarePath)
+                else # If zero is on the boundary of two sectors, then it must be on the real line, and we need to deform two sectors
+                    # Find out which vertices are in the lower half plane
+                    nGonPath = vertices[find(vertex -> !pointInSector(vertex, (0, pi)), vertices)]
+                    for index in indices
+                        thetaStart = thetaStartList[index]
+                        thetaEnd = thetaEndList[index]
+                        # If this is the sector in the upper half plane, deform gamma_a+
+                        if thetaStart >= 0 && thetaStart <= pi && thetaEnd >= 0 && thetaEnd <= pi
+                            gammaAPlusIndex = find(path -> (isApprox(argument(zero), argument(path[1])) || isApprox(argument(zero), argument(path[length(path)]))), gammaAPlus)[1]
+                            deformedPath = copy(gammaAPlus[gammaAPlusIndex])
+                            if isApprox(argument(zero), argument(deformedPath[length(deformedPath)])) # if zero is on the starting boundary, insert the n-gon path after 0+0*im
+                                splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), nGonPath)
+                            else # if zero is on the ending boundary, insert the n-gon path before 0+0*im
+                                splice!(deformedPath, 2:1, nGonPath)
+                            end
+                            gammaAPlus[gammaAPlusIndex] = deformedPath
+                        else # If this is the sector in the lower half plane, deform gamma_a-
+                            gammaAMinusIndex = find(path -> (isApprox(argument(zero), argument(path[1])) || isApprox(argument(zero), argument(path[length(path)]))), gammaAMinus)[1]
+                            deformedPath = copy(gammaAMinus[gammaAMinusIndex])
+                            if isApprox(argument(zero), argument(deformedPath[length(deformedPath)])) # if zero is on the starting boundary, insert the n-gon path after 0+0*im
+                                splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), nGonPath)
+                            else # if zero is on the ending boundary, insert the n-gon path before 0+0*im
+                                splice!(deformedPath, 2:1, nGonPath)
+                            end
+                            gammaAMinus[gammaAMinusIndex] = deformedPath
                         end
-                        gammaAPlus[index] = deformedPath
-                    else # if sector is in the lower half plane, deform gamma_a-
-                        deformedPath = gammaAMinus[index-length(gammaAPlus)]
-                        if any(i -> isapprox(zero, thetaStartList[i]), 1:n) # if zero is on the starting boundary, insert the square path after 0+0*im
-                            splice!(deformedPath, length(deformedPath):(length(deformedPath)-1), squarePath)
-                        else # if zero is on the ending boundary, insert the square path before 0+0*im
-                            splice!(deformedPath, 2:1, squarePath)
-                        end
-                        gammaAMinus[index-length(gammaAPlus)] = deformedPath
                     end
                 end
                 # Sort each sector's path in the order in which they are integrated over
@@ -482,25 +554,23 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
                     gammaAs[j] = gammaA 
                 end
                 gammaAPlus, gammaAMinus = gammaAs[1], gammaAs[2]
-            # If zero is in any of the sectors, ignore it
-            # elseif any(i -> argument(zero)>thetaStartList[i] && argument(zero)<thetaEndList[i], 1:n)
-            # elseif all(i -> argument(zero)<thetaStartList[i] || argument(zero)>thetaEndList[i], 1:n)
+            # If zero is interior to any sector (after splitting by real line), ignore it
             # If zero is exterior to the sectors, avoid it
-            elseif all(i -> !pointInSector(zero, (thetaStartList[i], thetaEndList[i])), 1:n)
-                squarePath = [z1, z2, z3, z4, z1] # counterclockwise
-                # If zero is in the upper half plane, add squarePath to gamma_0+
+            elseif all(i -> pointExSector(zero, (thetaStartList[i], thetaEndList[i])), 1:nSplit)
+                nGonPath = vcat(vertices, vertices[1]) # counterclockwise
+                # If zero is in the upper half plane, add the n-gon path to gamma_0+
                 if argument(zero) >= 0 && argument(zero) <= pi
-                    push!(gamma0Plus, squarePath)
-                else # If zero is in the lower half plane, add squarePath to gamma_0-
-                    push!(gamma0Minus, squarePath)
+                    push!(gamma0Plus, nGonPath)
+                else # If zero is in the lower half plane, add the n-gon path to gamma_0-
+                    push!(gamma0Minus, nGonPath)
                 end
             end
-        else # If zero is at the origin, we deform all sectors
+        else # If zero is at the origin, we deform all sectors and draw an n-gon around the origin
             # deform each sector in gamma_a+
             for i = 1:length(gammaAPlus)
                 deformedPath = gammaAPlus[i]
                 # find the index of the zero at origin in the sector boundary path
-                index = find(j -> isapprox(deformedPath[j], 0+0*im), 1:length(deformedPath))
+                index = find(j -> isApprox(deformedPath[j], 0+0*im), 1:length(deformedPath))
                 # If the origin is not in the path, then it has already been bypassed
                 if isempty(index)
                 else # If not, find its index
@@ -516,6 +586,7 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
             # deform each sector in gamma_a-
             for i = 1:length(gammaAMinus)
                 deformedPath = gammaAMinus[i]
+                index = find(j -> isApprox(deformedPath[j], 0+0*im), 1:length(deformedPath))
                 if isempty(index)
                 else
                     index = index[1]
@@ -525,6 +596,10 @@ function find_gamma(a::Number, n::Int, zeroList::Array, infinity::Number)
                 splice!(deformedPath, index:(index-1), squarePath)
                 gammaAMinus[i] = deformedPath
             end
+            # Draw an n-gon around the origin and add to gamma_0+
+            vertices = draw_nGonAroundZero(zero, epsilon/2, nGon)
+            nGonPath = vcat(vertices, vertices[1])
+            push!(gamma0Plus, nGonPath)
         end
     end
     return (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus)
@@ -536,6 +611,7 @@ function plot_contour(gamma::Array, infinity::Number)
     for i = 1:length(gamma)
         # For each sector path in the gamma contour, plot the points in the path and connect them in the order in which they appear in the path
         sectorPath = gamma[i]
+        # labels = map(string, collect(1:1:length(sectorPath)))
         sectorPathList[i] = layer(x = real(sectorPath), y = imag(sectorPath), Geom.line(preserve_order=true))
     end
     coord = Coord.cartesian(xmin=-infinity, xmax=infinity, ymin=-infinity, ymax=infinity, fixed=true)

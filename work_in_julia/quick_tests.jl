@@ -296,7 +296,7 @@ a = -im
 n = 3
 symbolic = false
 infinity = 10
-zeroList = [1+sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
+zeroList = [3+3*sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
 function plot_contour(contour)
     sectorList = Array{Any}(length(contour),1)
     for i = 1:length(contour)
@@ -306,13 +306,16 @@ function plot_contour(contour)
     coord = Coord.cartesian(xmin=-10.0, xmax=10.0, ymin=-10.0, ymax=10.0, fixed=true)
     plot(coord, sectorList...)
 end
-(gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
+a = -im
+n = 4
+(gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity; nGon = 8)
 gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
 myPlot = plot_contour(gamma, 10)
 draw(PDF("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\contourPlot.pdf"), myPlot)
 
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
 plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
 
 zeroList = [1+0*im, -1+sqrt(3)*im]
 plot(x=real(gammaAPlus[1]), y=imag(gammaAPlus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
@@ -346,3 +349,30 @@ delta = get_delta(adjointU)
 delta(lambda)
 deltaChebApprox = Fun(delta, 0..1)
 roots(deltaChebApprox)
+
+# vertices = draw_squareAroundZero(1+im, 1, -im, 4)
+vertices = draw_nGonAroundZero(1-im, 1, 9)
+labels = map(string, collect(1:1:9))
+plot(x=real(vertices), y=imag(vertices), label=labels, Geom.label, Geom.point, Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+a = 1
+n = 4
+infinity = 10
+zeroList = [0+0*im, 3, 4, -3, -7]
+(gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity; nGon = 8)
+gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
+myPlot = plot_contour(gamma, 10)
+
+plot(x=real(gammaAMinus[1]), y=imag(gammaAMinus[1]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+plot(x=real(gammaAMinus[2]), y=imag(gammaAMinus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+plot(x=real(gammaAMinus[3]), y=imag(gammaAMinus[3]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+plot(x=real(gammaAPlus[2]), y=imag(gammaAPlus[2]), Coord.Cartesian(ymin=-10,ymax=10, xmin=-10, xmax=10, fixed=true))
+
+a = -im
+n = 4
+infinity = 10
+zeroList = [3+3*sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im]
+zeroList = [3+3*sqrt(3)*im, 2+2*sqrt(3)*im, 0+0*im, 0+5*im, 0-5*im, 1]
+(gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity; nGon = 8)
+gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
+myPlot = plot_contour(gamma, 10)
