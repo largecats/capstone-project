@@ -12,15 +12,18 @@ using QuadGK
 using ApproxFun
 using Roots
 using Gadfly
+using PyPlot
+pygui(true)
 include("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\construct_adjoint.jl")
 ##########################################################################################################################################################
 # Helper functions
+##########################################################################################################################################################
 # Assign string as variable name
 function assign(s::AbstractString, v::Any)
     s=Symbol(s)
     @eval (($s) = ($v))
 end
-##########################################################################################################################################################
+
 # Function addition (f + g)(x) := f(x) + g(x)
 function add_func(f::Union{Number, Function}, g::Union{Number, Function})
     function h(x)
@@ -189,7 +192,7 @@ function get_FPlusMinusLambda(adjointU::VectorBoundaryForm, lambda::Number)
     return (FPlusLambda, FMinusLambda)
 end
 
-# Returns a function that shifts a point in the interval [a,b] to a corresponding point in [-1,1]
+# Returns a function or SymPy object that shifts a point in the interval [a,b] to a corresponding point in [-1,1]
 function shift_interval(originalInterval::Tuple{Number,Number}; targetInterval = (-1,1), symbolic = true)
     (a,b) = originalInterval
     (c,d) = targetInterval
@@ -255,15 +258,16 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
     end
 end
 
-# Find the angles of the lines characterizing gammaA, boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [-2pi, 2pi). We make the interval like this to ensure that [z is in a sector] <=> [angle(z) >= sectorStart && angle(z) <= sectorEnd]
+# Find the angles of the lines characterizing gammaA, boundary of the domain {\lambda\in \C: Re(a*\lambda^n)>0} in [-2pi, 2pi). We make the interval like this to ensure that [z is in a sector] iff [angle(z) >= sectorStart && angle(z) <= sectorEnd]
 function find_gammaAAngles(a::Number, n::Int; symbolic = false)
     # thetaA = argument(a)
     thetaA = angle(a)
-    thetaStartList = Array{Number}(n) # List of where domain sectors start
-    thetaEndList = Array{Number}(n) # List of where domain sectors end
+    thetaStartList = Array{Number}(n) # List of angles that characterize where domain sectors start
+    thetaEndList = Array{Number}(n) # List of angles that characterize where domain sectors end
     if symbolic
         k = symbols("k")
         counter = 0
+        # Substituting counter for k
         while N(subs((2pi*k + pi/2 - thetaA)/n, k, counter)) < 2pi
             thetaStart = subs((2PI*k - PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
             thetaEnd = subs((2PI*k + PI/2 - rationalize(thetaA/pi)*PI)/n, k, counter)
@@ -288,7 +292,7 @@ function find_gammaAAngles(a::Number, n::Int; symbolic = false)
     return (thetaStartList, thetaEndList)
 end
 
-function isApproxLess(x::Number, y::Number; atol = 1e-15)
+function isApproxLess(x::Number, y::Number; atol = 1e-10)
     return !isapprox(x,y; atol = atol) && x < y
 end
 
@@ -622,16 +626,18 @@ function plot_contour(gamma::Array, infinity::Number)
     plot(Guide.xlabel("Re"), Guide.ylabel("Im"), coord, sectorPathList...)
 end
 
-
 # Get F in (2.15a) as a function of lambda
 function get_F(f::Function, adjointU::VectorBoundaryForm, a::Number, n::Number, zeroList::Array, infinity::Number)
     (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
     function F(lambda::Number)
         (FPlusLambda, FMinusLambda) = get_FPlusMinusLambda(adjointU, lambda)
         # if lambda in gamma+ return FPlusLambda(f); if lambda in gamma- return FMinusLambda(f)
-        if lambda in gammaAPlus || lambda in gamma0Plus
+        # How to characterize "in"?
+        # if lambda in gammaAPlus || lambda in gamma0Plus
+        if lambda >= 0
             return FPlusLambda(f)
-        elseif lambda in gammaAMinus || lambda in gamma0Minus
+        # elseif lambda in gammaAMinus || lambda in gamma0Minus
+        else
             return FMinusLambda(f)
         end
     end
@@ -652,18 +658,42 @@ function get_f(gamma::Array, F::Function)
     return f
 end
 
-# Function to find (approximately) zeroes of delta(lambda)
-function get_zeroList(delta::Function, infinity::Number)
-    # deltaChebApprox = Fun(delta, ) # domain of lambda is the complex plane, approximated by the circle of radius infinity
+# Plot approximate zeroes of delta as points where the hue changes most rapidly in the contour plot of the argument of delta below
+function plot_zeroList(delta::Function, infinity::Number)
+    xList = linspace(-infinity,infinity,1000)
+    yList = linspace(-infinity,infinity,1000)
+    zarg = [sin(angle(delta(x+im*y))) for y in yList, x in xList]
+    contourf(xList, yList, zarg, cmap=get_cmap("Spectral"))
+    # savefig("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\delta_zeroes.png")
 end
 
-# Function to solve a given IBVP with given L and U
+# # Function to find (approximately) zeroes of delta(lambda). Does not seem to perform better than human input.
+# function get_zeroList(delta::Function, infinity::Number)
+#     xList = linspace(-infinity,infinity,1000)
+#     yList = linspace(-infinity,infinity,1000)
+#     zeroList = []
+#     for x in xList
+#         for y in yList
+#             z = x+im*y
+#             # if isApprox(delta(z),0; atol = 0.05)
+#             if true
+#                 append!(zeroList, z)
+#             end
+#         end
+#     end
+#     return zeroList
+# end
+
+# Function to solve a given IBVP with given L, U, and f (p15 (3.2)), where f is as in 2.12b
 function solve_IBVP(L::LinearDifferentialOperator, U::VectorBoundaryForm, pDerivMatrix::Array, lambda::Number, a::Number, zeroList::Array, infinity::Number, f::Function) # f is given
     n = length(L.pFunctions)-1
     adjointU = construct_validAdjoint(L, U, pDerivMatrix)
     F = get_F(f, adjointU, a, n, zeroList, infinity)
+    (gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus) = find_gamma(a, n, zeroList, infinity)
+    gamma = collect(Iterators.flatten([gammaAPlus, gammaAMinus, gamma0Plus, gamma0Minus]))
     function q(x,t)
-        return f(e^(-a*lambda^n*F(lambda)))
+        # get_f is f_x: F(lambda) -> f(x), get_F is F_lambda: f(x) -> F(lambda)
+        return get_f(gamma, e^(-a*lambda^n*t)*get_F(f, adjointU, a, n, zeroList, infinity))
     end
     return q
 end

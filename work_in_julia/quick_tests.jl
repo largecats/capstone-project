@@ -168,7 +168,7 @@ lambda = 1.5
 (MPlus, MMinus) = get_MPlusMinus(adjointU, lambda)
 M = get_M(adjointU, lambda)
 f(x) = x
-(FPlus, FMinus) = get_FPlusMinus(adjointU, f, lambda)
+(FPlus, FMinus) = get_FPlusMinusLambda(adjointU, f, lambda)
 
 f(x) = exp(-im*x)*(3x^2+cos(x)+1)
 fChebApproxSym = get_ChebyshevApproximation(f, 0, 1; symbolic = true)
@@ -344,7 +344,7 @@ lambda = 1.5
 (MPlus, MMinus) = get_MPlusMinus(adjointU)
 M = get_M(adjointU)
 f(x) = x
-(FPlus, FMinus) = get_FPlusMinus(adjointU, lambda)
+(FPlus, FMinus) = get_FPlusMinusLambda(adjointU, lambda)
 delta = get_delta(adjointU)
 delta(lambda)
 deltaChebApprox = Fun(delta, 0..1)
@@ -383,3 +383,37 @@ myPlot = plot_contour(gamma, 10)
 draw(PDF("C:\\Users\\LinFan Xiao\\Academics\\College\\Capstone\\work_in_julia\\contourPlot.pdf"), myPlot)
 
 myPlot = contour_tracing(-im, 5, 10, 10000)
+
+a = -im
+n = 3
+find_gammaAAngles(a::Number, n::Int; symbolic = true)
+find_gammaAAngles(a::Number, n::Int; symbolic = false)
+
+# Find zeroes of delta
+t = symbols("t")
+(a,b) = (0,1)
+symPFunctions = [t+im t*im t]
+pFunctions = [t->t+im t->t*im t->t]
+symL = SymLinearDifferentialOperator(symPFunctions, (a,b), t)
+L = LinearDifferentialOperator(pFunctions, (a,b), symL)
+n = 2
+# MCandRe = rand(Uniform(1.0,10.0), n, n)
+# MCandIm = rand(Uniform(1.0,10.0), n, n)
+MCandRe = [1 0; 0 1]
+MCandIm = [1 0; 0 1]
+MCand = MCandRe + MCandIm*im
+# NCandRe = rand(Uniform(1.0,10.0), n, n)
+# NCandIm = rand(Uniform(1.0,10.0), n, n)
+NCandRe = [0 0; 0 0]
+NCandIm = [0 0; 0 0]
+NCand = NCandRe + NCandIm*im
+U = VectorBoundaryForm(MCand, NCand)
+pDerivMatrix = [t->t+im t->t; t->t*im t->im]
+adjointU = construct_validAdjoint(L, U, pDerivMatrix)
+delta = get_delta(adjointU)
+infinity = 10
+plot_zeroList(delta, infinity::Number)
+zeroList = [0+0*im]
+lambda = 1
+f = # S is L, what is f??
+solve_IBVP(L, U, pDerivMatrix, lambda, a, zeroList, infinity, f)
