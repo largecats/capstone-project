@@ -415,5 +415,5 @@ infinity = 10
 plot_zeroList(delta, infinity::Number)
 zeroList = [0+0*im]
 lambda = 1
-f = # S is L, what is f??
+f = # S is L, f is q(x,0), a given parameter of the IBVP
 solve_IBVP(L, U, pDerivMatrix, lambda, a, zeroList, infinity, f)
