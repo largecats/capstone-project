@@ -417,3 +417,13 @@ zeroList = [0+0*im]
 lambda = 1
 f = # S is L, f is q(x,0), a given parameter of the IBVP
 solve_IBVP(L, U, pDerivMatrix, lambda, a, zeroList, infinity, f)
+
+##########################################################################################################################################################
+# find_roots_exponential_polynomial.jl
+##########################################################################################################################################################
+using SymPy
+using Plots
+
+lambda = symbols("lambda")
+delta = cos(lambda)*e^lambda
+separate_real_imaginary(delta)
