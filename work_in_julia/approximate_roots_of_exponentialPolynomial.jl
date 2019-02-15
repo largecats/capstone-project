@@ -53,21 +53,25 @@ end
 function separate_real_imaginary_mult(expr::SymPy.Sym)
     terms = args(expr)
     result = 1
-    # if the expanded expression contains toplevel multiplication, the individual terms must all be powers
+    # if the expanded expression contains toplevel multiplication, the individual terms must all be exponentials or powers
     for term in terms
         println("term = $term")
         # if term is exponential
         if func(term) == func(sympyExpExpr)
             termSeparated = separate_real_imaginary_exp(term)
-        # else, further split each product term into indivdual factors
+        # if term is power (not sure if this case and the case below overlaps)
+        elseif func(term) == func(sympyPowerExpr)
+            termSeparated = separate_real_imaginary_power(term)
+            # else, further split each product term into indivdual factors (this case also includes the case where term is a number, which would go into the "constant" below)
         else
-            (constant, factors) = factor_list(term)
-            termSeparated = constant
-            # separate each factor into real and imaginary parts and collect the product of separated factors
-            for (factor, power) in factors
-                factor = factor^power
-                termSeparated = termSeparated * (real(factor) + im*imag(factor))
-            end
+            termSeparated = term # term is a number
+#             (constant, factors) = factor_list(term)
+#             termSeparated = constant
+#             # separate each factor into real and imaginary parts and collect the product of separated factors
+#             for (factor, power) in factors
+#                 factor = factor^power
+#                 termSeparated = termSeparated * (real(factor) + im*imag(factor))
+#             end
         end
         println("termSeparated = $termSeparated") 
         # collect the product of separated term, i.e., product of separated factors
@@ -77,16 +81,29 @@ function separate_real_imaginary_mult(expr::SymPy.Sym)
 end
 # helper function that deals with the case where func(expr) = func(sympyAddExpr)
 function separate_real_imaginary_add(expr::SymPy.Sym)
-    # if the expanded expression contains toplevel addition, the individual terms must all be products
+    # if the expanded expression contains toplevel addition, the individual terms must all be products or symbols
     terms = args(expr)
     result = 0
+    # termSeparated = 0 # to avoid undefined error if there is no else (case incomplete)
     for term in terms
+        println("term = $term")
+        # if term is a symbol
+        if func(term) == func(x)
+            termSeparated = term
         # if term is exponential
-        if func(term) == func(sympyExpExpr)
+        elseif func(term) == func(sympyExpExpr)
             termSeparated = separate_real_imaginary_exp(term)
-        else #if func(term) = func(sympyMultExpr)
+        # if term is a power
+        elseif func(term) == func(sympyPowerExpr)
+            termSeparated = separate_real_imaginary_power(term)
+        # if term is a product
+        elseif func(term) == func(sympyMultExpr)
             termSeparated = separate_real_imaginary_mult(term)
+        # if term is a number
+        else
+            termSeparated = term
         end
+        println("termSeparated = $termSeparated")
         result = result + termSeparated
     end
     return result
@@ -105,7 +122,7 @@ function separate_real_imaginary_power_add_mult(expr::SymPy.Sym)
         result = separate_real_imaginary_power(expr)
     elseif func(expr) == func(sympyAddExpr)
         result = separate_real_imaginary_add(expr)
-    else # if func(expr) == func(sympyMultExpr)
+    elseif func(expr) == func(sympyMultExpr)
         result = separate_real_imaginary_mult(expr)
     end
     return result
@@ -151,16 +168,30 @@ end
 
 # function to plot the level curves real(Delta(lambda)) = 0 and imaginary(Delta(lambda)) = 0
 function plot_level_curves(separatedDelta::SymPy.Sym; realFunc = real(separatedDelta), imagFunc = imag(separatedDelta), xRange = (-infty, infty), yRange = (-infty, infty), step = infty/1000)
+    xGridStep = (xRange[2] - xRange[1])/50
+    yGridStep = (yRange[2] - yRange[1])/50
     if free_symbols(separatedDelta) == [x, y]
-       Plots.contour(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], realFunc, levels=[0], size = (1500, 1000), 
-            tickfontsize = 20, seriescolor=:reds, transpose = false, linewidth = 4, linealpha = 1)
-        Plots.contour!(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], imagFunc, levels=[0], size = (1500, 1000),
-            tickfontsize = 20, seriescolor=:blues, transpose = false, linewidth = 4, linealpha = 1)
+       Plots.contour(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], realFunc, levels=[0], 
+            size = (1500, 1000), tickfontsize = 20, seriescolor=:reds, transpose = false, 
+            linewidth = 4, linealpha = 1, 
+            xticks = xRange[1]:xGridStep:xRange[2], yticks = yRange[1]:yGridStep:yRange[2], 
+            grid = true, gridalpha = 0.5)
+        Plots.contour!(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], imagFunc, levels=[0], 
+            size = (1500, 1000), tickfontsize = 20, seriescolor=:blues, transpose = false, 
+            linewidth = 4, linealpha = 1,
+            xticks = xRange[1]:xGridStep:xRange[2], yticks = yRange[1]:yGridStep:yRange[2], 
+            grid = true, gridalpha = 0.5)
     else
-        Plots.contour(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], realFunc, levels=[0], size = (1500, 1000), 
-            tickfontsize = 20, seriescolor=:reds, transpose = true, linewidth = 4, linealpha = 1)
-        Plots.contour!(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], imagFunc, levels=[0], size = (1500, 1000),
-            tickfontsize = 20, seriescolor=:blues, transpose = true, linewidth = 4, linealpha = 1)
+        Plots.contour(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], realFunc, levels=[0], 
+            size = (1500, 1000), tickfontsize = 20, seriescolor=:reds, transpose = true, 
+            linewidth = 4, linealpha = 1, 
+            xticks = xRange[1]:xGridStep:xRange[2], yticks = yRange[1]:yGridStep:yRange[2], 
+            grid = true, gridalpha = 0.5)
+        Plots.contour!(xRange[1]:step:xRange[2], yRange[1]:step:yRange[2], imagFunc, levels=[0], 
+            size = (1500, 1000), tickfontsize = 20, seriescolor=:blues, transpose = true, 
+            linewidth = 4, linealpha = 1, 
+            xticks = xRange[1]:xGridStep:xRange[2], yticks = yRange[1]:yGridStep:yRange[2], 
+            grid = true, gridalpha = 0.5)
     end
 end
 
