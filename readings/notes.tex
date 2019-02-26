@@ -1728,9 +1728,9 @@ K_1(z) &= \frac{e^z-1}{z}\\
 K_{n}(z) &= K_{n-2}(z) + 2\left(\frac{e^z-\cos(\frac{(n-1)\pi}{2})}{z} - \frac{n-1}{z}K_{n-1}(z)\right),\quad n\geq 2.
 \end{align*}
 
-Since the Chebyshev coefficients are given on $[-1,1]$, we write 
-\[f(x)=\sum_{n=0}^N a_n T_n(g(x))\]
-where $g(x):[0,1]\to [-1,1]$ is an interval shift function given by $g(x)=2x-1$. As before, we wish to compute
+Since the Chebyshev coefficients are given on $[-1,1]$, we need to shift the interval via some function $g(x)$ such that
+\[f(x) = \sum_{n=0}^N b_n T_n(g(x)).\]
+Define $g(x):[0,1]\to [-1,1]$ by $g(x)=2x-1$. As before, we wish to compute
 \[\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx.\]
 With the change of variable $t=g(x)=2x-1$, we have $x=g^{-1}(t)=\frac{t+1}{2}$. Writing $c=\frac{\alpha^{l-1}\lambda}{2}$, we have
 \begin{align*}
@@ -1845,6 +1845,8 @@ Hence, for $c\in\mathbb{C}\setminus\{0\}$,
 \end{align*}
 
 In summary,
+\[f(x) = f\circ g^{-1}(g(x)) = q(g(x)) = q(t) = \sum_{n=0}^N b_n T_n(t) = \sum_{n=0}^N b_n T_n(g(x)),\]
+and
 \begin{align*}
     \int_{-1}^1 e^{-ic t}q(t)\,dt &= \sum_{n=0}^N b_n \int_{-1}^1 e^{-ic t} \cos(n\cdot\cos^{-1}(t))\,dt\\
     &= \sum_{n=0}^N b_n \tilde{T}_n(\frac{\alpha^{l-1}\lambda}{2}),
