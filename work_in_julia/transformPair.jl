@@ -243,6 +243,7 @@ function get_ChebyshevApproximation(f::Function, interval::Tuple{Number,Number};
                 # Here, we compose the interval shift function with the Chebyshev term.
                 chebTerm = get_ChebyshevSeriesTerm(i-1; symbolic = symbolic)
                 summand = mult_func(chebCoefficient, x -> chebTerm(shift_interval((a,b); symbolic = symbolic)(x)))
+                # summand = mult_func(chebCoefficient, chebTerm)
                 sum = add_func(sum, summand)
             end
             return sum(x)

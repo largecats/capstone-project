@@ -1593,5 +1593,278 @@ For example, when $a=-i$ and $n=3$,
 \[\theta_\lambda\in \bigcup_{k\in\Z}\left(\frac{2\pi k -\frac{\pi}{2}-(-\frac{\pi}{2})}{3},\,\frac{2\pi k + \frac{\pi}{2}-(-\frac{\pi}{2})}{3}\right) = \bigcup_{k\in\Z}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right).\]
 Thus, in $[0,2\pi)$,
 \[\theta_\lambda=\arg(\lambda)\in \bigcup_{k\in\{0,1,2\}}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right) = (0,\frac{\pi}{3})\cup (\frac{2\pi}{3}, \pi)\cup (\frac{4\pi}{3}, \frac{5\pi}{3}).\]
+
+\subsubsection{Integral of Chebyshev polynomial}
+Suppose that on $[0,1]$,
+\begin{align*}
+f(x) = \sum_{n=0}^N a_n T_n(x)
+\end{align*}
+is a finite sum of Chebyshev polynomials
+\begin{align*}
+T_n(x) = 
+\begin{cases}
+\cos(n\cdot \arccos(x))&\quad\mbox{$|x|\leq 1$}\\
+\frac{1}{2}\left((x-\sqrt{x^2-1})^n + (x+\sqrt{x^2-1})^n\right)&\quad\mbox{$|x|>1$}.
+\end{cases}
+\end{align*}
+Then
+$$f(x) = \sum_{n=0}^N a_n \cos(n\cdot \arccos(x)).$$
+\begin{align*}
+\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx &= \int_0^1e^{-i\alpha^{l-1}\lambda x}\sum_{n=0}^N a_n \cos(n\cdot \arccos(x))\,dx\\
+&= \sum_{n=0}^N a_n\int_0^1e^{-i\alpha^{l-1}\lambda x}\cos(n\cdot \arccos(x))\,dx.
+\end{align*}
+Writing $c=\alpha^{l-1}\lambda$, 
+$$\int_0^1e^{-i\alpha^{l-1}\lambda x}\cos(n\cdot \arccos(x))\,dx = \int_0^1e^{-ic x}\cos(n\cdot \arccos(x))\,dx.$$
+
+Writing $x=\cos\theta$,
+\begin{align*}
+\int_0^1e^{-ic x}\cos(n\cdot \arccos(x))\,dx &= \int_0^1e^{-ic \cos\theta}\cos(n\cdot \arccos(\cos\theta))\,d\cos\theta\\
+&= \int_{\pi/2}^0 e^{-ic \cos\theta}\cos(n\theta)(-\sin\theta)\,d\theta\\
+&= \int_0^{\pi/2} e^{-ic \cos\theta}\cos(n\theta)\sin\theta\,d\theta.
+\end{align*}
+
+Define
+$$\tilde{T}_n(c) := \int_0^{\pi/2} e^{-ic \cos\theta}\cos(n\theta)\sin\theta\,d\theta.$$
+Then
+\begin{align*}
+\tilde{T}_n(0) = \int_0^{\pi/2}\cos(n\theta)\sin\theta\,d\theta &=
+\begin{cases}
+1&\quad\mbox{if $n=0$}\\
+[\frac{1}{2}\sin^2\theta + \frac{0}{2}\cos^2\theta]_0^{\frac{\pi}{2}}&\quad\mbox{if $n=1$}\\
+\left[\frac{n}{(n-1)(n+1)}\sin\theta\sin(n\theta) + \frac{1}{(n-1)(n+1)}\cos\theta\cos(n\theta)\right]_0^{\frac{\pi}{2}}&\quad\mbox{if $n\geq 2$}
+\end{cases}\\
+&= 
+\begin{cases}
+1&\quad\mbox{if $n=0$}\\
+\frac{1}{2}\sin^2(\frac{\pi}{2}) - \frac{1}{2}\sin^2(0)&\quad\mbox{if $n=1$}\\
+\frac{n}{n^2-1}\sin(\frac{\pi}{2})\sin(\frac{n\pi}{2}) + \frac{1}{n^2-1}\cos(\frac{\pi}{2})\cos(\frac{n\pi}{2})\\ 
+- \frac{n}{n^2-1}\sin(0)\sin(0) - \frac{1}{n^2-1}\cos(0)\cos(0)&\quad\mbox{if $n\geq 2$}
+\end{cases}\\
+&= 
+\begin{cases}
+1&\quad\mbox{if $n=0$}\\
+\frac{1}{2}&\quad\mbox{if $n=1$}\\
+\frac{n}{n^2-1}\sin(\frac{n\pi}{2})-\frac{1}{n^2-1}&\quad\mbox{if $n\geq 2$}
+\end{cases}.
+\end{align*}
+
+For $c\in\mathbb{C}\setminus\{0\}$, using integration by parts,
+\begin{align*}
+\tilde{T}_n(c) &= \int_0^{\pi/2} e^{-ic \cos\theta}\cos(n\theta)\sin\theta\,d\theta\\
+&= \left[\cos(n\theta)\frac{1}{ic}e^{-ic\cos\theta}\right]_0^{\frac{\pi}{2}} - \int_0^{\frac{\pi}{2}}\frac{1}{ic}e^{-ic\cos\theta}n(-\sin(n\theta))\,d\theta\\
+&= \left[\cos(\frac{n\pi}{2})\frac{1}{ic}e^{-ic\cos(\frac{\pi}{2})} - \cos(0)\frac{1}{ic}e^{-ic\cos 0}\right] + \frac{n}{ic}\int_0^{\frac{\pi}{2}}e^{-ic\cos\theta}\sin(n\theta)\,d\theta\\
+&= \frac{1}{ic}\left(n\int_0^{\frac{\pi}{2}}e^{-ic\cos\theta}\sin(n\theta)\,d\theta + \cos(\frac{n\pi}{2})- e^{-ic}\right).
+\end{align*}
+
+Let $z\in\mathbb{C}\setminus\{0\}$, and define
+$$K_n(z) := \int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin(n\theta)\,d\theta.$$
+Then
+$$K_0(z) = \int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin 0\,d\theta=0,$$
+\begin{align*}
+K_1(z) &= \int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin\theta\,d\theta\\
+&= \left[-\frac{1}{z}e^{z\cos\theta}\right]_0^{\frac{\pi}{2}}\\
+&= -\frac{1}{z}e^{z\cos(\frac{\pi}{2})} + \frac{1}{z}e^{z\cos 0}\\
+&= \frac{1}{z}(e^z-1).
+\end{align*}
+To compute $K_n(z)$ for $n\geq 2$, we first note that
+\begin{align*}
+\sin((n+1)\theta) - \sin((n-1)\theta) &= \frac{e^{i(n+1)\theta} - e^{-i(n+1)\theta}}{2i} - \frac{e^{i(n-1)\theta} - e^{-i(n-1)\theta}}{2i}\\
+&= \frac{e^{in\theta}e^{i\theta} - e^{in\theta}e^{-\theta} - e^{-in\theta}e^{-i\theta} + e^{-in\theta}e^{i\theta}}{2i}\\
+&= \frac{(e^{i\theta}-e^{-i\theta})(e^{in\theta}+e^{-in\theta})}{2i}\\
+&= 2\left(\frac{e^{i\theta}-e^{-i\theta}}{2i}\right)\left(\frac{e^{in\theta}+e^{-in\theta}}{2}\right)\\
+&= 2\sin\theta\cos(n\theta).
+\end{align*}
+So
+$$\sin((n+1)\theta) = \sin((n-1)\theta) + 2\sin\theta\cos(n\theta).$$
+Thus,
+\begin{align*}
+K_{n+1}(z) &= \int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin((n+1)\theta)\,d\theta\\
+&= \int_0^{\frac{\pi}{2}}e^{z\cos\theta}(\sin((n-1)\theta) + 2\sin\theta\cos(n\theta))\,d\theta\\
+&= \int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin((n-1)\theta)\,d\theta + 2\int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin\theta\cos(n\theta)\,d\theta\\
+&= K_{n-1}(z) + 2\int_0^{\frac{\pi}{2}}\cos(n\theta)\sin\theta e^{z\cos\theta}\,d\theta.
+\end{align*}
+Using integration by parts,
+\begin{align*}
+\int_0^{\frac{\pi}{2}}\cos(n\theta)\sin\theta e^{z\cos\theta}\,d\theta &= \left[-\frac{1}{z}e^{z\cos\theta}\cos(n\theta)\right]_0^{\frac{\pi}{2}} - \int_0^{\frac{\pi}{2}}\frac{1}{z}e^{z\cos\theta}n\sin(n\theta)\,d\theta\\
+&= -\frac{1}{z}e^{z\cos(\frac{\pi}{2})}\cos(\frac{n\pi}{2}) + \frac{1}{z}e^{z\cos 0}\cos 0 - \frac{n}{z}\int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin(n\theta)\,d\theta\\
+&= \begin{cases}
+    \frac{1}{z}e^z - \frac{n}{z}K_n(z)&\quad\mbox{if $n$ odd}\\
+    \frac{1}{z}(e^z-1) - \frac{n}{z}K_n(z)&\quad\mbox{if $n$ is multiple of $4$}\\
+    \frac{1}{z}(e^z+1) - \frac{n}{z}K_n(z)&\quad\mbox{else}
+\end{cases}\\
+&= \frac{1}{z}(e^z-\cos(\frac{n\pi}{2})) - \frac{n}{z}K_n(z).
+\end{align*}
+Thus, $K_n(z)$ satisfies the recurrence relation
+\begin{align*}
+K_0(z) &= 0\\
+K_1(z) &= \frac{e^z-1}{z}\\
+K_{n}(z) &= K_{n-2}(z) + 2\left(\frac{e^z-\cos(\frac{(n-1)\pi}{2})}{z} - \frac{n-1}{z}K_{n-1}(z)\right),\quad n\geq 2.
+\end{align*}
+Hence, for $c\in\mathbb{C}\setminus\{0\}$,
+\begin{align*}
+\tilde{T}_n(c) &= \frac{1}{ic}\left(n\int_0^{\frac{\pi}{2}}e^{-ic\cos\theta}\sin(n\theta)\,d\theta + \cos(\frac{n\pi}{2})- e^{-ic}\right)\\
+&= \frac{1}{ic}\left(nK_n(-ic) + \cos(\frac{n\pi}{2}) - e^{-ic}\right).
+\end{align*}
+
+In summary,
+\begin{align*}
+\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx &= \sum_{n=0}^N a_n\int_0^1e^{-i\alpha^{l-1}\lambda x}\cos(n\cdot \arccos(x))\,dx\\
+&= \sum_{n=0}^N a_n \tilde{T}_n(\alpha^{l-1}\lambda),
+\end{align*}
+where 
+\begin{alignat*}{2}
+\tilde{T}_n(c) = \int_0^{\pi/2} e^{-ic \cos\theta}\cos(n\theta)\sin\theta\,d\theta &=
+\begin{cases}
+1&\quad\mbox{if $n=0$}\\
+\frac{1}{2}&\quad\mbox{if $n=1$}\\
+\frac{n}{n^2-1}\sin(\frac{n\pi}{2})-\frac{1}{n^2-1}&\quad\mbox{if $n\geq 2$}
+\end{cases},&\quad\mbox{$c=0$}\\
+&= \frac{1}{ic}\left(nK_n(-ic) + \cos(\frac{n\pi}{2}) - e^{-ic}\right),&\quad\mbox{$c\neq 0$},
+\end{alignat*}
+where
+\begin{align*}
+K_0(z) &= 0\\
+K_1(z) &= \frac{e^z-1}{z}\\
+K_{n}(z) &= K_{n-2}(z) + 2\left(\frac{e^z-\cos(\frac{(n-1)\pi}{2})}{z} - \frac{n-1}{z}K_{n-1}(z)\right),\quad n\geq 2.
+\end{align*}
+
+Since the Chebyshev coefficients are given on $[-1,1]$, we write 
+\[f(x)=\sum_{n=0}^N a_n T_n(g(x))\]
+where $g(x):[0,1]\to [-1,1]$ is an interval shift function given by $g(x)=2x-1$. As before, we wish to compute
+\[\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx.\]
+With the change of variable $t=g(x)=2x-1$, we have $x=g^{-1}(t)=\frac{t+1}{2}$. Writing $c=\frac{\alpha^{l-1}\lambda}{2}$, we have
+\begin{align*}
+    \int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx &= \int_0^1 e^{-i2c\frac{t+1}{2}}f(\frac{t+1}{2})\,d(\frac{t+1}{2})\\
+    &= \int_{-1}^1 e^{-ict}e^{-ic}f(\frac{t+1}{2})\frac{1}{2}\,dt\\
+    &= \frac{1}{2e^{ic}}\int_{-1}^1 e^{-ict} f(\frac{t+1}{2})\,dt\\
+    &= \frac{1}{2e^{ic}}\int_{-1}^1 e^{-ict} q(t)\,dt,
+\end{align*}
+where $q(t) := f\circ g^{-1}(t)$. Thus, it suffices to find 
+\[\int_{-1}^1 e^{-ict} q(t)\,dt.\]
+
+Suppose that on $[-1,1]$,
+\[q(t) = \sum_{n=0}^N b_n T_n(t)\]
+is a finite sum of Chebyshev polynomials
+\begin{align*}
+T_n(x) = 
+\begin{cases}
+\cos(n\cdot \arccos(x))&\quad\mbox{$|x|\leq 1$}\\
+\frac{1}{2}\left((x-\sqrt{x^2-1})^n + (x+\sqrt{x^2-1})^n\right)&\quad\mbox{$|x|>1$}.
+\end{cases}
+\end{align*}
+Then
+\[q(t) = \sum_{n=0}^N b_n \cos(n\cdot \cos^{-1}(t)),\]
+and so 
+\begin{align*}
+    \int_{-1}^1 e^{-ict} q(t)\,dt &= \int_{-1}^1 e^{-ict} \sum_{n=0}^N b_n \cos(n\cdot \cos^{-1}(t))\,dt \\
+    &= \sum_{n=0}^N b_n \int_{-1}^1 e^{-ict}\cos(n\cdot \cos^{-1}(t))\,dt.
+\end{align*}
+With the change of variable $t=\cos\theta$,
+\begin{align*}
+    \int_{-1}^1 e^{-ict}\cos(n\cdot \cos^{-1}(t))\,dt &= \int_{-1}^1 e^{-ic\cos\theta}\cos(n\cdot \cos^{-1}(\cos\theta))\,d\cos\theta\\
+    &= \int_\pi^0 e^{-ic\cos\theta} \cos(n\theta) (-\sin\theta)\,d\theta\\
+    &= \int_0^\pi e^{-ic\cos\theta} \cos(n\theta) \sin\theta\,d\theta.
+\end{align*}
+Define
+\begin{align*}
+    \tilde{T_n})(c) := \int_0^\pi e^{-ic\cos\theta} \cos(n\theta) \sin\theta\,d\theta.
+\end{align*}
+Then 
+\begin{align*}
+    \tilde{T}_n(0) = \int_0^{\pi}\cos(n\theta)\sin\theta\,d\theta &=
+    \begin{cases}
+    2&\quad\mbox{if $n=0$}\\
+    [\frac{1}{2}\sin^2\theta + \frac{0}{2}\cos^2\theta]_0^{\pi}&\quad\mbox{if $n=1$}\\
+    \left[\frac{n}{(n-1)(n+1)}\sin\theta\sin(n\theta) + \frac{1}{(n-1)(n+1)}\cos\theta\cos(n\theta)\right]_0^{\pi}&\quad\mbox{if $n\geq 2$}
+    \end{cases}\\
+    &= 
+    \begin{cases}
+    2&\quad\mbox{if $n=0$}\\
+    \frac{1}{2}\sin^2(\pi) - \frac{1}{2}\sin^2(0)&\quad\mbox{if $n=1$}\\
+    \frac{n}{n^2-1}\sin(\pi)\sin(n\pi) + \frac{1}{n^2-1}\cos(\pi)\cos(n\pi)\\ 
+    - \frac{n}{n^2-1}\sin(0)\sin(0) - \frac{1}{n^2-1}\cos(0)\cos(0)&\quad\mbox{if $n\geq 2$}
+    \end{cases}\\
+    &= 
+    \begin{cases}
+    2&\quad\mbox{if $n=0$}\\
+    0&\quad\mbox{if $n=1$}\\
+    \frac{(-1)^{n+1}-1}{n^2-1}&\quad\mbox{if $n\geq 2$}
+    \end{cases}.
+\end{align*}
+For $c\in\C\setminus\{0\}$, using integration by parts,
+\begin{align*}
+    \tilde{T}_n(c) &= \int_0^\pi e^{-ic\cos\theta}\cos(n\theta)\sin\theta\,d\theta\\
+    &= \left[\cos(n\theta)\frac{1}{ic}e^{-ic\cos\theta}\right]_0^{\pi} - \int_0^{\pi}\frac{1}{ic}e^{-ic\cos\theta}n(-\sin(n\theta))\,d\theta\\
+    &= \left[\cos(n\pi)\frac{1}{ic}e^{-ic\cos(\pi)} - \cos(0)\frac{1}{ic}e^{-ic\cos 0}\right] + \frac{n}{ic}\int_0^{\pi}e^{-ic\cos\theta}\sin(n\theta)\,d\theta\\
+    &= \frac{1}{ic}\left(n\int_0^{\pi}e^{-ic\cos\theta}\sin(n\theta)\,d\theta + (-1)^n e^{ic}- e^{-ic}\right).
+\end{align*}
+
+Let $z\in \C\setminus\{0\}$, define 
+\[K_n(z):=\int_0^\pi e^{z\cos\theta}\sin(n\theta)\,d\theta.\]
+Then
+$$K_0(z) = \int_0^{\pi}e^{z\cos\theta}\sin 0\,d\theta=0,$$
+\begin{align*}
+K_1(z) &= \int_0^{\pi}e^{z\cos\theta}\sin\theta\,d\theta\\
+&= \left[-\frac{1}{z}e^{z\cos\theta}\right]_0^{\pi}\\
+&= -\frac{1}{z}e^{z\cos(\pi)} + \frac{1}{z}e^{z\cos 0}\\
+&= \frac{e^z - e^{-z}}{z}
+\end{align*}
+To compute $K_n(z)$ for $n\geq 2$, we first note that
+\begin{align*}
+\sin((n+1)\theta) - \sin((n-1)\theta) &= \frac{e^{i(n+1)\theta} - e^{-i(n+1)\theta}}{2i} - \frac{e^{i(n-1)\theta} - e^{-i(n-1)\theta}}{2i}\\
+&= \frac{e^{in\theta}e^{i\theta} - e^{in\theta}e^{-\theta} - e^{-in\theta}e^{-i\theta} + e^{-in\theta}e^{i\theta}}{2i}\\
+&= \frac{(e^{i\theta}-e^{-i\theta})(e^{in\theta}+e^{-in\theta})}{2i}\\
+&= 2\left(\frac{e^{i\theta}-e^{-i\theta}}{2i}\right)\left(\frac{e^{in\theta}+e^{-in\theta}}{2}\right)\\
+&= 2\sin\theta\cos(n\theta).
+\end{align*}
+So
+$$\sin((n+1)\theta) = \sin((n-1)\theta) + 2\sin\theta\cos(n\theta).$$
+Thus,
+\begin{align*}
+K_{n+1}(z) &= \int_0^{\pi}e^{z\cos\theta}\sin((n+1)\theta)\,d\theta\\
+&= \int_0^{\pi}e^{z\cos\theta}(\sin((n-1)\theta) + 2\sin\theta\cos(n\theta))\,d\theta\\
+&= \int_0^{\pi}e^{z\cos\theta}\sin((n-1)\theta)\,d\theta + 2\int_0^{\frac{\pi}{2}}e^{z\cos\theta}\sin\theta\cos(n\theta)\,d\theta\\
+&= K_{n-1}(z) + 2\int_0^{\pi}\cos(n\theta)\sin\theta e^{z\cos\theta}\,d\theta.
+\end{align*}
+Using integration by parts,
+\begin{align*}
+\int_0^{\pi}\cos(n\theta)\sin\theta e^{z\cos\theta}\,d\theta &= \left[-\frac{1}{z}e^{z\cos\theta}\cos(n\theta)\right]_0^{\pi} - \int_0^{\pi}\frac{1}{z}e^{z\cos\theta}n\sin(n\theta)\,d\theta\\
+&= -\frac{1}{z}e^{z\cos(\pi)}\cos(n\pi) + \frac{1}{z}e^{z\cos 0}\cos 0 - \frac{n}{z}\int_0^{\pi}e^{z\cos\theta}\sin(n\theta)\,d\theta\\
+&= \frac{e^z}{z} + (-1)^{n+1}\frac{e^{-z}}{z} - \frac{n}{z}K_n(z).
+\end{align*}
+Thus, $K_n(z)$ satisfies the recurrence relation
+\begin{align*}
+K_0(z) &= 0\\
+K_1(z) &= \frac{e^z-e^{-z}}{z}\\
+K_{n}(z) &= K_{n-2}(z) + 2\left(\frac{e^z}{z} + (-1)^{n}\frac{e^{-z}}{z} - \frac{n-1}{z}K_{n-1}(z)\right),\quad n\geq 2.
+\end{align*}
+Hence, for $c\in\mathbb{C}\setminus\{0\}$,
+\begin{align*}
+\tilde{T}_n(c) &= \frac{1}{ic}\left(n\int_0^{\pi}e^{-ic\cos\theta}\sin(n\theta)\,d\theta + (-1)^n e^{ic}- e^{-ic}\right)\\
+&= \frac{1}{ic}\left(nK_n(-ic) + (-1)^n e^{ic} - e^{-ic}\right).
+\end{align*}
+
+In summary,
+\begin{align*}
+    \int_{-1}^1 e^{-ic t}q(t)\,dt &= \sum_{n=0}^N b_n \int_{-1}^1 e^{-ic t} \cos(n\cdot\cos^{-1}(t))\,dt\\
+    &= \sum_{n=0}^N b_n \tilde{T}_n(\frac{\alpha^{l-1}\lambda}{2}),
+\end{align*}
+where 
+\begin{alignat*}{2}
+    \tilde{T}_n(c) = \int_0^\pi e^{-ic\cos\theta}\cos(n\theta)\sin\theta\,d\theta &= 
+    \begin{cases}
+        2 &\quad\mbox{if $n=0$}\\
+        0 &\quad\mbox{if $n=1$}\\
+        \frac{(-1)^{n+1}-1}{n^2-1} &\quad\mbox{if $n\geq 2$}
+    \end{cases},
+    &\quad\mbox{if $c=0$}\\
+    &= \frac{1}{ic}\left(nK_n(-ic) + (-1)^n e^{ic} - e^{-ic}\right)&\quad\mbox{if $c\neq 0$},
+\end{alignat*}
+where 
+\begin{align*}
+    K_0(z) &= 0\\
+    K_1(z) &= \frac{e^z-e^{-z}}{z}\\
+    K_{n}(z) &= K_{n-2}(z) + 2\left(\frac{e^z}{z} + (-1)^{n}\frac{e^{-z}}{z} - \frac{n-1}{z}K_{n-1}(z)\right),\quad n\geq 2.
+\end{align*}
 \end{document}
 
