@@ -595,7 +595,7 @@ function check_adjoint(L::LinearDifferentialOperator, U::VectorBoundaryForm, adj
     # println("M * inv(BEvalA) * P = $left")
     # println("N * inv(BEvalB) * Q = $right")
     tol = set_tol_matrix(left, right)
-    return all(i -> isapprox(left[i], right[i]; atol = tol), length(left)) # Can't use == to deterimine equality because left and right are arrays of floats
+    return all(i -> isapprox(left[i], right[i]; atol = tol), 1:length(left)) # Can't use == to deterimine equality because left and right are arrays of floats
 end
 
 # Find a valid adjoint
