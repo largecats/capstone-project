@@ -1953,6 +1953,14 @@ end
 
 sym = free_symbols(FPlusSymF)[1]
 
+FPlusSymF = simplify(FPlusSym(f))
+FPlusSymFFunc = lambdify(FPlusSymF)
+for lambda = 1:20
+    tic()
+    FPlusSymFFunc(lambda)
+    toc()
+end
+
 for lambda = 1:20
     tic()
     subs(FPlusSymF, sym, lambda)
