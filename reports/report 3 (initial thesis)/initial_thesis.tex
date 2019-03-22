@@ -64,10 +64,10 @@ AY 2018/2019\\
 \pagebreak
 \pagenumbering{arabic}
 
-\section{Introduction}
-Evolution partial differential equations (PDEs) relate a quantity to its rates of change with respect to both time and position. Evolution PDEs can model a variety of phenomena in physics, such as wave propagation and particle motion. This project concerns implementing an algorithmic procedure to solve a certain class of initial-boundary value problems (IBVP) for evolution PDEs in the finite interval \cite{Smith2016} based on the Fokas transform method \cite{Fokas2008}. The implementation is done in Julia, with a focus on symbolic results among numeric features.
+\section{Introduction}\label{sec:intro}
+Evolution partial differential equations (PDEs) relate a quantity to its rates of change with respect to both time and position. Evolution PDEs can model a variety of phenomena in physics, such as wave propagation and particle motion. This project concerns implementing an algorithmic procedure to solve a certain class of initial-boundary value problems (IBVPs) for evolution PDEs in the finite interval \cite{Smith2016} based on the Fokas transform method \cite{Fokas2008}. The implementation is done in Julia, with a focus on symbolic results among numeric features.
 
-\subsection{Motivation}
+\subsection{Motivation}\label{sec:motivation}
 To motivate the project, suppose we want to solve some IBVPs.
 
 Certain IBVPs (henceforth referred to as type I problems) can be solved algorithmically via classical transform pairs such as the Fourier transform (Figure \ref{fig:classical_transform}). 
@@ -85,13 +85,13 @@ with periodic boundary conditions
     u(0, t) &= u(L, t),&\quad t&\in (0,\infty)\\
     u_x(0, t) &= u_x(L, t),&\quad t&\in (0,\infty)
 \end{alignat*}
-and initial condition
+and initial datum
 \[u(x,0) = f(x), \quad x\in (0, L)\]
 can be turned into an ordinary differential equation (ODE) in the temporal variable $t$
 \[U_t = -a\cdot s^2U\]
-with initial conditions 
+with initial datum
 \[U(s,0) = F(s),\quad s\in (0,L).\]
-where $U(s,t):=\mathcal{F}[u]$ and $F(s):=\mathcal{F}[f]$ are the Fourier transforms of $u(x,t)$ and $f(x)$, respectively, with respect to $x$. 
+where $U(s,t):=\mathcal{F}[u]$ and $F(s):=\mathcal{F}[f]$ are the Fourier transforms of $u(x,t)$ and $f(x)$ with respect to $x$, respectively. 
 
 % Similarly, the linear Schr\"{o}dinger equation \cite{Taylor2018} for a free particle given by 
 % \[ih w_t(x,t) = -\frac{h^2}{2m}w_{xx}(x,t)\]
@@ -99,13 +99,13 @@ where $U(s,t):=\mathcal{F}[u]$ and $F(s):=\mathcal{F}[f]$ are the Fourier transf
 % \[W_t(s,t) = \frac{h}{2mi} s^2W(s,t),\]
 % where $W(s,t):=\mathcal{F}[w]$ is the Fourier transform of the wave function $w(x,t)$.
 
-For more complicated IBVPs (henceforth referred to as type II problems), no such classical transform pairs exist. The linearized Korteweg-de Vries (linearized KdV) equation which describes shallow water waves \cite{Korteweg1895}, 
+For more complicated IBVPs (henceforth referred to as type II problems), no such classical transform pairs exist. The linearized Korteweg-de Vries (linearized KdV) equation which describes shallow water waves \cite{Korteweg1895},
 \begin{equation}\label{eq:linearied_kdv}
     u_t + u_{xxx} = 0,
 \end{equation}
 is one such example. Solving these IBVPs typically requires a combination of ad-hoc methods. These methods are often specific to the given problem and cannot be generalized to problems with different parameters (e.g., IBVP involving PDE of a different order or different boundary conditions). 
 
-The Fokas transform method \cite{Fokas2008} extends the idea of transform pairs to solving type II problems by constructing non-classical transform pairs based on the problem parameters. Since appropriate transform pairs can now be ``customized'' for IBVPs with different parameters, this means that the Fokas method allows solving an entire class of IBVPs algorithmically in a manner similar to Figure \ref{fig:classical_transform} (Figure \ref{fig:fokas_transform}).
+The Fokas transform method \cite{Fokas2008} extends the idea of transform pairs to solving type II problems by constructing non-classical transform pairs based on the problem parameters. Since appropriate transform pairs can now be ``customized'' for IBVPs with different parameters, this means that the Fokas method allows solving an entire class of IBVPs algorithmically in a manner similar to Figure \ref{fig:classical_transform}, as illustrated in Figure \ref{fig:fokas_transform}.
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.8\textwidth]{fokas_transform.png}
@@ -113,7 +113,7 @@ The Fokas transform method \cite{Fokas2008} extends the idea of transform pairs 
     \label{fig:fokas_transform}
 \end{figure}
 
-\noindent Examples of IBVPs that can be solved by the Fokas method include the following IBVPs of linearized Korteweg-de Vries (linearized KdV) equation \cite{Smith2016}:
+\noindent Examples of IBVPs that can be solved by the Fokas method include the following IBVPs of the linearized KdV equation \cite{Smith2016}:
 \begin{subequations}\label{eq:problem_1}
     \begin{alignat}{3}
         q_t(x,t) + q_{xxx}(x,t) &= 0,\quad &(x,t)&\in (0,1)\times (0,T)\\
@@ -159,7 +159,7 @@ and
 % \end{align*}
 % where $c\in\hat{\C}$. 
 
-As will be shown later, the Fokas method is applicable to the more general cases of IBVPs with spatial order $n$. PDEs of higher order are generally not as well understood as their first and second order counterparts. The Fokas method advances the understanding of higher order PDEs by providing an algorithmic procedure to solve an entire class of IBVPs of arbitrary order. Using the Fokas method by hand, however, is laborious. It is thus of interest to implement the Fokas method as a software package that aims to supply as much computer aid as possible in the computation process. These include visualizations of integration contours, numerical evaluations, and more importantly, derivation of explicit symbolic formulae for important mathematical objects which would help proving technical lemmas that arise when applying the Fokas method to different types of problems \cite{Miller2018}.
+As will be shown later, the Fokas method is applicable to the more general cases of IBVPs with spatial order $n$. PDEs of higher order are generally not as well understood as their first and second order counterparts. The Fokas method advances the understanding of higher order PDEs by providing an algorithmic procedure to solve an entire class of IBVPs of arbitrary order. Applying the Fokas method by hand, however, is laborious. It is thus of interest to implement the Fokas method as a software package that aims to supply as much computer aid as possible in the computation process. These include visualizations of integration contours, numerical evaluations, and more importantly, derivation of explicit symbolic formulae for important mathematical objects which would help proving technical lemmata that arise when generalizing the Fokas method to problems other than IBVPs \cite{Miller2018}.
 
 In this project, the implementation of the Fokas method is developed in Julia, a free open-source, high-performance language for numerical computing \cite{julia}. Among tools for numerical computing, commercial software packages may provide functionalities to execute sophisticated computational tasks; yet due to being closed-source, there exists a lack of transparency which limits users' understanding of the nature of the software output. As a result, there has been a trend in the mathematical community that encourages the use of open-source languages like Julia, which allows users to verify the correctness of the output. Therefore, we choose Julia to be the language of implementation. To our knowledge, despite the presence of various differential equation solvers in mathematical software such as Julia, Mathematica, and Matlab, this is the first time that the Fokas method is implemented computationally, and it allows solving a particular class of IBVPs for which no other solver algorithm yet exists.
 
@@ -190,7 +190,7 @@ The Fokas method allows solving any well-posed IBVP that can be written in the f
         q(\cdot, t) &\in \Phi \quad &\forall t&\in [0,T],\label{eq:boundary_condition}
     \end{alignat}
 \end{subequations}
-where $a$ is a complex constant. For the IBVP to be well-posed, we require that $a=\pm i$ if $n$ is odd and $\real(a)\geq 0$ if $n$ is even. Equation \eqref{eq:PDE} is a PDE relating a quantity $q$ to its temporal and spatial rates of change $\partial_t[q]$ and $aS[q]$. Equation \eqref{eq:initial_condition} is the initial condition where the temporal variable $t=0$. Equation \eqref{eq:boundary_condition} corresponds to the homogeneous spatial boundary conditions. 
+where $a$ is a complex constant. For the IBVP to be well-posed, we require that $a=\pm i$ if $n$ is odd and $\real(a)\geq 0$ if $n$ is even. Equation \eqref{eq:PDE} is a PDE relating a quantity $q$ to its temporal and spatial rates of change $\partial_t[q]$ and $aS[q]$. Equation \eqref{eq:initial_condition} is the initial datum where the temporal variable $t=0$. Equation \eqref{eq:boundary_condition} corresponds to the homogeneous spatial boundary conditions. 
 
 The linearized KdV equations introduced in equation \eqref{eq:linearied_kdv} are examples of such IBVPs. Specifically, IBVP \eqref{eq:problem_1} can be written in the form of \eqref{eq:IBVP} with $a=-i$,
 \[S = (-i)^3 \frac{d^3}{dx^3} = i\frac{d^3}{dx^3},\]
@@ -215,7 +215,7 @@ and
 % \[ih\frac{\partial}{\partial t}w + \frac{h^2}{2m}\frac{\partial^2}{\partial x^2}w = 0,\]
 % where $w(x,t)$ is the wave function, $h$ is the Planck's constant, $m$ is the mass of the particle, and $kx$ describes the potential energy of the particle in the force field. It can be written in the form of \eqref{eq:PDE} as
 % \[(\partial_t + aS)q(x,t) = 0\]
-% where $q=w$, $S = \frac{\partial^2}{\partial x^2}$, and $a = \frac{h}{2mi}$. The initial condition 
+% where $q=w$, $S = \frac{\partial^2}{\partial x^2}$, and $a = \frac{h}{2mi}$. The initial datum 
 % \[w(x,0) = w_0(x)\]
 % would mean that the system's wave form at initial stage is described by the wave function $w_0(x)$, and the boundary conditions 
 % \[w(\cdot, t) = f\]
@@ -228,7 +228,7 @@ For appropriate transform pair $f(x)=f_x(F)$ and $F(\lambda)=F_\lambda(f)$ found
 thus completing Figure \ref{fig:fokas_transform}.
 
 \section{Preliminaries}
-We now begin to introduce the preliminary definitions and results used in the algorithmic procedure that finds \eqref{eq:q(x,t)}. The key to the algorithm is constructing the Fokas transform pair, which in turn depends on finding a valid adjoint of the given boundary conditions. Thus, we devote the following sections to characterizing the adjoint, and by doing so, outline its construction. These sections present material from chapter 11 of \cite{CoddingtonLevinson}, with proofs expanded and completed, and the utility of the theorems expounded.
+We now begin to introduce the preliminary definitions and results used in the algorithmic procedure that finds \eqref{eq:q(x,t)}. The key to the algorithm is the construction of the Fokas transform pair, which in turn depends on finding a valid adjoint of the given boundary conditions. Thus, we devote the following sections to characterizing the adjoint, and by doing so, outline its construction. These sections present material from chapter 11 of \cite{CoddingtonLevinson}, with proofs expanded and completed, and the utility of the theorems expounded.
 
 \subsection{Homogeneous Boundary Value Problems}
 \begin{defn}\cite[p.81]{CoddingtonLevinson}\label{defn:linear differential operator}
@@ -266,7 +266,7 @@ for $v\in V$, $w\in W$, where $\langle \cdot,\,\cdot \rangle$ denotes inner prod
 \end{defn}
 
 \subsubsection{Adjoint boundary conditions}
-For a homogeneous boundary value problem $\pi$ with linear differential operator $L$ and some (homogeneous) boundary conditions, an adjoint problem $\pi^+$ involves the adjoint linear differential operator $L^+$ and some (homogeneous) adjoint boundary conditions. The adjoint boundary conditions are such that an equation similar to \eqref{eq:linear map adjoint} exists for solutions of $\pi$ and those of $\pi^+$, with the inner product $\langle\cdot,\,\cdot\rangle$ defined as $\langle u,v\rangle := \int_a^b u\bar{v}\,dt$ for $u, v\in C^n$ on $[a,b]$. In the following sections, we seek to characterize the adjoint boundary conditions and their construction.
+For a homogeneous boundary value problem $\pi$ with linear differential operator $L$ and some (homogeneous) boundary conditions, an adjoint problem $\pi^+$ involves the adjoint linear differential operator $L^+$ and a set of (homogeneous) adjoint boundary conditions. The adjoint boundary conditions are such that an equation similar to \eqref{eq:linear map adjoint} exists for solutions of $\pi$ and those of $\pi^+$, with the inner product $\langle\cdot,\,\cdot\rangle$ defined as $\langle u,v\rangle := \int_a^b u\bar{v}\,dt$ for $u, v\in C^n$ on $[a,b]$. In the following sections, we seek to characterize the adjoint boundary conditions and their construction.
 
 The construction depends on two important results, namely Green's formula and the boundary-form formula. Green's formula allows characterizing a form, which, when used in the boundary-form formula, gives rise to the desired construction. 
 
@@ -520,9 +520,9 @@ With this notation, we can rewrite the right-hand side of Green's formula as a s
     \end{bmatrix}.
 \end{split}
 \end{equation}
-Recall that $\det(\lambda A) = \lambda^n\det(A)$ for $n\times n$ matrix $A$. Thus,
-\[\det\hat{B}= \det(-B(t_1))\det(B(t_2))= (-1)^n\det B(t_1)\det B(t_2)\]
-since $B(t_1)$ is $n\times n$. Since $B(t)$ is nonsingular for $t\in [a,b]$ (as shown before), $\hat{B}$ is nonsingular for $t_1, t_2\in [a,b]$.
+Recall that $\det(\lambda A) = \lambda^n\det(A)$ for $n\times n$ matrix $A$. Thus, since $B(t_1)$ is $n\times n$, we have
+\[\det\hat{B}= \det(-B(t_1))\det(B(t_2))= (-1)^n\det B(t_1)\det B(t_2).\]
+Since $B(t)$ is nonsingular for $t\in [a,b]$ (as shown before), $\hat{B}$ is nonsingular for $t_1, t_2\in [a,b]$.
 
 To recapitulate, given a linear differential operator $L$ defined on an interval $[a,b]$ with coefficients $p_0(t),\ldots,p_n(t)$, from the Green's formula, we have defined a matrix $B$ which depends on $p_0,\ldots,p_n$ and a matrix $\hat{B}$ which depends on $B$ and $[a,b]$. These objects will be important in characterizing an adjoint boundary condition using the boundary-form formula, which we now turn to.
 
@@ -999,7 +999,7 @@ is nonsingular (because it has inverse $\begin{bmatrix}M & N\\ M_c & N_c\end{bma
     \end{align*}
     or $P_1=PA$, $Q_1=QA$. Thus, 
     \[U_1^+y = P_1^*\eta(a) + Q_1^*\eta(b) = A^*P^*\eta(a) + A^*Q^*\eta(b)= A^* U^+y.\]
-    Since $A^*$ is a linear map, $U^+y=0$ implies $U_1^+y=A^*U^+y=0$. Since $A^*$ is nonsingular, $A^{\star^{-1}}$ is also a linear map, and $A^{\star^{-1}}U_1^+y = U^+y$. Thus, $U_1^+y=0$ implies $U^+y=A^{\star^{-1}}U_1^+y=0$. Therefore, $U^+y=0$ if and only if $U_1^+y=0$. Since $U^+y=0$ is adjoint to $Ux=0$, $U_1^+y=0$ is adjoint to $Ux=0$.
+    Since $A^*$ is a linear map, $U^+y=0$ implies $U_1^+y=A^*U^+y=0$. Since $A^*$ is nonsingular, $A^{*^{-1}}$ is also a linear map, and $A^{*^{-1}}U_1^+y = U^+y$. Thus, $U_1^+y=0$ implies $U^+y=A^{*^{-1}}U_1^+y=0$. Therefore, $U^+y=0$ if and only if $U_1^+y=0$. Since $U^+y=0$ is adjoint to $Ux=0$, $U_1^+y=0$ is adjoint to $Ux=0$.
 \end{proof}
 
 To recapitulate, the boundary-form formula (Theorem \ref{thm:boundary form formula}) provides the existence and construction of adjoint boundary condition, and Theorem \ref{thm:condition iff adjoint} supplies a means to check whether a proposed adjoint boundary condition is valid. With these results, we are ready to formulate an algorithmic procedure to solve \eqref{eq:IBVP} using the Fokas method.
@@ -1017,7 +1017,7 @@ Define the differential operator
 to be the spatial differential operator in equation \eqref{eq:S},
 the interval 
 \[[a,b] := [0,1]\]
-to be the unit interval in \eqref{eq:IBVP}, and $U$ to be the vector boundary form associated with two $n\times n$ matrices $M$, $N$ given by 
+to be the unit interval in \eqref{eq:IBVP}, and $U$ to be the vector boundary form associated with two $n\times n$ matrices $M$, $N$ given entry-wise by 
 \[M_{jk} := b_{jk},\quad N_{jk} := \beta_{jk}\]
 for $b_{jk}, \beta{jk}$ in equation \eqref{eq:B_j}.
 Then we have defined a boundary-value problem in the spatial variable from the original IBVP, namely
@@ -1030,7 +1030,7 @@ We first check that $U_1,\ldots, U_n$ are linearly independent. Recall from equa
 Thus, it suffices to check whether $\rank(M:N)=n$. $U$ would be considered an invalid input if $\rank(M:N)\neq n$.
 
 \subsubsection{Finding a candidate adjoint}
-Recall from Definition \ref{defn:complementary boundary form} that extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ (where $(U_{n+1},\ldots, U_{2n})$ is a complementary boundary form $U_c$) is equivalent to embedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix (where the newly added rows constitute $(\tilde{M}, \tilde{N})$ associated with $U_c$). Thus, we can construct this $2n\times 2n$ nonsingular matrix as follows. Given the identity matrix $E_{2n}$ and the $n\times 2n$ matrix $(M:N)$, we append the rows of $E_{2n}$ one by one to $(M:N)$ and discard any row that does not make the rank of the resulting matrix increase.
+Recall from Definition \ref{defn:complementary boundary form} that extending $U_1,\ldots,U_n$ to $U_1,\ldots,U_{2n}$ (where $(U_{n+1},\ldots, U_{2n})$ is a complementary boundary form $U_c$) is equivalent to embedding $(M:N)$ in a $2n\times 2n$ nonsingular matrix (where the newly added rows constitute $(\tilde{M}, \tilde{N})$ associated with $U_c$). Thus, we can construct this $2n\times 2n$ nonsingular matrix as follows: Given the identity matrix $E_{2n}$ and the $n\times 2n$ matrix $(M:N)$, we append the rows of $E_{2n}$ one by one to $(M:N)$ and retain only those rows that make the rank of the resulting matrix increase.
 
 % \begin{algorithm}[H]
 %     \caption{Algorithm to find $U_c$.}\label{algo:Find U_c.}
@@ -1060,24 +1060,26 @@ in Theorem \ref{thm:boundary form formula} (where $\tilde{M}, \tilde{N}$ are ass
 Recall that the linear differential operator $L$ is characterized by the functions $p_0,\ldots,p_n$ and the interval $[a,b]$. Let $B$ be as in (\ref{eq:B(t)}) which depends on $p_0,\ldots,p_n$. Construct $\hat{B}$ from $B$ and $[a,b]$ as in Theorem \ref{thm:boundary form formula}. Let $J:=(\hat{B}H^{-1})^*$. By Theorem \ref{thm:boundary form formula} and Proposition \ref{prop:unique nonsingular G in semibilinear form}, the matrix $J$ is of the form
 \[J=\begin{bmatrix}M' & N'\\ \tilde{M}' & \tilde{N}'\end{bmatrix}\]
 where $\tilde{M}', \tilde{N}'$ are associated with an adjoint $U^+$ and $M', N'$ with its complement $U_c^+$.
-Thus, we can identify $(P^\star:Q^\star)$ with the last $n$ rows of $J$. That is, identify $P^\star$ with $\tilde{M}'$, the lower-left $n\times n$ submatrix of $J$, and $Q^\star$ with $\tilde{N}'$, the lower-right $n\times n$ submatrix of $J$. Define $U^+$ by
-\[U^+x = P^\star \xi(a) + Q^\star \xi(b),\]
+Thus, we can identify $(P^*:Q^*)$ with the last $n$ rows of $J$. That is, identify $P^*$ with $\tilde{M}'$, the lower-left $n\times n$ submatrix of $J$, and $Q^*$ with $\tilde{N}'$, the lower-right $n\times n$ submatrix of $J$. Define $U^+$ by
+\[U^+x = P^* \xi(a) + Q^* \xi(b),\]
 then we have found an adjoint $U^+$ to $U$.
 
 \subsubsection{Checking the validity of the candidate adjoint}
 By Theorem \ref{thm:condition iff adjoint}, with
-\[Ux = M\xi(a) + N\xi(b),\quad U^+x = P^\star \xi(a) + Q^\star \xi(b),\]
+\begin{equation}\label{eq:adjointU}
+    Ux = M\xi(a) + N\xi(b),\quad U^+x = P^* \xi(a) + Q^* \xi(b)
+\end{equation}
 we can check whether the $U^+$ found above is indeed a valid adjoint to $U$ by checking 
 \[MB^{-1}(a)P = NB^{-1}(b)Q\]
 where $B$ is as in (\ref{eq:B(t)}).
 
 \subsection{Constructing the Fokas Transform Pair}\label{sec:fokas_transform_pair}
 
-This section presents materials from \cite{Smith2016}, with definitions expanded and adapted to the algorithm that can be implemented in software.
+This section presents materials from \cite{Smith2016}, with definitions expanded and adapted to the algorithm.
 
 Define the matrices 
-\[b^\star := P^\star,\quad \beta^\star := Q^\star,\]
-where $P^\star, Q^\star$ are the matrices associated with the adjoint vector boundary form $U^+$ constructed above.
+\[b^\star := P^*,\quad \beta^\star := Q^*,\]
+where $P^*, Q^*$ are the matrices associated with the adjoint vector boundary form $U^+$ in equation \ref{eq:adjointU}.
 Let $\alpha := e^{2\pi i/n}$. For complex variable $\lambda$, define $W^+(\lambda)$, $W^-(\lambda)$ as the $n\times n$ matrices whose $kj$-entries are given by
 \begin{subequations}\label{eq:M+/-}
     \begin{align}
@@ -1103,8 +1105,8 @@ Let $X^{lj}$ be the $(n-1)\times (n-1)$ submatrix of the block matrix $\mathbb{W
 For $\lambda\in\C$ such that $\Delta(\lambda)\neq 0$, define
 \begin{subequations}\label{eq:F_lambda_+-}
     \begin{align}
-        F^+_\lambda(f) &:= \frac{1}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)M^+_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx \label{eq:F+}\\
-        F^-_\lambda(f) &:= \frac{-e^{-i\lambda}}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)M^-_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx. \label{eq:F-}
+        F^+_\lambda(f) &:= \frac{1}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)W^+_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx \label{eq:F+}\\
+        F^-_\lambda(f) &:= \frac{-e^{-i\lambda}}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)W^-_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx. \label{eq:F-}
     \end{align}
 \end{subequations}
 
@@ -1123,7 +1125,7 @@ A sample contour is shown in Figure \ref{fig:gamma_smith_fokas}.
 
 \begin{figure}[htpb!]
     \centering
-    \includegraphics[width=0.5\linewidth]{gamma_smith_fokas.png}
+    \includegraphics[width=0.5\linewidth]{General-contours-02.mps}
     \caption{Hypothetical $\Gamma$ contours corresponding to the case $a=-i$, taken from \cite{Smith2016}. The red dashed lines correspond to $\Gamma_a^+$, and the green dashed lines correspond to $\Gamma_a^-$. The blue circles correspond to $\Gamma_0^+$, and the black circles correspond to $\Gamma_0^-$. The arrows indicate the order of integration in equation \eqref{eq:q(x,t)_explicit}.}
     \label{fig:gamma_smith_fokas}
 \end{figure}
@@ -1145,8 +1147,8 @@ which allows computing the IBVP solution $q(x,t)$ in \eqref{eq:q(x,t)} by
     \end{split}
 \end{equation}
 
-\subsubsection{Constructing contours}\label{sec:characterizing_contours}
-All objects defined above except for the contour $\Gamma$, namely $W^+(\lambda)$, $W^-(\lambda)$, $W(\lambda)$, $\Delta(\lambda)$, $X^{lj}$, $F^+_\lambda(f)$, $F^-_\lambda(f)$, can be constructed directly from their explicit expressions. Thus, to construct the Fokas transform pair $F_\lambda$ and $f_x$, we need to find an explicit characterization of the contour $\Gamma$.
+\subsubsection{Constructing contours}\label{sec:constructing_contours}
+All objects defined above except for the contour $\Gamma$, namely $W^+(\lambda)$, $W^-(\lambda)$, $W(\lambda)$, $\Delta(\lambda)$, $X^{lj}$, $F^+_\lambda(f)$, $F^-_\lambda(f)$, can be constructed directly from their explicit expressions. Thus, to construct the Fokas transform pair $F_\lambda$ and $f_x$, we only need to find an explicit characterization of the contour $\Gamma$.
 
 We note that by \eqref{eq:gamma}, $\Gamma_a^+$ and $\Gamma_a^-$ are boundaries of the region $\{\lambda\in\C:\, \real(a\lambda^n)>0\}$ in the upper and lower half planes, respectively, deformed to avoid zeroes of $\Delta(\lambda)$. On the other hand, $\Gamma_0^+$ and $\Gamma_0^-$ consist of circles of radius $\epsilon$ around zeroes of $\Delta(\lambda)$ in the closed upper half plane and the open lower half plane, respectively. Thus, to find $\Gamma$, we need to find the region $\{\lambda\in\C:\, \real(a\lambda^n)>0\}$ and the zeroes of $\Delta(\lambda)$.
 
@@ -1199,11 +1201,11 @@ Figure \ref{fig:contourTracing} shows some simulations of the region $\{\lambda\
 \paragraph{Deforming contours}\mbox{}\\
 The boundaries of the sectors found above form the ``backbones'' of the contours $\Gamma_a^+$ and $\Gamma_a^-$. We proceed to turn these ``backbones'' into $\Gamma_a^+$, $\Gamma_a^-$ by deforming them to avoid zeroes of $\Delta(\lambda)$. 
 
-Before going into the technicalities of the contour deformation, we first draw attention to a modification of the mathematical construction of $\Gamma$ in the actual implementation of the algorithm. In \eqref{eq:gamma}, $\Gamma$ is defined on the entire complex plane; that is, we can have $\lambda$ with arbitrarily large modulus. In the actual implementation, however, we choose a sufficiently large real number $d$ to represent infinity in the algorithm's context. That is, we restrict the mathematical construction to the disk $D(0, d)$. As the choice of $d$ potentially implies a tradeoff between computational cost and numerical accuracy, it should be chosen with regard to the error tolerance of the computational task at hand. Note that the original infinite contour integrals are understood as improper integrals which, whenever they exist, are equal to their principal values, namely the limits of the respective integrals as the boundaries tend to infinity. Truncating within $D(0,d)$ and expecting convergence as $d\to\infty$ is therefore legitimate.
+Before going into the technicalities of the contour deformation, we first draw attention to a modification of the mathematical construction of $\Gamma$ in the actual implementation of the algorithm. In \eqref{eq:gamma}, $\Gamma$ is defined on the entire complex plane; that is, we can have $\lambda$ with arbitrarily large modulus. In the actual implementation, however, we choose a sufficiently large real number $d$ to represent infinity in the algorithm's context. That is, we restrict the mathematical construction to the disk $D(0, d)$. As the choice of $d$ potentially implies a tradeoff between computational cost and numerical accuracy, it should be chosen with regard to the error tolerance of the computational task at hand. Note that the original infinite contour integrals are understood as improper integrals which, whenever they exist, are equal to their principal values, namely the limits of the respective integrals as the integration bounds tend to infinity. Truncating within $D(0,d)$ and expecting convergence as $d\to\infty$ is therefore legitimate.
 
 By the theory of exponential polynomials \cite{Langer1931}, $\Delta(\lambda)$ has infinitely many zeroes, yet any finite region contains only finitely many of these zeroes. Since we restrict the construction to the finite region $D(0, d)$, we would only be dealing with finitely many zeroes of $\Delta(\lambda)$. This is an important fact: One complication that arises in practice is that each circular contour around a zero of $\Delta(\lambda)$ not only cannot overlap with the circle around another zero but also cannot overlap with the boundary of any sector. That is, in Figure \ref{fig:gamma_smith_fokas}, the blue and black circles not only cannot overlap with each other, but they also cannot overlap with the red or green dashed lines if the zeroes of $\Delta(\lambda)$ at their centers do not lie on the boundaries of the red or green sectors. This implies that the $5\epsilon$ introduced in section \ref{sec:fokas_transform_pair} in fact needs to be the minimum of the infimum of the pairwise distances between distinct zeroes of $\Delta(\lambda)$ and the infimum of distances between each zero that is exterior to all sectors and the boundary of each sector. The theory of exponential polynomials \cite{Langer1931} guarantees that the former infimum is positive, but there is no such guarantee for the latter infimum. However, precisely because we are working with a finite number of zeroes of $\Delta(\lambda)$ in $D(0, d)$, the latter infimum is positive, and so is $\epsilon$. 
 
-To see that our choice of $\epsilon$ is valid, suppose $5\epsilon$ is the minimum of the two infima described above. Then the circle of radius $\epsilon$ around a zero of $\Delta(\lambda)$ does not overlap with any sector boundary. Moreover, the contours around any two distinct zeroes of $\Delta(\lambda)$ do not overlap. Indeed: In Figure \ref{fig:epsilon}, suppose the radius of the blue circle around a zero of $\Delta(\lambda)$ is $\epsilon$ and the distance between the blue circle and the red dashed curve around it is again $\epsilon$. Then since the distance between any two distinct zeroes of $\Delta(\lambda)$ is no less than $5\epsilon$, the blue circle together with the red dashed curve around it is still of distance $5\epsilon-2\epsilon\cdot 2 = \epsilon$ from the red dashed curve and the blue circle surrounding the nearest zero of $\Delta(\lambda)$. Thus, our choice of $\epsilon$ ensures that no contour around a zero of $\Delta(\lambda)$ is ``overwritten'' by that around another.
+To see that our choice of $\epsilon$ is valid, suppose $5\epsilon$ is the minimum of the two infima described above. Then the circle of radius $\epsilon$ around a zero of $\Delta(\lambda)$ does not overlap with any sector boundary. Moreover, the contours around any two distinct zeroes of $\Delta(\lambda)$ do not overlap. Indeed: In Figure \ref{fig:epsilon}, suppose the radius of the blue circle around a zero of $\Delta(\lambda)$ is $\epsilon$ and the distance between the blue circle and the red dashed curve around it is again $\epsilon$. Then since the distance between any two distinct zeroes of $\Delta(\lambda)$ is no less than $5\epsilon$, the blue circle together with the red dashed curve around it is still of distance $5\epsilon-2\epsilon\cdot 2 = \epsilon$ from the red dashed curve and the blue circle surrounding the nearest zero of $\Delta(\lambda)$. Thus, our choice of $\epsilon$ ensures that no contour around a zero of $\Delta(\lambda)$ is ``overwritten'' by the contour around another zero.
 
 \begin{figure}[htpb!]
     \centering
@@ -1225,7 +1227,7 @@ On a side note, the way we deform the contours described above implies that we c
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.8\textwidth]{epsilon_2_ps.png}
-    \caption{Two distinct zeroes of $\Delta(\lambda)$ that are $4\epsilon$ apart. The zero on the left is at the origin. The blue circles and red dashed contours are as in Figure \ref{fig:gamma_smith_fokas}. The radius of the blue circles, the distance between the blue circle and the red dashed curve around it, and the distance between the two red dashed curves, are all $\epsilon$.}
+    \caption{Two distinct zeroes of $\Delta(\lambda)$ that are $4\epsilon$ apart. The zero on the left is at the origin. The blue circles and red dashed contours are as in Figure \ref{fig:gamma_smith_fokas} (though not drawn to scale here). The radius of the blue circles, the distance between the blue circle and the red dashed curve around it, and the distance between the two red dashed curves, are all $\epsilon$.}
     \label{fig:epsilon_2}
 \end{figure}
 
@@ -1312,7 +1314,7 @@ On a side note, the way we deform the contours described above implies that we c
 %         \Return{vcat(mat, E)}
 %     }
 % \end{algorithm}
-The construction of $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ is described as follows. In the implementation, each contour in $\Gamma$ is encoded by an array of points listed in the order of integration. By Figure \ref{fig:gamma_smith_fokas}, we integrate over each contour in $\Gamma_a^\pm$ from the ending ray to the starting ray, and each contour in $\Gamma_0^\pm$ counterclockwise. Thus, in constructing the contours, for each sector, we initialize its boundary contour by an array of three points, namely the point on the ending ray with distance $d$ from the origin, the origin, and the point on the starting ray with modulus $d$. We add these initial sector boundary contours to $\Gamma_a^\pm$ depending on whether the sectors are in the upper or lower half planes. Then, for each zero of $\Delta(\lambda)$ that is not at the origin, if it is on the boundary of some sector, we deform the boundary contour of that sector to include a ``bulge'' that is the exterior half of an $N$-gon of radius $\epsilon$ around the zero, with the vertices listed counterclockwise. If the zero is exterior to all sectors, we add an $N$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out, as explained before. Finally, if there is a zero at the origin, we draw an $N$-gon around it and deform the boundary contours of all sectors to avoid the $N$-gon. 
+The construction of $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ is described as follows. In the implementation, each contour in $\Gamma$ is encoded by an array of points listed in the order of integration. By Figure \ref{fig:gamma_smith_fokas}, we integrate over each contour in $\Gamma_a^\pm$ from the ending ray to the starting ray, and each contour in $\Gamma_0^\pm$ counterclockwise. Thus, in constructing the contours, for each sector, we initialize its boundary contour by an array of three points, namely the point on the ending ray with distance $d$ from the origin, the origin itself, and the point on the starting ray with modulus $d$. We add these initial sector boundary contours to $\Gamma_a^\pm$ depending on whether the sectors are in the upper or lower half planes. Then, for each zero of $\Delta(\lambda)$ that is not at the origin, if it is on the boundary of some sector, we deform the boundary contour of that sector to include a ``bulge'' that is the exterior half of an $N$-gon of radius $\epsilon$ around the zero, with the vertices listed counterclockwise. If the zero is exterior to all sectors, we add an $N$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out, as explained before. Finally, if there is a zero at the origin, we draw an $N$-gon around it and deform the boundary contours of all sectors to avoid the $N$-gon. 
 % At the end of this process, $\Gamma_a$ would contain all sector boundary contours now appropriately deformed, and $\Gamma_0$ would contain all the $N$-gon contours encircling isolated zeroes.
 
 \noindent\subparagraph{Approximating the zeroes of an exponential polynomial}\mbox{}\\
@@ -1343,7 +1345,7 @@ Writing $\Delta(\lambda)=\real(\Delta)(\lambda) + i\imag(\Delta)(\lambda)$ for $
 %     \end{align}
 % \end{subequations}
 
-We approximate the solutions to \eqref{eq:delta_real_imaginary} by visualizing their corresponding level curves. In the examples below (Figure \ref{fig:levelCurves}), the red lines correspond to the zeroes of $\real(\Delta)(\lambda)$, and the blue lines correspond to those of $\imag(\Delta)(\lambda)$. Thus, we can approximately locate the zeroes of $\Delta(\lambda)$ at the intersections of the red and blue lines. 
+We approximate the solutions to \eqref{eq:delta_real_imaginary} by visualizing their corresponding level curves. In the examples shown in Figure \ref{fig:levelCurves}, the red lines correspond to the zeroes of $\real(\Delta)(\lambda)$, and the blue lines correspond to those of $\imag(\Delta)(\lambda)$. We can approximately locate the zeroes of $\Delta(\lambda)$ at the intersections of the red and blue lines. 
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
@@ -1526,16 +1528,20 @@ Thus, in summary,
 \end{align*}
 
 \section{Implementation}
-The above algorithm is implemented in Julia 0.6.4. Packages used are ``SymPy'' \cite{sympy}, ``sympy'' \cite{sympyPython},  ``Distributions'' \cite{distributions}, ``ApproxFun'' \cite{approxfun}, ``Roots'' \cite{roots}, ``QuadGK'' \cite{quadgk}, ``Plots'' \cite{plots}, ``Gadfly'' \cite{gadfly}, and ``PyPlot'' \cite{pyplot}.
+\subsection{Overview}
+The above algorithm is implemented in Julia 0.6.4. Packages used are ``SymPy'' \cite{sympy}, ``sympy'' \cite{sympyPython},  ``Distributions'' \cite{distributions}, ``ApproxFun'' \cite{approxfun}, ``Roots'' \cite{roots}, ``QuadGK'' \cite{quadgk}, ``Plots'' \cite{plots}, ``Gadfly'' \cite{gadfly}, and ``PyPlot'' \cite{pyplot}. A documentation with examples can be found at \cite{Xiao}.
 
-\subsection{Sample usage}
-As mentioned in the introduction section, the implementation aims at providing computer aid alongside human judgment in the process of using the Fokas method to solve IBVPs. It also supplies functionalities such as visualization and symbolic formulae that are useful for purposes not necessarily related to solving the IBVPs per se but to the study of them. We illustrate these utilities with the examples below. More details can be found in the documentation.
+As mentioned near the end of section \ref{sec:motivation}, the implementation aims at providing computer aid alongside human judgment in the process of using the Fokas method to solve IBVPs. It also supplies functionalities such as visualization and symbolic formulae that are useful not only in solving the IBVPs using the Fokas method but also in generalizing the Fokas method to problems other than IBVPs. 
 
 % TBD: Take the following from the documentation.
 % 1) A second order example with solution $q(x,t)$ that can be evaluated within half a minute at each value, but cannot yet be plotted due to compilation time.
 % 2) Problem1, problem2 with formulae verification and significance in relation to \cite{Miller2018}.
+
+\subsection{Sample usage}
+We illustrate these utilities with the examples below. More details can be found in the documentation \cite{Xiao}.
+
 \subsubsection{Solving IBVP}\label{sec:ex1}
-In this section, we illustrate how the implementation provides computer aid in using the Fokas method.
+In this section, we illustrate how the implementation provides computer aid in the process of applying the Fokas method.
 
 Consider the IBVP
 \begin{subequations}\label{eq:ex1}
@@ -1608,7 +1614,7 @@ In practice, we would convert the symbolic formulae into function objects, becau
 
 \subsubsection{Symbolic features}
 
-In this section, we illustrate how the symbolic formulae provided by the implementation can be useful in proving technical lemmas that arise when applying the Fokas method to different types of problems. 
+In this section, we illustrate how the symbolic formulae provided by the implementation can be useful in proving technical lemmata that arise when generalizing the Fokas method to problems other than IBVPs. 
 
 For the IBVPs \eqref{eq:problem_1} and \eqref{eq:problem_2}, the formulae for $F_\lambda^+$ and $F_\lambda^-$ have been computed by hand in \cite[p. 1-4]{Smith2016}. Symbolic formulae for the same objects have been found by the implementation of the Fokas method following the steps outlined in section \ref{sec:ex1}, with $S$, $a$ as described in section \ref{sec:IBVP}, and
 \[M = \begin{bmatrix}1 & 0 & 0\\ 0 & 0 & 0\\ 0 & 1 & 0\end{bmatrix},\quad N = \begin{bmatrix} 0 & 0 & 0\\ 1 & 0 & 0 \\ 0 & -2 & 0\end{bmatrix}\]
@@ -1616,15 +1622,25 @@ in \eqref{eq:problem_1}, and
 \[M = \begin{bmatrix}1 & 0 & 0\\ 0 & 0 & 0\\ 0 & 0 & 0\end{bmatrix},\quad N = \begin{bmatrix} 0 & 0 & 0\\ 1 & 0 & 0 \\ 0 & 1 & 0\end{bmatrix}\]
 in \eqref{eq:problem_2}. The symbolic formulae found by the implementation, though not simplified to forms pleasant to the human eye, have been verified to be equivalent to those derived by hand in \cite{Smith2016} by comparing the coefficients of $\hat{f}(\alpha^{l-1}\lambda) = \int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx$ in \eqref{eq:F_lambda_+-} evaluated at $100$ random values of $\lambda\in\C$ for which $\Delta(\lambda)\neq 0$.
 
+These symbolic formulae are helpful in generalizing the Fokas method from IBVPs to different types of problems, such as initial-nonlocal value problems (INLVPs) \cite{Miller2018}, where the set of boundary conditions includes a special ``nonlocal'' condition \cite{Miller2018}. In particular, extending the Fokas method to INLVPs involving the heat equation on finite $1$-dimensional spatial domain relies on two lemmata concerning the locations of the zeroes of $\Delta(\lambda)$ in equation \eqref{eq:delta} and the decay of $F_\lambda^+$, $F_\lambda^-$ as $\lambda\to\infty$ \cite[p. 4]{Miller2018}. Hence, explicit formulae for $F_\lambda^+$, $F_\lambda^-$ in terms of $\lambda$, which the implementation provides, would be helpful in proving lemmatas of similar nature.
+
 \section{Discussion}
-TBD: Significance (symbolic features, visualizations). Current limits (e.g., speed limit due to compilation time). Need for custom integrator tailored to the IBVP.
+% TBD: Significance (symbolic features, visualizations). Current limits (e.g., speed limit due to compilation time). Need for custom integrator tailored to the IBVP.
+Currently, this project's implementation of the Fokas method \cite{Xiao} supplies utilities such as contour visualization, symbolic formulae derivation, and numerical features that significantly reduce the time and effort in applying the Fokas method compared to working by hand. Limitations and room for further improvement concern issues in speed. 
+
+Although evaluation of the solution $q(x,t)$ at a single point can now be done in less than half a minute, analyzing the solution in depth usually requires visualizing it, which poses a much higher requirement on the evaluation speed of the solution. To plot in reasonable time, evaluation at a single point should ideally be less than a few seconds. The implementation as it is now evaluates $q(x,t)$ as follows. Given $(x_0, t_0)\in (0,1)\times (0,T)$, the integrand $e^{i\lambda x_0}e^{-\alpha \lambda^n t_0}F_\lambda^\pm(f)$ is defined as a function of $\lambda$, which is then integrated over the four contours $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ as in equation \eqref{eq:q(x,t)_explicit}. This means that when attempting to plot $q(x,t)$ over a domain $D$, at each point $(x_0, t_0)\in D$, a new function corresponding to the integrand is defined, compiled, and evaluated. Here is the issue: Compilation time could be several orders of magnitude higher than evaluation time, and the more so for complicated functions. For instance, the compilation time issue would be prominent if the Chebyshev approximation of $f(x)$ used in section \ref{sec:approximate_integral_chebyshev} has many coefficients; in this case the symbolic formulae for $F_\lambda^+$, $F_\lambda^-$ would be complicated, meaning that they would take much time to compile. 
+
+Moreover, if the circular contours around zeroes of $\Delta(\lambda)$ have very small diameter $\epsilon$ (given our choice of $\epsilon$ in section \ref{sec:constructing_contours}, this would be the case if two distinct zeroes are very close to each other, or there is a zero that is close to the boundary of some sector), the integration contours would be very close to the zeroes which they are supposed to avoid. As discussed in section \ref{sec:constructing_contours}, zeroes of $\Delta(\lambda)$ are poles of the integrand, so the integrand easily becomes numerically unstable near them, yielding very large numeric values when evaluated. As a result, the integration itself becomes slow.
+
+One possible solution to the above speed issues is to develop a custom integrator tailored to these contour integrals by exploiting the mathematical properties of the integrand and the contour. As mentioned in \cite{Miller2018}, analysis of the behaviour of $F_\lambda^+$ and $F_\lambda^-$ over $\Gamma$ could help identify the components of the integrand that contributes significantly to the integral at different parts of the contour $\Gamma$. In this way, we could reduce the time it takes to evaluate $q(x,t)$ by discarding components of the integrand whose contribution to the integral is insignificant.
 
 \newpage
 \pagenumbering{gobble}
 \addcontentsline{toc}{section}{References}
 
 \newpage
-\bibliographystyle{unsrt}
+\bibliographystyle{utphys}
+% \bibliographystyle{unsrt}
 \bibliography{C:/Bibtex/Capstone}
 \end{document}
 
