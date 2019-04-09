@@ -288,6 +288,24 @@ Yale-NUS College \\ % Your institution for the title page
     \frametitle{Motivation}
     \begin{itemize}
         \item The Fokas method advances the understanding of high order PDEs by providing an algorithmic procedure to solve an entire class of IBVPs of arbitrary spatial order.
+        %\item However, it is still laborious to use the Fokas method by hand.
+    \end{itemize}
+    % Thus, capstone:
+    % \begin{tcolorbox}[colback=white,colframe=gray!40, arc=0pt, outer arc=0pt]
+    %     \begin{center}
+    %         Implement the Fokas method as a software library$^*$ that supplies various computer aid in the process of solving IBVPs$^{**}$.
+    %     \end{center}
+    % \end{tcolorbox}
+    % \begin{itemize}
+    %     \item[$*$] In Julia: Being open-source allows for checking correctness.
+    %     \item[$**$] This is the first time that the Fokas method is implemented computationally in any generality, and it allows solving a class of IBVPs for which no other solver algorithm yet exists.
+    % \end{itemize}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{Motivation}
+    \begin{itemize}
+        \item The Fokas method advances the understanding of high order PDEs by providing an algorithmic procedure to solve an entire class of IBVPs of arbitrary spatial order.
         \item However, it is still laborious to use the Fokas method by hand.
     \end{itemize}
     % Thus, capstone:
@@ -406,8 +424,8 @@ Yale-NUS College \\ % Your institution for the title page
     \begin{tcolorbox}[colback=white,colframe=gray!40, arc=0pt, outer arc=0pt]
         \begin{center}
             \begin{tikzpicture}
-                \node[draw] at (0, 2.5) (ODE) [box] {$(\partial_t + a\lambda^n)\hat{q}(\lambda,t) = 0$\\ $\hat{q}(\lambda,0) = \hat{f}(\lambda)$};
-                \node[draw] at (0, 0) (PDE) [box] {$(\partial_t + a(-i)^n \partial_x^n)q(x,t) = 0$\\$q(\cdot, t)\in\Phi$};
+                \node[draw] at (0, 2.5) (ODE) [box] {$(\partial_t + a\lambda^n)\hat{q}(\lambda,t) = 0$\\ $\hat{q}(\lambda,0)\text{ known}$};
+                \node[draw] at (0, 0) (PDE) [box] {$(\partial_t + a(-i)^n \partial_x^n)q(x,t) = 0$\\$q(x,0)=f(x)\in \Phi$\\$q(\cdot, t)\in\Phi$};
                 \node[draw] at (6, 2.5) (ODE solution) [box] {$\hat{q}(\lambda,t)=e^{-a\lambda^n t}F_\lambda(f)$};
                 \node[draw] at (6, 0) (PDE solution) [box] {$q(x,t) = f_x(e^{-a\lambda^n t}F_\lambda(f))$};
                 \draw[arrow] (PDE) -- node[mylabel] {Transform $F_\lambda$} (ODE);
@@ -421,7 +439,7 @@ Yale-NUS College \\ % Your institution for the title page
 
 \begin{frame}
     \frametitle{Algorithm: Overview}
-    \begin{itemize}
+    \begin{itemize}\setlength\itemsep{1em}
         \item Input: An IBVP of the form
         %\begin{subequations*}\label{eq:IBVP}
             \begin{alignat*}{3}
@@ -653,21 +671,17 @@ Yale-NUS College \\ % Your institution for the title page
     \end{figure}
     \textbf{IBVP solution}
 
-    $q(x,t)$ can be evaluated within $20$s.
+    $q(x,t)$ can be evaluated at given $(x_0, t_0)$ within $20$s.
 \end{frame}
 
 \begin{frame}
     \frametitle{Sample usage: Symbolic features}
-    Applying the Fokas method requires two technical lemmas concerning the poles of the integrands $F_\lambda^+$, $F_\lambda^-$ and their asymptotic behaviour \footcite{Miller2018}. 
-    \newline
-
-    Thus, it is necessary to obtain symbolic formulas for the integrands. 
-    \newline
-
-    In the case of complicated integrands, it is of interest to compute their symbolic formulas using a computer.
-    \newline
-
-    We verified that the library computes the correct symbolic formulas for $F_\lambda^+$, $F_\lambda^-$ using the following two problems.
+    \begin{itemize}\setlength\itemsep{1em}
+        \item Applying the Fokas method requires two technical lemmas concerning the positions of the poles of the integrands $F_\lambda^+$, $F_\lambda^-$ and their asymptotic behaviour \footcite{Miller2018}. 
+        \item Thus, it is necessary to obtain symbolic formulas for the integrands. 
+        \item In the case of complicated integrands, it is of interest to derive their symbolic formulas using a computer.
+        \item We verified that the library computes the correct symbolic formulas for $F_\lambda^+$, $F_\lambda^-$ using the following two problems.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -727,8 +741,12 @@ Yale-NUS College \\ % Your institution for the title page
     \frametitle{Summary}
     \begin{itemize}
         \item The Fokas method allows solving an entire class of IBVPs of arbitrary spatial order.
-        \item A library has been developed in Julia to provide computer aid in the process of applying the Fokas method to solve IBVPs. These include symbolic formulas of important mathematical objects, their numeric approximations, and contour visualization. Code, unit tests, and documentations are available on a public GitLab repository\footcite{Xiao}.
-        \item Looking ahead, it is of interest to develop a custom integrator to bring the computation time from dozens of seconds to the order of milliseconds.
+        \item A library has been developed in Julia to provide computer aid in the process of applying the Fokas method to solve IBVPs. 
+        \begin{itemize}
+            \item Functionalities of the library include symbolic formulas of important mathematical objects, their numeric representations, and contour visualization. 
+            \item The library's code, unit tests, and documentations are available on a public GitLab repository\footcite{Xiao}.
+        \end{itemize} 
+        \item Looking ahead, in order to analyze the solution graphically, it is of interest to develop a custom integrator to bring the time it takes to evaluate the solution at a given point down to the order of milliseconds.
     \end{itemize}
 \end{frame}
 
