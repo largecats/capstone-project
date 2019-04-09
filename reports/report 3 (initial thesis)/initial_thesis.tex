@@ -1105,8 +1105,8 @@ Let $X^{lj}$ be the $(n-1)\times (n-1)$ submatrix of the block matrix $\mathbb{W
 For $\lambda\in\C$ such that $\Delta(\lambda)\neq 0$, define
 \begin{subequations}\label{eq:F_lambda_+-}
     \begin{align}
-        F^+_\lambda(f) &:= \frac{1}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)W^+_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx \label{eq:F+}\\
-        F^-_\lambda(f) &:= \frac{-e^{-i\lambda}}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)W^-_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx. \label{eq:F-}
+        F^+_\lambda(f) &:= \frac{1}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}^n(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)W^+_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx \label{eq:F+}\\
+        F^-_\lambda(f) &:= \frac{-e^{-i\lambda}}{2\pi \Delta(\lambda)} \sum_{l=1}^n\sum_{j=1}^n(-1)^{(n-1)(l+j)}\det X^{lj}(\lambda)W^-_{1j}(\lambda)\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx. \label{eq:F-}
     \end{align}
 \end{subequations}
 
