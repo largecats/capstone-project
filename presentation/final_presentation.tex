@@ -406,7 +406,7 @@ Yale-NUS College \\ % Your institution for the title page
     \begin{tcolorbox}[colback=white,colframe=gray!40, arc=0pt, outer arc=0pt]
         \begin{center}
             \begin{tikzpicture}
-                \node[draw] at (0, 2.5) (ODE) [box] {$(\partial_t + a\lambda^n)\hat{q}(\lambda,t) = 0$\\ $q(x,0) = f(x)\in \Phi$};
+                \node[draw] at (0, 2.5) (ODE) [box] {$(\partial_t + a\lambda^n)\hat{q}(\lambda,t) = 0$\\ $\hat{q}(\lambda,0) = \hat{f}(\lambda)$};
                 \node[draw] at (0, 0) (PDE) [box] {$(\partial_t + a(-i)^n \partial_x^n)q(x,t) = 0$\\$q(\cdot, t)\in\Phi$};
                 \node[draw] at (6, 2.5) (ODE solution) [box] {$\hat{q}(\lambda,t)=e^{-a\lambda^n t}F_\lambda(f)$};
                 \node[draw] at (6, 0) (PDE solution) [box] {$q(x,t) = f_x(e^{-a\lambda^n t}F_\lambda(f))$};
@@ -717,9 +717,9 @@ Yale-NUS College \\ % Your institution for the title page
         \item Next step: Speed up
         \begin{itemize}
             \item Measures have been taken to bring down computation time to a reasonable range (e.g., by replacing double integral with explicit formulas).
-            \item Yet to analyze the IBVP solution in-depth, evaluating it at a given point should take less than milliseconds to allow graphing.
+            \item Yet to analyze the IBVP solution in-depth, evaluating it at a given $(x_0,t_0)$ should take less than milliseconds to allow graphing.
         \end{itemize}
-        \item Idea: Develop a custom integrator tailored to the evaluation of these contour integrals by exploiting the mathematical properties of the integrand and the contour.
+        \item Idea: Develop a custom integrator tailored to the efficient evaluation of these contour integrals by exploiting the mathematical properties of the integrand and the contour.
     \end{itemize}
 \end{frame}
 
@@ -727,7 +727,7 @@ Yale-NUS College \\ % Your institution for the title page
     \frametitle{Summary}
     \begin{itemize}
         \item The Fokas method allows solving an entire class of IBVPs of arbitrary spatial order.
-        \item A library has been developed in Julia to provide computer aid in the process of applying the Fokas method to solve IBVPs. These include symbolic formulas of important mathematical objects, their numeric approximations, and contour visualization. Code, unit tests, and documentations are available on a public Gitlab repository\footcite{Xiao}.
+        \item A library has been developed in Julia to provide computer aid in the process of applying the Fokas method to solve IBVPs. These include symbolic formulas of important mathematical objects, their numeric approximations, and contour visualization. Code, unit tests, and documentations are available on a public GitLab repository\footcite{Xiao}.
         \item Looking ahead, it is of interest to develop a custom integrator to bring the computation time from dozens of seconds to the order of milliseconds.
     \end{itemize}
 \end{frame}
