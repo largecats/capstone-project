@@ -1076,6 +1076,8 @@ we can check whether the $U^+$ found above is indeed a valid adjoint to $U$ by c
 \[MB^{-1}(a)P = NB^{-1}(b)Q\]
 where $B$ is as in (\ref{eq:B(t)}).
 
+It may be worth noting that although the spatial differential operator which the above procedure will be applied to when using the Fokas method assumes the specific form given by equation \eqref{eq:S}, the procedure in fact works for any general linear differential operator. Systematic unit tests have been developed \cite{Xiao} to test the procedure's implementation in Julia, accounting for linear differential operators with constant coefficients and polynomial coefficients.
+
 \subsection{Constructing the Fokas transform pair}\label{sec:fokas_transform_pair}
 
 This section presents materials from \cite{Smith2016}, with definitions expanded and adapted to the algorithm.
@@ -1547,7 +1549,7 @@ We illustrate the utilities of the implementation using two cases of sample usag
 \subsubsection{Solving IBVP}\label{sec:ex1}
 In this section, we show how the implementation provides computer aid in the process of applying the Fokas method.
 
-Consider the IBVP
+Consider the heat equation IBVP
 \begin{subequations}\label{eq:ex1}
     \begin{alignat}{3}
         q_t - q_{xx} &= 0\quad &\forall (x,t)&\in (0,1)\times (0,T) \label{eq:ex1_PDE}\\
@@ -1618,6 +1620,10 @@ As shown in equation \eqref{eq:q(x,t)_explicit}, to compute $q(x,t)$, we need to
 %This is also the only way to avoid the cost.
 
 In practice, we would convert the symbolic formulas into function objects, because in Julia, function objects are evaluated much faster than symbolic objects. More recent versions of Julia have parsers that perform the conversion. In Julia 0.6.4 in which the current implementation is based (for reasons explained in the last paragraph in section \ref{sec:motivation}), however, no such parser exists, and conversion needs to be done manually, namely to create the corresponding function objects by typing in the symbolic formulas in the function definition. Having done so, current implementation of the Fokas method allows evaluating $q(x,t)$ at a given $(x_0, t_0)\in (0,1)\times (0,T)$ within $20$ seconds with the modulus of complex infinity set as $10$, and within $1$ minute with the modulus of complex infinity set as $50$ (which is a more reasonable value regarding numerical accuracy as explained in section \ref{sec:deform_contours}).
+
+As a side note, the solution $q(x,t)$ computed above using equation \eqref{eq:q(x,t)_explicit} corresponds to the separated solution of the heat equation \cite{Pinsky1991} in the following sense. Using Cauchy's theorem and Jordan's lemma from complex analysis, it can be shown that integration over the $\Gamma$ contour in Figure \ref{fig:ex1_contourPlot} reduces to integration over closed contours around the poles of $F^+_\lambda$ and $F^-_\lambda$, i.e., the zeros of $\Delta(\lambda)$ in Figure \ref{fig:ex1_levelCurves}. That is, $q(x,t)$ reduces to a sum of contour integrals around zeros of $\Delta(\lambda)$, and using the residue theorem, these contour integrals can be shown to correspond to the eigenfunctions of Sturm-Liouville BVP related to the heat equation IBVP. Since $\Delta(\lambda)$ have infinitely many zeros on the real line, as the estimate of the modulus of complex infinity $d$ tends to $\infty$, $\Gamma$ would effectively consist of infinitely many closed contours centered on the real line, much like the blue circles on $\real(\lambda)$ in Figure \ref{fig:gamma_smith_fokas}, but extending to $\infty$ in both directions. As a result, $q(x,t)$ would become an infinite series of contour integrals, which is none other than the separated solution of the heat equation of the form 
+\[q(x,t) = \sum_{n=1}^\infty A_n \phi_n(x)e^{-\lambda_n Kt},\]
+where $A_n$ are Fourier coefficients of the initial datum $f(x)$, $\lambda_n$ the eigenvalues of the Sturm-Liouville problem, and $\phi_n(x)$ the corresponding eigenfunctions. Such correspondence to the separated solution makes sense since the Fokas transform effectively separates the spatial and temporal components of the IBVP.
 
 \subsubsection{Symbolic features}\label{sec:symbolic_features}
 
