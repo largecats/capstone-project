@@ -56,15 +56,15 @@ AY 2018/2019\\
 % \listoftables
 \pagebreak
 \pagenumbering{gobble}
-\begin{center}\section*{Acknowledgements}\end{center}
-\addcontentsline{toc}{section}{Acknowledgements}
-I thank Linkin Park, Imagine Dragons, Two Steps from Hell, Paramount Pictures, Marvel Entertainment, and Netflix for providing mental sustenance throughout my capstone project.
+% \begin{center}\section*{Acknowledgements}\end{center}
+% \addcontentsline{toc}{section}{Acknowledgements}
+% I thank Linkin Park, Imagine Dragons, Two Steps from Hell, Paramount Pictures, Marvel Entertainment, and Netflix for providing mental sustenance throughout my capstone project.
 
 \pagebreak
 \pagenumbering{arabic}
 
 \section{Introduction}\label{sec:intro}
-Evolution partial differential equations (PDEs) relate a quantity to its rates of change with respect to both time and position. Evolution PDEs can model a variety of phenomena, such as heat flow, wave propagation, and particle motion. This project concerns implementing an algorithmic procedure to solve a class of initial-boundary value problems (IBVPs) for linear evolution PDEs of arbitrary spatial order in the finite interval \cite{Smith2016} based on the Fokas transform method \cite{Fokas2000}\cite{Fokas2001}\cite{Fokas2008}\cite{Smith2012}\cite{Deconinck2014}\cite{Fokas2015}. The implementation is developed in Julia \cite{julia}, featuring -- among other functionalities such as numeric evaluation and visualization -- symbolic computation.
+Evolution partial differential equations (PDEs) relate a quantity to its rates of change with respect to both time and position. Evolution PDEs can model a variety of phenomena, such as heat flow, wave propagation, and particle motion. This project concerns implementing an algorithmic procedure to solve a class of initial-boundary value problems (IBVPs) for linear evolution PDEs of arbitrary spatial order in the finite interval \cite{Smith2016} based on the Fokas transform method \cite{Fokas2000}\cite{Fokas2001}\cite{Fokas2008}\cite{Smith2012}\cite{Deconinck2014}\cite{Fokas2015}. The implementation is developed in Julia \cite{julia}, featuring symbolic computation along with numeric evaluation.
 
 \subsection{Motivation}\label{sec:motivation}
 %To motivate the project, suppose we want to solve some IBVPs.
@@ -73,7 +73,7 @@ IBVPs arise naturally in the study of physical systems. Certain IBVPs (hencefort
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.8\textwidth]{classical_transform.png}
-    \caption{Solving type I IBVPs using classical transform pairs such as the Fourier transform.}
+    \caption{Solving type I IBVPs using classical transform pairs.}
     \label{fig:classical_transform}
 \end{figure}
 
@@ -104,7 +104,7 @@ For more complicated IBVPs (henceforth referred to as type II problems), no such
 \begin{equation}\label{eq:linearied_kdv}
     u_t + u_{xxx} = 0,
 \end{equation}
-is one such example. Solving these IBVPs typically requires a combination of ad-hoc methods, which are often specific to the given problem and cannot be generalized to related problems with different parameters (e.g., IBVPs involving PDEs of different orders or different boundary conditions). 
+is one such example. Solving type II problems typically requires a combination of ad-hoc methods, which are often specific to the given problem and cannot be generalized to related problems with different parameters (e.g., IBVPs involving PDEs of different orders or different boundary conditions).
 
 The Fokas transform method extends the idea of classical transform pairs to solving type II problems by constructing non-classical transform pairs (henceforth referred to as the Fokas transform pairs) based on the IBVP parameters. In other words, the Fokas method ``customizes'' appropriate transform pairs for a class of related IBVPs with different parameters; this class of IBVPs can then be solved algorithmically in a manner similar to Figure \ref{fig:classical_transform}, as illustrated in Figure \ref{fig:fokas_transform}.
 \begin{figure}[htpb!]
@@ -162,9 +162,9 @@ and
 % \end{align*}
 % where $c\in\widehat{\C}$. 
 
-As mentioned earlier and will be shown later, the Fokas method is applicable to IBVPs with arbitrary spatial order. PDEs of higher order are generally not as well understood as their first and second order counterparts. The Fokas method thus advances the understanding of higher order PDEs by providing an algorithmic procedure to solve an entire class of IBVPs of arbitrary spatial order. Applying the Fokas method by hand, however, is laborious. It is thus of interest to implement the Fokas method as a software package that aims to supply as much computer aid as possible in the computation process. These include visualizations of integration contours, numeric evaluations, and more importantly, derivation of explicit symbolic formulas for important mathematical objects which would help proving technical lemmas that arise in applying the Fokas method to IBVPs \cite{Smith2012} and beyond \cite{Miller2018}.
+As mentioned earlier and will be shown later, beyond the two examples above, the Fokas method is in fact applicable to IBVPs with arbitrary spatial order. PDEs of higher order are generally not as well understood as their first and second order counterparts. The Fokas method thus advances the understanding of higher order PDEs by providing an algorithmic procedure to solve an entire class of IBVPs of arbitrary spatial order. Applying the Fokas method by hand, however, is laborious. It is thus of interest to implement the Fokas method as a software library that aims to supply as much computer aid as possible in the computation process. The types of computer aid include visualizations of integration contours, numeric evaluation, and more importantly, derivation of explicit symbolic formulas for important mathematical objects which would help proving technical lemmas that arise in applying the Fokas method to IBVPs \cite{Smith2012} and beyond \cite{Miller2018}.
 
-In this project, the implementation of the Fokas method is developed in Julia, a free open-source, high-performance language for numerical computing \cite{julia}. Among tools for numerical computing, commercial software packages may provide functionalities to execute sophisticated computational tasks; yet due to being closed-source, there exists a lack of transparency which limits users' understanding of the nature of the software output. As a result, there has been a trend in the mathematical community that encourages the use of open-source languages like Julia, which allows users to verify the correctness of the output. Therefore, we choose Julia to be the language of implementation. At the start of this project, the latest release of Julia is 1.0; however, existing graphing packages in Julia were not yet made compatible with Julia 1.0 at that time. Thus, this project uses the next latest release of Julia that is stable at that time, namely Julia 0.6.4. 
+In this project, the implementation of the Fokas method is developed in Julia, a free open-source, high-performance language for numerical computing \cite{julia}. Among tools for numerical computing, commercial software packages may provide functionalities to execute sophisticated computational tasks; yet due to being closed-source, there exists a lack of transparency which limits users' understanding of the nature of the software output. As a result, there has been a trend in the mathematical community that encourages the use of open-source languages like Julia, which allows users to verify the correctness of the output. Therefore, we choose Julia to be the language of implementation. At the start of this project, the latest release of Julia is 1.0; however, existing graphical libraries in Julia were not yet made compatible with Julia 1.0 at that time. Thus, this project uses the next latest release of Julia that is stable at that time, namely Julia 0.6.4. 
 
 To the best of our knowledge, despite the presence of various differential equation solvers in mathematical software such as Julia, Mathematica, and Matlab, this is the first time that the Fokas method is implemented computationally in any generality, and it allows solving a particular class of IBVPs for which no other general analytic solver algorithm yet exists.
 
@@ -213,7 +213,7 @@ Similarly, IBVP \eqref{eq:problem_2} can be written in the form of \eqref{eq:IBV
 \begin{align*}
     B_1 \phi &= 1\cdot\phi(0) + 0\cdot\phi(1) + 0\cdot\phi^{(1)}(0) + 0\cdot\phi^{(1)}(1) + 0\cdot\phi^{(2)}(0) + 0\cdot\phi^{(2)}(1)\\
     B_2 \phi &= 0\cdot\phi(0) + 1\cdot\phi(1) + 0\cdot\phi^{(1)}(0) + 0\cdot\phi^{(1)}(1) + 0\cdot\phi^{(2)}(0) + 0\cdot\phi^{(2)}(1)\\
-    B_3 \phi &= 0\cdot\phi(0) + 0\cdot\phi(1) + 1\cdot\phi^{(1)}(0) -+ 0\cdot\phi^{(1)}(1) + 0\cdot\phi^{(2)}(0) + 0\cdot\phi^{(2)}(1),
+    B_3 \phi &= 0\cdot\phi(0) + 0\cdot\phi(1) + 0\cdot\phi^{(1)}(0) + 1\cdot\phi^{(1)}(1) + 0\cdot\phi^{(2)}(0) + 0\cdot\phi^{(2)}(1),
 \end{align*}
 and 
 \[\Phi = \{\phi\in C^{\infty}[0,1]:\, B_j\phi = 0\,\forall j\in\{1,2,3\}\}.\]
@@ -228,7 +228,7 @@ and
 % \[w(\cdot, t) = f\]
 % would mean that the behaviour of the system at its boundary is described by the function $f$ (e.g., if we are considering particles moving in a box, $f$ would describe how the particles behave at the box's boundaries).
 
-For appropriate transform pair $f(x)=f_x(F)$ and $F(\lambda)=F_\lambda(f)$ found using the Fokas method (to be explained in detail later), the solution to the IBVP characterized above is given by \cite[p.15]{Smith2016}
+For appropriate transform $F_\lambda$ and inverse transform $f_x$ pair found using the Fokas method (to be explained in detail later), the solution to the IBVP characterized above is given by \cite[p.15]{Smith2016}
 \begin{equation}\label{eq:q(x,t)}
     q(x,t) = f_x(e^{-a\lambda^n t}F_\lambda(f)),
 \end{equation}
@@ -1086,20 +1086,25 @@ It may be worth noting that although the spatial differential operator which the
 
 \subsection{Constructing the Fokas transform pair}\label{sec:fokas_transform_pair}
 
-Having constructed the adjoint boundary conditions, we can now construct the Fokas transform pair. The Fokas transform pair is a pair of contour integral transform and inverse transform. The key to its construction is thus its integrands and the integration contours. This section presents materials from \cite{Smith2016}, with definitions expanded and adapted to the algorithm.
+Having constructed the adjoint boundary conditions, we can now construct the Fokas transform pair. The Fokas transform pair is a pair of contour integral transform and inverse transform. The key to its construction is thus its integrands and the integration contours. This section presents material from \cite{Smith2016}, with definitions expanded and adapted to the algorithm.
 
 \paragraph{Definition of the integrands}\label{sec:integrand_defn}\mbox{}\\
 Define the matrices 
 \[b^\star := P^*,\quad \beta^\star := Q^*,\]
 where $P^*, Q^*$ are the matrices associated with the adjoint vector boundary form $U^+$ in equation \ref{eq:adjointU}.
-Let $\alpha := e^{2\pi i/n}$, where $n$ is the spatial order of the IBVP in \eqref{eq:IBVP}. For complex variable $\lambda$, define $W^+(\lambda)$, $W^-(\lambda)$ as the $n\times n$ matrices whose $kj$-entries are given by
+
+Let $\alpha := e^{2\pi i/n}$, where $n$ is the spatial order of the IBVP in \eqref{eq:IBVP}. 
+
+For complex variable $\lambda$, define $W^+(\lambda)$, $W^-(\lambda)$ as the $n\times n$ matrices whose $kj$-entries are given by
 \begin{subequations}\label{eq:M+/-}
     \begin{align}
         W^+_{kj}(\lambda) &:= \sum_{r=0}^{n-1}(-i\alpha^{k-1}\lambda)^r b^\star_{jr}\label{eq:M+}\\
         W^-_{kj}(\lambda) &:= \sum_{r=0}^{n-1}(-i\alpha^{k-1}\lambda)^r \beta^\star_{jr},\label{eq:M-}
     \end{align}
 \end{subequations}
-where $b^\star_{jr}$, $\beta^\star_{jr}$ are indexed from $0$ to $n-1$ in $r$. Define $W$ as the $n\times n$ matrix whose $kj$-entry is given by
+where $b^\star_{jr}$, $\beta^\star_{jr}$ are indexed from $0$ to $n-1$ in $r$. 
+
+Define $W$ as the $n\times n$ matrix whose $kj$-entry is given by
 \begin{equation}\label{eq:M}
     W_{kj}(\lambda) := W^+_{kj}(\lambda) + W^-_{kj}(\lambda)e^{-\alpha^{k-1}\lambda}.
 \end{equation}
@@ -1123,7 +1128,7 @@ For $\lambda\in\C$ such that $\Delta(\lambda)\neq 0$, define the integrands
 \end{subequations}
 
 \paragraph{Definition of the integration contours}\label{sec:contour_defn}\mbox{}\\
-We now define the integration contours. By the theory of exponential polynomials \cite{Langer1931}, the infimum of the distances between every two distinct zeros of $\Delta(\lambda)$ is positive. Let $5\epsilon$ be such this infimum. Let $\partial S$ denote boundary of set $S$. Let $\cl{S}$ denote the closure of set $S$. Let $\C^\pm$ denote the open upper and open lower halves of the complex plane, respectively. Let $D(x_0,\epsilon)$ denote the disk $\{x\in\C:\, |x-x_0|<\epsilon\}$ centered at $x_0$ with radius $\epsilon$. Let $C(x_0,\epsilon)$ denote the circle $\{x\in\C:\, |x-x_0|=\epsilon\}$ centered at $x_0$ with radius $\epsilon$. Define the contours
+We now define the integration contours. By the theory of exponential polynomials \cite{Langer1931}, the infimum of the distances between every two distinct zeros of $\Delta(\lambda)$ is positive. Let $5\epsilon$ be that infimum. Let $\partial S$ denote boundary of set $S$. Let $\cl{S}$ denote the closure of set $S$. Let $\C^\pm$ denote the open upper and open lower halves of the complex plane, respectively. Let $D(x_0,\epsilon)$ denote the disk $\{x\in\C:\, |x-x_0|<\epsilon\}$ centered at $x_0$ with radius $\epsilon$. Let $C(x_0,\epsilon)$ denote the circle $\{x\in\C:\, |x-x_0|=\epsilon\}$ centered at $x_0$ with radius $\epsilon$. Define the contours
 \begin{subequations}\label{eq:gamma}
     \begin{align}
         \Gamma_a^{\pm} &:= \partial\left(\{\lambda\in\C^{\pm}:\, \real(a\lambda^n)>0\}\setminus \bigcup_{\substack{\sigma\in\C;\\\Delta(\sigma)=0}} D(\sigma, 2\epsilon)\right)\label{eq:gammaAPlusMinus}\\
@@ -1139,11 +1144,12 @@ A sample contour is shown in Figure \ref{fig:gamma_smith_fokas}.
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.5\linewidth]{General-contours-02.mps}
-    \caption{Hypothetical $\Gamma$ contours corresponding to the case $a=-i$, taken from \cite{Smith2016}. The red dashed lines correspond to $\Gamma_a^+$, and the green dashed lines correspond to $\Gamma_a^-$. The blue circles correspond to $\Gamma_0^+$, and the black circles correspond to $\Gamma_0^-$. The arrows indicate the order of integration in equation \eqref{eq:q(x,t)_explicit}.}
+    \caption{Hypothetical $\Gamma$ contours corresponding to the case $a=-i$, taken from \cite{Smith2016}. The red dashed lines correspond to $\Gamma_a^+$, and the green dashed lines correspond to $\Gamma_a^-$. The blue circles correspond to $\Gamma_0^+$, and the black dashed circles correspond to $\Gamma_0^-$. The arrows indicate the order of integration in equation \eqref{eq:q(x,t)_explicit}.}
     \label{fig:gamma_smith_fokas}
 \end{figure}
 
-The Fokas transform pair is given by
+\paragraph{Definition of the Fokas transform pair}\label{sec:fokas_transform_pair_defn}\mbox{}\\
+With the integrands $F^+_\lambda$, $F^-_\lambda$ and the contours $\Gamma$, the Fokas transform pair is given by
 \begin{subequations}\label{eq:fokas_transform_pair}
     \begin{alignat}{3}
         F_\lambda: f(x)&\mapsto F(\lambda)\quad &F_\lambda(f) &= \begin{cases}F^+_\lambda(f)\quad\mbox{if $\lambda\in \Gamma_0^+\cup \Gamma_a^+$},\\F^-_\lambda(f)\quad\mbox{if $\lambda\in \Gamma_0^-\cup \Gamma_a^-$},\end{cases} \label{eq:F_lambda}\\
@@ -1154,7 +1160,7 @@ which allows computing the IBVP solution $q(x,t)$ in \eqref{eq:q(x,t)} by
 \begin{equation}\label{eq:q(x,t)_explicit}
     \begin{split}
         q(x,t) &= f_x\left(e^{-a\lambda^n t}F_\lambda(f)\right)\\
-        &= \int_{\Gamma_0^+}e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^+(f)\,d\lambda + \int_{\Gamma_a^+}e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^+(f)\,d\lambda\\
+        &:= \int_{\Gamma_0^+}e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^+(f)\,d\lambda + \int_{\Gamma_a^+}e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^+(f)\,d\lambda\\
         &\qquad + \int_{\Gamma_0^-}e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^-(f)\,d\lambda + \int_{\Gamma_a^-}e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^-(f)\,d\lambda.
     \end{split}
 \end{equation}
@@ -1189,7 +1195,7 @@ Thus, in $[0,2\pi)$,
 \[\theta_\lambda=\arg(\lambda)\in \bigcup_{k\in\{0,1,2\}}\left(\frac{2\pi k}{3},\,\frac{2\pi k + \pi}{3}\right) = \left(0,\frac{\pi}{3}\right)\cup \left(\frac{2\pi}{3}, \pi\right)\cup \left(\frac{4\pi}{3}, \frac{5\pi}{3}\right).\]
 Figure \ref{fig:contourTracing} shows some simulations of the region $\{\lambda\in\C:\,\real(a\lambda^n)>0\}$. Note that the region consists of a number of connected components, which we henceforth refer to as sectors.
 
-\begin{figure}
+\begin{figure}[htpb!]
     \begin{subfigure}{.5\textwidth}
       \centering
       \includegraphics[width=1\linewidth]{contourSimulation_n=2_a=1_cropped.pdf}
@@ -1214,19 +1220,19 @@ Figure \ref{fig:contourTracing} shows some simulations of the region $\{\lambda\
     \label{fig:contourTracing}
 \end{figure}
 
-\paragraph{Deforming contour backbone to avoid the poles of the integrands}\label{sec:deform_contours}\mbox{}\\
+\paragraph{Deforming contour backbone to avoid poles of the integrands}\label{sec:deform_contours}\mbox{}\\
 The boundaries of the sectors found above form the ``backbones'' of the contours $\Gamma_a^+$ and $\Gamma_a^-$. We proceed to turn these ``backbones'' into $\Gamma_a^+$, $\Gamma_a^-$ by deforming them to avoid  the poles of the integrands $F^+_\lambda$ and $F^-_\lambda$, i.e., the zeros of $\Delta(\lambda)$. 
 
 Before going into the technicalities of the contour deformation, we first draw attention to a modification of the mathematical construction of $\Gamma$ in the actual implementation of the algorithm. In \eqref{eq:gamma}, $\Gamma$ is defined on the entire complex plane; that is, we can have $\lambda$ with arbitrarily large modulus. In the actual implementation, however, we choose a sufficiently large real number $d$ to represent the modulus of complex infinity in the algorithm's context. That is, we restrict the mathematical construction to the disk $D(0, d)$. As the choice of $d$ potentially implies a tradeoff between computational cost and numerical accuracy, it should be chosen with regard to the error tolerance of the computational task at hand. The figures in this report and the documentation of the implementation of the Fokas method \cite{Xiao} are obtained with $d=10$ for clearer illustration. Note that the original infinite contour integrals are understood as improper integrals which, whenever they exist, are equal to their principal values, namely the limits of the respective integrals as the integration bounds tend to infinity. Truncating within $D(0,d)$ and expecting convergence as $d\to\infty$ is therefore legitimate.
 
-By the theory of exponential polynomials \cite{Langer1931}, $\Delta(\lambda)$ has infinitely many zeros, yet any finite region contains only finitely many of these zeros. Since we restrict the construction to the finite region $D(0, d)$, we would only be dealing with finitely many zeros of $\Delta(\lambda)$. This is an important fact: One complication that arises in practice is that each circular contour around a zero of $\Delta(\lambda)$ not only cannot overlap with the circle around another zero but also cannot overlap with the boundary of any sector. That is, in Figure \ref{fig:gamma_smith_fokas}, the blue and black circles not only cannot overlap with each other, but they also cannot overlap with the red or green dashed lines if the zeros of $\Delta(\lambda)$ at their centers do not lie on the boundaries of the red or green sectors. This implies that the $5\epsilon$ introduced in section \ref{sec:fokas_transform_pair} in fact needs to be the minimum of the infimum of the pairwise distances between distinct zeros of $\Delta(\lambda)$ and the infimum of distances between each zero that is exterior to all sectors and the boundary of each sector. The theory of exponential polynomials \cite{Langer1931} guarantees that the former infimum is positive, but there is no such guarantee for the latter infimum. However, precisely because we are working with a finite number of zeros of $\Delta(\lambda)$ in $D(0, d)$, the latter infimum is positive, and so is $\epsilon$. 
+By the theory of exponential polynomials \cite{Langer1931}, $\Delta(\lambda)$ has infinitely many zeros, yet any finite region contains only finitely many of these zeros. Since we restrict the construction to the finite region $D(0, d)$, we would only be dealing with finitely many zeros of $\Delta(\lambda)$. This is an important fact: One complication that arises in practice is that each circular contour around a zero of $\Delta(\lambda)$ not only cannot overlap with the circle around another zero but also cannot overlap with the boundary of any sector. That is, in Figure \ref{fig:gamma_smith_fokas}, the blue and black circles not only cannot overlap with each other, but they also cannot overlap with the red or green dashed lines if the zeros of $\Delta(\lambda)$ at their centers do not lie on the boundaries of the red or green sectors. This implies that the $5\epsilon$ introduced in section \ref{sec:fokas_transform_pair} in fact needs to be the minimum of the infimum of the pairwise distances between distinct zeros of $\Delta(\lambda)$ and the infimum of distances between each zero that is exterior to all sectors and the boundary of each sector. The theory of exponential polynomials \cite{Langer1931} guarantees that the former infimum is positive, but there is no such guarantee for the latter infimum. However, precisely because we are working with a finite number of zeros of $\Delta(\lambda)$ in $D(0, d)$, the latter infimum is indeed positive, and so is $\epsilon$. 
 
 To see that our choice of $\epsilon$ is valid, suppose $5\epsilon$ is the minimum of the two infima described above. Then the circle of radius $\epsilon$ around a zero of $\Delta(\lambda)$ does not overlap with any sector boundary. Moreover, the contours around any two distinct zeros of $\Delta(\lambda)$ do not overlap. Indeed: In Figure \ref{fig:epsilon}, suppose the radius of the blue circle around a zero of $\Delta(\lambda)$ is $\epsilon$ and the distance between the blue circle and the red dashed curve around it is again $\epsilon$. Then since the distance between any two distinct zeros of $\Delta(\lambda)$ is no less than $5\epsilon$, the blue circle together with the red dashed curve around it is still of distance $5\epsilon-2\epsilon\cdot 2 = \epsilon$ from the red dashed curve and the blue circle surrounding the nearest zero of $\Delta(\lambda)$. Thus, our choice of $\epsilon$ ensures that no contour around a zero of $\Delta(\lambda)$ is ``overwritten'' by the contour around another zero.
 
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.8\textwidth]{epsilon_ps.png}
-    \caption{Two distinct zeros of $\Delta(\lambda)$ that are $5\epsilon$ apart. The blue circles and red dashed contours are as in Figure \ref{fig:gamma_smith_fokas}. The radius of the blue circles, the distance between each blue circle and the red dashed curve around it, and the distance between the two red dashed curves, are all $\epsilon$.}
+    \caption{Two distinct zeros of $\Delta(\lambda)$ (black dots) that are $5\epsilon$ apart. The blue circles and red dashed contours are as in Figure \ref{fig:gamma_smith_fokas}. The radius of the blue circles, the distance between each blue circle and the red dashed curve around it, and the distance between the two red dashed curves, are all $\epsilon$.}
     \label{fig:epsilon}
 \end{figure}
 
@@ -1238,17 +1244,17 @@ Note that each sector is assigned to $\Gamma_a^+$ or $\Gamma_a^-$ depending on w
 
 The contours $\Gamma_a^\pm$ are built from these rays with possible deformations to avoid zeros of $\Delta(\lambda)$. Here we make another modification of the mathematical construction in \eqref{eq:gamma} to save computational cost. We note that the contours $\Gamma_a^\pm$ and $\Gamma_0^\pm$ defined in \eqref{eq:gamma} lead to partial cancellation, and deformation is in fact only necessary if a zero lies on the boundary of some sector. Indeed: As illustrated in Figure \ref{fig:gamma_smith_fokas}, the red and blue dashed lines do not need to be deformed to avoid zeros exterior to all sectors because they are already outside the sectors. Moreover, zeros interior to any sector can be ignored, since integrating over the blue circle around the zero counterclockwise cancels with integrating over the interior red dashed circle around the zero clockwise. For a zero that lies on the boundary of the sector, half of the blue circle around it that is interior to the sector cancels out with the red dashed curve around it, but the other half that is exterior to the sector does not cancel with anything. In this case, we deform the ray on which the zero lies to include the exterior half of the blue circle that does not cancel. 
 
-On a side note, the way we deform the contours described above implies that we can choose $\epsilon$ to be $\frac{1}{4}$ the minimum of the pairwise distances between distinct zeros of $\Delta(\lambda)$ and the distances between any zero to any sector boundary, instead of $\frac{1}{5}$ as in section \ref{sec:contour_defn}. Indeed: Since we have merged the blue circle into the red dashed curve in the previous paragraph, the scenario in Figure \ref{fig:epsilon} would not occur. Instead, the scenario that puts the most constraint on $\epsilon$ occurs when a zero is at the origin, and as shown in Figure \ref{fig:epsilon_2}, this scenario only requires that the two distinct zeros are $4\epsilon$ apart. Besides mathematical clarity, there is a subtlety in the implementation that actually argues for using $4\epsilon$ over $5\epsilon$: Since zeros of $\Delta(\lambda)$ are poles of the integrands $F_\lambda^+$, $F_\lambda^-$ in \eqref{eq:F_lambda_+-}, the values of $F_\lambda^+$, $F_\lambda^-$ easily blow up near the zeros, thereby creating numerical instability. Thus, we use the new choice of $\epsilon$ in the actual implementation to make the contours stay further away from the zeros. Figure \ref{fig:contourPlots} shows the contour $\Gamma$ for some examples, and Figure \ref{fig:contourPlot_n=2} shows each component of $\Gamma$ of Figure \ref{fig:contourPlots}(a) separately.
+On a side note, the way we deform the contours described above implies that we can choose $\epsilon$ to be $\frac{1}{4}$ the minimum of the pairwise distances between distinct zeros of $\Delta(\lambda)$ and the distances between any zero to any sector boundary, instead of $\frac{1}{5}$ as in section \ref{sec:contour_defn}. Indeed: Since we have merged the blue circle into the red dashed curve in the previous paragraph, the scenario in Figure \ref{fig:epsilon} would not occur. Instead, the scenario that puts the most constraint on $\epsilon$ occurs when a zero is at the origin, and as shown in Figure \ref{fig:epsilon_2}, this scenario only requires that the two distinct zeros are $4\epsilon$ apart. Besides mathematical clarity, there is a subtlety in the implementation that actually argues for using $4\epsilon$ over $5\epsilon$: Since zeros of $\Delta(\lambda)$ are poles of the integrands $F_\lambda^+$, $F_\lambda^-$ in \eqref{eq:F_lambda_+-}, the values of $F_\lambda^+$, $F_\lambda^-$ easily blow up near the zeros, thereby creating numerical instability that could make integration very slow. Thus, we use the new choice of $\epsilon$ in the actual implementation to make the contours stay further away from the zeros. Figure \ref{fig:contourPlots} shows the contour $\Gamma$ for some examples, and Figure \ref{fig:contourPlot_n=2} shows each component of $\Gamma$ of Figure \ref{fig:contourPlots}(a) separately.
 
 \begin{figure}[htpb!]
     \centering
     \includegraphics[width=0.8\textwidth]{epsilon_2_ps.png}
-    \caption{Two distinct zeros of $\Delta(\lambda)$ that are $4\epsilon$ apart. The zero on the left is at the origin. The blue circles and red dashed contours are as in Figure \ref{fig:gamma_smith_fokas} (though not drawn to scale here). The radius of the blue circles, the distance between the blue circle and the red dashed curve around it, and the distance between the two red dashed curves, are all $\epsilon$.}
+    \caption{Two distinct zeros of $\Delta(\lambda)$ (black dots) that are $4\epsilon$ apart. The zero on the left is at the origin. The blue circles and red dashed contours are as in Figure \ref{fig:gamma_smith_fokas} (though not drawn to scale here). The radius of the blue circle, the distance between the blue circle and the red dashed curve around it, and the distance between the red dashed curve around the blue circle and the red dashed curve around the zero on the right, are all $\epsilon$.}
     \label{fig:epsilon_2}
 \end{figure}
 
 
-\begin{figure}
+\begin{figure}[htpb!]
     \begin{subfigure}{.5\textwidth}
       \centering
       \includegraphics[width=1\linewidth]{contourPlot_n=2_a=1_cropped.pdf}
@@ -1273,7 +1279,7 @@ On a side note, the way we deform the contours described above implies that we c
     \label{fig:contourPlots}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htpb!]
     \begin{subfigure}{.5\textwidth}
       \centering
       \includegraphics[width=1\linewidth]{contourPlot_n=2_a=1_gammaAPlus_cropped.pdf}
@@ -1330,10 +1336,10 @@ On a side note, the way we deform the contours described above implies that we c
 %         \Return{vcat(mat, E)}
 %     }
 % \end{algorithm}
-The construction of $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ is described as follows. In the implementation, each contour in $\Gamma$ is encoded by an array of points listed in the order of integration. By Figure \ref{fig:gamma_smith_fokas}, we integrate over each contour in $\Gamma_a^\pm$ from the ending ray to the starting ray, and each contour in $\Gamma_0^\pm$ counterclockwise. Thus, in constructing the contours, for each sector, we initialize its boundary contour by an array of three points, namely the point on the ending ray with modulus $d$, the origin, and the point on the starting ray with modulus $d$. We add these initial sector boundary contours to $\Gamma_a^\pm$ depending on whether the sectors are in the upper or lower half planes. Then, for each zero of $\Delta(\lambda)$ that is not at the origin, if it is on the boundary of some sector, we deform the boundary contour of that sector to include a ``bulge'' that is the exterior half of an $N$-gon of radius $\epsilon$ around the zero, with the vertices listed counterclockwise. If the zero is exterior to all sectors, we add an $N$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out, as explained before. Finally, if there is a zero at the origin, we draw an $N$-gon around it and deform the boundary contours of all sectors to avoid the $N$-gon. 
+The construction of $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ is described as follows. In the implementation, each contour in $\Gamma$ is encoded by an array of points listed in the order of integration. As shown in Figure \ref{fig:gamma_smith_fokas}, we integrate over each contour in $\Gamma_a^\pm$ from the ending ray to the starting ray, and each contour in $\Gamma_0^\pm$ counterclockwise. Thus, in constructing the contours, for each sector, we initialize its boundary contour by an array of three points, namely the point on the ending ray with modulus $d$, the origin, and the point on the starting ray with modulus $d$. We add these initial sector boundary contours to $\Gamma_a^\pm$ depending on whether the sectors are in the upper or lower half plane. Then, for each zero of $\Delta(\lambda)$ that is not at the origin, if it is on the boundary of some sector, we deform the boundary contour of that sector to include a ``bulge'' that is the exterior half of an $N$-gon of radius $\epsilon$ around the zero, with the vertices listed counterclockwise. If the zero is exterior to all sectors, we add an $N$-gon contour around it to $\Gamma_0^{\pm}$, depending on whether the zero is in the upper or lower half plane. If the zero is interior to any sector, we ignore it, since its contribution to the contour integral will be cancelled out, as explained before. Finally, if there is a zero at the origin, we draw an $N$-gon around it and deform the boundary contours of all sectors to avoid the $N$-gon. 
 % At the end of this process, $\Gamma_a$ would contain all sector boundary contours now appropriately deformed, and $\Gamma_0$ would contain all the $N$-gon contours encircling isolated zeros.
 
-\noindent\subparagraph{Approximating the poles of the integrands}\mbox{}\label{par:approximating_integrand_poles}\\
+\noindent\subparagraph{Approximating poles of the integrands}\mbox{}\label{par:approximating_integrand_poles}\\
 As promised, we now describe a method to approximate the poles of $F^+_\lambda$ and $F^-_\lambda$, i.e., the zeros of $\Delta(\lambda)$, in the finite region $D(0,d)$.
 
 Writing $\Delta(\lambda)=\real(\Delta)(\lambda) + i\imag(\Delta)(\lambda)$ for $\real(\Delta), \imag(\Delta): \C\to\R$, we note that $\lambda_0$ is a root of $\Delta(\lambda)$ if and only if it is both a root of $\real(\Delta)(\lambda)$ and a root of $\imag(\Delta)(\lambda)$. Thus, to find zeros of $\Delta(\lambda)$, we aim to solve simultaneously
@@ -1363,7 +1369,7 @@ Writing $\Delta(\lambda)=\real(\Delta)(\lambda) + i\imag(\Delta)(\lambda)$ for $
 
 We approximate the solutions to \eqref{eq:delta_real_imaginary} by visualizing their corresponding level curves. In the examples shown in Figure \ref{fig:levelCurves}, the red lines correspond to the zeros of $\real(\Delta)(\lambda)$, and the blue lines correspond to those of $\imag(\Delta)(\lambda)$. Thus, We can locate the zeros of $\Delta(\lambda)$ at the intersections of the red and blue lines. 
 
-\begin{figure}
+\begin{figure}[htpb!]
     \begin{subfigure}{.5\textwidth}
       \centering
       \includegraphics[width=1\linewidth]{levelCurves_1.pdf}
@@ -1392,27 +1398,29 @@ The above method still requires a human to read the level curve plots, visually 
 
 \subsubsection{Constructing the integrands}\label{sec:constructing_integrands}
 
-Having constructed the integration contour as above, theoretically, we can already compute the Fokas transform pair $F_\lambda$ and $f_x$ using equation \eqref{eq:fokas_transform_pair} and solve for $q(x,t)$ using equation \eqref{eq:q(x,t)_explicit}.
+Having constructed the integration contours as above, theoretically, we can already compute the Fokas transform pair $F_\lambda$ and $f_x$ using equation \eqref{eq:fokas_transform_pair} and solve for $q(x,t)$ using equation \eqref{eq:q(x,t)_explicit}.
 %Theoretically, the integrands $F^+_\lambda$ and $F^-_\lambda$ can be computed directly from \eqref{eq:F_lambda_+-}. 
-Yet there is one more complication in practice. As shown in equation \eqref{eq:q(x,t)_explicit}, the definition of the solution $q(x,t)$ involves integrals of $F_\lambda^+$, $F_\lambda^-$ over the contours $\Gamma$, but as shown in \eqref{eq:F+}--\eqref{eq:F-}, $F_\lambda^+$ and $F_\lambda^-$ themselves involve an integral of the initial datum $f(x)$. Double integrals are computationally expensive, and so to improve algorithm efficiency, we replace the inner integral involving $f(x)$ with an approximation of it that has explicit formula, developed as follows.
+Yet there is one more complication in practice. As shown in equation \eqref{eq:q(x,t)_explicit}, the solution $q(x,t)$ is a sum of integrals of $F_\lambda^+$, $F_\lambda^-$ over the contours $\Gamma$, but as shown in \eqref{eq:F+}--\eqref{eq:F-}, $F_\lambda^+$ and $F_\lambda^-$ themselves involve an integral of the initial datum $f(x)$. Double integrals are computationally expensive, and so to improve algorithm efficiency, we replace the inner integral involving $f(x)$ with an approximation of it that has explicit formula, developed as follows.
 
-\paragraph{Approximating inner integral using Chebyshev polynomials}\mbox{}\label{par:approximate_integral_chebyshev}
+\paragraph{Approximating the inner integral using Chebyshev polynomials}\mbox{}\label{par:approximate_integral_chebyshev}
 
-The inner integral in \eqref{eq:F_lambda_+-} that we wish to compute is
+The inner integral in \eqref{eq:F_lambda_+-} that we wish to approximate is
 \[\int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx,\]
 where $f(x)$ is the initial datum of the IBVP in \eqref{eq:IBVP}.
 Note that this is the Fourier transform of $f(x)$ on $[0,1]$ evaluated at $\alpha^{l-1}\lambda$.
-The idea is to approximate $f(x)$ using Chebyshev polynomials and compute the integral using explicit formula of the Fourier Transform of Chebyshev polynomials \cite{Fokas2012}.
+The idea is to approximate $f(x)$ using Chebyshev polynomials and compute the integral using explicit formulas of the Fourier transform of Chebyshev polynomials \cite{Fokas2012}.
+
+In this section, $n$ refers to the index of terms in the Chebyshev approximation of $f(x)$ instead of the spatial order of the IBVP in \eqref{eq:IBVP}.
 
 The Chebyshev polynomials are given by
 \[
     T_n(x) =
 \begin{cases}
     \cos(n \arccos(x))&\quad\mbox{$|x|\leq 1$}\\
-    \frac{1}{2}\left((x-\sqrt{x^2-1})^n + (x+\sqrt{x^2-1})^n\right)&\quad\mbox{$|x|>1$}.
+    \frac{1}{2}\left((x-\sqrt{x^2-1})^n + (x+\sqrt{x^2-1})^n\right)&\quad\mbox{$|x|>1$},
 \end{cases}    
 \]
-Given a function $f_0(x)$ on the interval $[a,b]$, we can approximate $f_0(x)$ using Chebyshev polynomial expansion. The Chebyshev approximation is best on $[-1,1]$. Thus, we scale $[a,b]$ to $[-1,1]$ via $g:[a,b]\to [-1,1]$ given by $g(x)=2(x-a)/(b-a)-1$, obtain the Chebyshev coefficients $\{b_n\}_{n=0}^N$ there, and write the approximation of $f_0$ on $[a,b]$ as
+for $n=0,1,2,\ldots$. Given a function $f_0(x)$ on the interval $[a,b]$, we can approximate $f_0(x)$ using Chebyshev polynomial expansion. The Chebyshev approximation is best on $[-1,1]$. Thus, we scale $[a,b]$ to $[-1,1]$ via $g:[a,b]\to [-1,1]$ given by $g(x)=2(x-a)/(b-a)-1$, obtain the Chebyshev coefficients $\{b_n\}_{n=0}^N$ there, and write the approximation of $f_0$ on $[a,b]$ as
 \begin{equation}\label{eq:cheb_f_on_[a,b]}
     f_0(x)\approx \sum_{n=0}^N b_n T_n(g(x)),
 \end{equation}
@@ -1428,12 +1436,12 @@ As shown in \eqref{eq:IBVP}, the IBVP's initial datum $f(x)$ is defined on $[0,1
 Thus, it suffices to find 
 \[\int_{-1}^1 e^{-ict} h(t)\,dt.\]
 
-Suppose that on $[-1,1]$,
+Suppose that on $[-1,1]$, the Chebyshev approximation of $h(t)$ is given by
 \[h(t) \approx \sum_{n=0}^N b_n T_n(t).\]
 Note that since $t=g(x)$, we have $f(x) = f(g^{-1}(g(x))) = h(g(x)) = h(t)$, and the above is equivalent to
 \[f(x) \approx \sum_{n=0}^N b_n T_n(g(x)),\]
 which is the same form as equation \eqref{eq:cheb_f_on_[a,b]}.
-Thus, the Chebyshev coefficients of $h(t)$ are exactly the coefficients of $f(x)$ obtained on $[-1,1]$ after scaling. 
+Thus, the Chebyshev coefficients of $h(t)$ are exactly the Chebyshev coefficients of $f(x)$ obtained on $[-1,1]$ after scaling. 
 
 Since $t\in [-1,1]$, the Chebyshev polynomials $T_n(t)$ is given by $\cos(n\arccos(t))$, and thus
 \[h(t) \approx \sum_{n=0}^N b_n \cos(n \arccos(t)).\]
@@ -1448,6 +1456,9 @@ With the change of variable $t=\cos\theta$, we have
     &= \int_\pi^0 e^{-ic\cos\theta} \cos(n\theta) (-\sin\theta)\,d\theta\\
     &= \int_0^\pi e^{-ic\cos\theta} \cos(n\theta) \sin\theta\,d\theta.
 \end{align*}
+
+The remaining section presents material from \cite{Fokas2012} with proofs expanded.
+
 Define
 \begin{align*}
     \hat{T}_n(c) := \int_0^\pi e^{-ic\cos\theta} \cos(n\theta) \sin\theta\,d\theta.
@@ -1458,7 +1469,7 @@ Then
     \begin{cases}
     2&\quad\mbox{if $n=0$}\\
     [\frac{1}{2}\sin^2\theta + \frac{0}{2}\cos^2\theta]_0^{\pi}&\quad\mbox{if $n=1$}\\
-    \left[\frac{n}{(n-1)(n+1)}\sin\theta\sin(n\theta) + \frac{1}{(n-1)(n+1)}\cos\theta\cos(n\theta)\right]_0^{\pi}&\quad\mbox{if $n\geq 2$}
+    \left[\frac{n}{n^2-1}\sin\theta\sin(n\theta) + \frac{1}{n^2-1}\cos\theta\cos(n\theta)\right]_0^{\pi}&\quad\mbox{if $n\geq 2$}
     \end{cases}\\
     &= 
     \begin{cases}
@@ -1469,12 +1480,13 @@ Then
     \end{cases}\\
     &= 
     \begin{cases}
-    2&\quad\mbox{if $n=0$}\\
-    0&\quad\mbox{if $n=1$}\\
-    \frac{(-1)^{n+1}-1}{n^2-1}&\quad\mbox{if $n\geq 2$}
-    \end{cases}.
+    2&\quad\mbox{if $n=0$},\\
+    0&\quad\mbox{if $n=1$},\\
+    \frac{(-1)^{n+1}-1}{n^2-1}&\quad\mbox{if $n\geq 2$}.
+    \end{cases}
 \end{align*}
-For $c\in\C\setminus\{0\}$, using integration by parts,
+Note that the formula for $n\geq 2$ agrees with the case for $n=0$, but for clarity, we write them separately.
+For $c\in\C\setminus\{0\}$, using integration by parts, we have
 \begin{align*}
     \hat{T}_n(c) &= \int_0^\pi e^{-ic\cos\theta}\cos(n\theta)\sin\theta\,d\theta\\
     &= \left[\cos(n\theta)\frac{1}{ic}e^{-ic\cos\theta}\right]_0^{\pi} - \int_0^{\pi}\frac{1}{ic}e^{-ic\cos\theta}n(-\sin(n\theta))\,d\theta\\
@@ -1484,13 +1496,18 @@ For $c\in\C\setminus\{0\}$, using integration by parts,
 
 Let $z\in \C\setminus\{0\}$, define 
 \[K_n(z):=\int_0^\pi e^{z\cos\theta}\sin(n\theta)\,d\theta.\]
-Then
-$$K_0(z) = \int_0^{\pi}e^{z\cos\theta}\sin 0\,d\theta=0,$$
+Then for $c\in\mathbb{C}\setminus\{0\}$,
 \begin{align*}
+\hat{T}_n(c) &= \frac{1}{ic}\left(n\int_0^{\pi}e^{-ic\cos\theta}\sin(n\theta)\,d\theta + (-1)^n e^{ic}- e^{-ic}\right)\\
+&= \frac{1}{ic}\left(nK_n(-ic) + (-1)^n e^{ic} - e^{-ic}\right).
+\end{align*}
+We note that
+\begin{align*}
+K_0(z) &= \int_0^{\pi}e^{z\cos\theta}\sin 0\,d\theta=0\\
 K_1(z) &= \int_0^{\pi}e^{z\cos\theta}\sin\theta\,d\theta\\
 &= \left[-\frac{1}{z}e^{z\cos\theta}\right]_0^{\pi}\\
 &= -\frac{1}{z}e^{z\cos(\pi)} + \frac{1}{z}e^{z\cos 0}\\
-&= \frac{e^z - e^{-z}}{z}
+&= \frac{e^z - e^{-z}}{z}.
 \end{align*}
 To compute $K_n(z)$ for $n\geq 2$, we first note that
 \begin{align*}
@@ -1521,12 +1538,6 @@ K_0(z) &= 0\\
 K_1(z) &= \frac{e^z-e^{-z}}{z}\\
 K_{n}(z) &= K_{n-2}(z) + 2\left(\frac{e^z}{z} + (-1)^{n}\frac{e^{-z}}{z} - \frac{n-1}{z}K_{n-1}(z)\right),\quad n\geq 2.
 \end{align*}
-Hence, for $c\in\mathbb{C}\setminus\{0\}$,
-\begin{align*}
-\hat{T}_n(c) &= \frac{1}{ic}\left(n\int_0^{\pi}e^{-ic\cos\theta}\sin(n\theta)\,d\theta + (-1)^n e^{ic}- e^{-ic}\right)\\
-&= \frac{1}{ic}\left(nK_n(-ic) + (-1)^n e^{ic} - e^{-ic}\right).
-\end{align*}
-
 Further solving the recurrence relation \cite{Fokas2012} gives
 \begin{alignat*}{2}
     \hat{T}_n(c) = \int_0^\pi e^{-ic\cos\theta}\cos(n\theta)\sin\theta\,d\theta &= 
@@ -1544,20 +1555,21 @@ where
 \begin{cases}
 (-1)^n&\quad\mbox{if $m=1$},\\
 (-1)^{n+1}n^2&\quad\mbox{if $m=2$},\\
-(-1)^{n+m-1}2^{m-2}n\sum_{k=1}^{n-m+2}\binom{m+k-3}{k-1}\prod_{j=k}^{m+k-3}(n-j)&\quad\mbox{else}.
+(-1)^{n+m-1}2^{m-2}n\sum_{k=1}^{n-m+2}\binom{m+k-3}{k-1}\prod_{j=k}^{m+k-3}(n-j)&\quad\mbox{if $m=3,4,\ldots,n+1$}.
 \end{cases}
 \end{align*}
+
 Thus, in summary,
 \begin{align*}
     \int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx &= \frac{1}{2e^{ic}}\int_{-1}^1 e^{-ict} h(t)\,dt\\
     &\approx \frac{1}{2e^{ic}}\sum_{n=0}^N b_n \int_{-1}^1 e^{-ict}\cos(n \arccos(t))\,dt\\
     &= \frac{1}{2e^{ic}}\sum_{n=0}^N b_n \hat{T}_n(t),
 \end{align*}
-where $\hat{T}_n(t)$ is given above.
+with $\hat{T}_n(t)$ given above.
 
 \section{Implementation}
 \subsection{Overview}
-The above algorithm is implemented in Julia 0.6.4. Dependencies are ``SymPy'' \cite{sympy}, ``sympy'' \cite{sympyPython},  ``Distributions'' \cite{distributions}, ``ApproxFun'' \cite{approxfun}, ``Roots'' \cite{roots}, ``QuadGK'' \cite{quadgk}, ``Plots'' \cite{plots}, ``Gadfly'' \cite{gadfly}, and ``PyPlot'' \cite{pyplot}. Documentation with examples can be found in \cite{Xiao}, with possible minor differences in notation from section \ref{sec:fokas_transform_pair}.
+The above algorithm is implemented in Julia 0.6.4. Library dependencies are \texttt{SymPy} \cite{sympy}, \texttt{sympy} \cite{sympyPython},  \texttt{Distributions} \cite{distributions}, \texttt{ApproxFun} \cite{approxfun}, \texttt{Roots} \cite{roots}, \texttt{QuadGK} \cite{quadgk}, \texttt{Plots} \cite{plots}, \texttt{Gadfly} \cite{gadfly}, and \texttt{PyPlot} \cite{pyplot}. Code, unit tests, and documentation with examples can be found in \cite{Xiao}, with possibly minor differences in notation from section \ref{sec:fokas_transform_pair}.
 
 As mentioned near the end of section \ref{sec:motivation}, the implementation aims at providing computer aid alongside human judgment in the process of using the Fokas method to solve IBVPs.
 
@@ -1598,12 +1610,15 @@ Uf = \begin{bmatrix}
 By \eqref{eq:Ux=Mxi(a)+Nxi(b)}, $f\in \Phi$, as required.
 
 The adjoint vector boundary form found by the algorithm outlined in section \ref{sec:construct_adjoint} is characterized by the matrices
-\begin{subequations}\label{eq:ex1_b_beta}
-\begin{align}
-    b^\star &= \begin{bmatrix}0&-1\\ 1&0\end{bmatrix},\\
-    \beta^\star &= \begin{bmatrix}0&1\\ -1&0\end{bmatrix}.
-\end{align}
-\end{subequations}
+% \begin{subequations}\label{eq:ex1_b_beta}
+% \begin{align}
+%     b^\star &= \begin{bmatrix}0&-1\\ 1&0\end{bmatrix},\\
+%     \beta^\star &= \begin{bmatrix}0&1\\ -1&0\end{bmatrix}.
+% \end{align}
+% \end{subequations}
+\begin{equation}\label{eq:ex1_b_beta}
+    b^\star = \begin{bmatrix}0&-1\\ 1&0\end{bmatrix}, \quad \beta^\star = \begin{bmatrix}0&1\\ -1&0\end{bmatrix}.
+\end{equation}
 From \eqref{eq:ex1_b_beta}, we compute $\Delta(\lambda)$ in \eqref{eq:delta} to be 
 \begin{equation}\label{eq:ex1_delta}
     \Delta(\lambda) = 8i\lambda \sin^2\left(\frac{\lambda}{2}\right),
@@ -1634,40 +1649,46 @@ With this information, we find the contours $\Gamma$ to be as in Figure \ref{fig
     \label{fig:ex1_contourPlot}
 \end{figure}
 
-As shown in equation \eqref{eq:q(x,t)_explicit}, to compute $q(x,t)$, we need to evaluate $e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^\pm(f)$ over the contours $\Gamma_a^\pm$ and $\Gamma_0^\pm$, respectively; call this the outer integral. We note that the inner integral $\int_0^1 e^{i\alpha^{l-1}\lambda x}f(x)\,dx$ in \eqref{eq:F_lambda_+-} depends on both $\lambda$ and $f$. One consequence is that if $F_\lambda^+$, $F_\lambda^-$ are to be implemented as functions without symbolic expressions, they each need to take both $\lambda$ and $f$ as arguments. But doing so results in unnecessary computational cost: The outer integral is over $\lambda$ only, that is, when evaluating it, $\lambda$ changes while $f$ does not. But once $\lambda$ changes, the inner integral also needs to be re-calculated, and because it depends on $f$ and $\lambda$, the procedure to approximate the integral described in section \ref{par:approximate_integral_chebyshev} would need to be repeated. As a result, when evaluating $q(x,t)$, the Chebyshev approximation of $f$ is re-calculated at each point in the $\Gamma$ contour even though $f$ does not change throughout the process. Current implementation of the Fokas method avoids such unnecessary computational cost by obtaining the explicit symbolic formulas of $F_\lambda^+$, $F_\lambda^-$ that depend on $\lambda$ only, namely \eqref{eq:ex1_F_lambda_+-}, with $\hat{f}(\lambda)$ replaced by the approximation of $\int_0^1 e^{i\lambda x}f(x)\,dx$ obtained in section \ref{par:approximate_integral_chebyshev}, written as symbolic expressions in $\lambda$. In this way, the components of the outer integral that depend on $f$ are evaluated only once.
+As shown in equation \eqref{eq:q(x,t)_explicit}, to compute $q(x,t)$, we need to evaluate $e^{i\lambda x}e^{-a\lambda^n t}F_\lambda^\pm(f)$ over the contours $\Gamma_a^\pm$ and $\Gamma_0^\pm$, respectively; call this the outer integral. We note that the inner integral $\int_0^1 e^{i\alpha^{l-1}\lambda x}f(x)\,dx$ in \eqref{eq:F_lambda_+-} depends on both $\lambda$ and $f$. One consequence of this is that if $F_\lambda^+$, $F_\lambda^-$ are to be implemented as functions without symbolic expressions, they each need to take both $\lambda$ and $f$ as arguments. But doing so results in unnecessary computational cost: The outer integral is over $\lambda$ only, meaning that, when evaluating it, $\lambda$ changes while $f$ does not. But once $\lambda$ changes, the inner integral also needs to be re-calculated, and because it depends on $f$ and $\lambda$, the procedure to approximate the integral described in section \ref{par:approximate_integral_chebyshev} would need to be repeated. As a result, when evaluating $q(x,t)$, the Chebyshev approximation of $f$ is re-calculated at each point in the $\Gamma$ contour even though $f$ does not change throughout the process. Current implementation of the Fokas method in this project avoids such unnecessary computational cost by computing the explicit symbolic formulas of $F_\lambda^+$, $F_\lambda^-$ that depend on $\lambda$ only; these symbolic formulas are derived by replacing $\hat{f}(\lambda)$ in \eqref{eq:ex1_F_lambda_+-} with the symbolic expression of the approximation of $\int_0^1 e^{i\lambda x}f(x)\,dx$ obtained in section \ref{par:approximate_integral_chebyshev}.
+%these formulas are obtained from \eqref{eq:ex1_F_lambda_+-}, with $\hat{f}(\lambda)$ replaced by the approximation of $\int_0^1 e^{i\lambda x}f(x)\,dx$ obtained in section \ref{par:approximate_integral_chebyshev}, written as a symbolic expression in $\lambda$. 
+In this way, components of the outer integral that depend on $f$ are evaluated only once.
 %This is also the only way to avoid the cost.
 
-In practice, we would convert the symbolic formulas into function objects, because in Julia, function objects are evaluated much faster than symbolic objects. More recent versions of Julia have parsers that perform the conversion. In Julia 0.6.4 in which the current implementation is based (for reasons explained in the last paragraph in section \ref{sec:motivation}), however, no such parser exists, and conversion needs to be done manually, namely to create the corresponding function objects by typing in the symbolic formulas in the function definition. Having done so, current implementation of the Fokas method allows evaluating $q(x,t)$ at a given $(x_0, t_0)\in (0,1)\times (0,T)$ within $20$ seconds with the modulus of complex infinity set as $10$, and within $1$ minute with the modulus of complex infinity set as $50$ (which is a more reasonable value regarding numerical accuracy, as explained in section \ref{sec:deform_contours}).
+In practice, we would convert the symbolic formulas into function objects, because in Julia, function objects are evaluated much faster than symbolic objects. More recent versions of Julia have parsers that perform the conversion. In Julia 0.6.4 in which the current implementation is based (for reasons explained in the last paragraph in section \ref{sec:motivation}), however, no such parser exists, and conversion needs to be done manually, namely to create the corresponding function objects by typing in the symbolic formulas in the function definition. Having done so, current implementation of the Fokas method in this project allows evaluating $q(x,t)$ at a given $(x_0, t_0)\in (0,1)\times (0,T)$ within $20$ seconds with the modulus of complex infinity set as $10$, and within $1$ minute with the modulus of complex infinity set as $50$ (which is a more reasonable value regarding numerical accuracy, as explained in section \ref{sec:deform_contours}).
 
-As a side note, the solution $q(x,t)$ computed above using equation \eqref{eq:q(x,t)_explicit} corresponds to the separated solution of the heat equation \cite{Pinsky1991} in the following sense. Using Cauchy's theorem and Jordan's lemma from complex analysis, it can be shown that integration over the $\Gamma$ contour in Figure \ref{fig:ex1_contourPlot} reduces to integration over closed contours around the poles of $F^+_\lambda$ and $F^-_\lambda$, i.e., the zeros of $\Delta(\lambda)$ in Figure \ref{fig:ex1_levelCurves}. That is, $q(x,t)$ reduces to a sum of contour integrals around zeros of $\Delta(\lambda)$, and using the residue theorem, these contour integrals can be shown to correspond to the eigenfunctions of Sturm-Liouville BVP related to the heat equation IBVP. Since $\Delta(\lambda)$ have infinitely many zeros on the real line, as the estimate of the modulus of complex infinity $d$ tends to $\infty$, $\Gamma$ would effectively consist of infinitely many closed contours centered on the real line, much like the blue circles on $\real(\lambda)$ in Figure \ref{fig:gamma_smith_fokas}, but extending to $\infty$ in both directions. As a result, $q(x,t)$ would become an infinite series of contour integrals, which is none other than the separated solution of the heat equation of the form 
+As a side note, the solution $q(x,t)$ computed above using equation \eqref{eq:q(x,t)_explicit} corresponds to the separated solution of the heat equation \cite{Pinsky1991} in the following sense. Using Cauchy's theorem and Jordan's lemma from complex analysis, it can be shown that integration over the $\Gamma$ contour in Figure \ref{fig:ex1_contourPlot} reduces to integration over closed contours around the poles of $F^+_\lambda$ and $F^-_\lambda$, i.e., the zeros of $\Delta(\lambda)$ in Figure \ref{fig:ex1_levelCurves}. That is, $q(x,t)$ reduces to a sum of contour integrals around zeros of $\Delta(\lambda)$, and using the residue theorem, these contour integrals can be shown to correspond to the eigenfunctions of Sturm-Liouville BVP related to the heat equation IBVP. Since $\Delta(\lambda)$ have infinitely many zeros on the real line, as the estimate of the modulus of complex infinity $d$ tends to $\infty$, $\Gamma$ would effectively consist of infinitely many closed contours centered on the real line (much like the blue circles on $\real(\lambda)$ in Figure \ref{fig:gamma_smith_fokas}, but extending to $\infty$ in both directions). As a result, $q(x,t)$ would become an infinite series of contour integrals, which is none other than the separated solution of the heat equation of the form 
 \[q(x,t) = \sum_{n=1}^\infty A_n \phi_n(x)e^{-\lambda_n Kt},\]
-where $A_n$ are Fourier coefficients of the initial datum $f(x)$, $\lambda_n$ the eigenvalues of the Sturm-Liouville problem, and $\phi_n(x)$ the corresponding eigenfunctions. Such correspondence to the separated solution is no surprise since the Fokas transform originated from a deeper form of separation of variables \cite{Fokas2009}. This is also reflected in the fact that methods based on transform pairs effectively separate the spatial and temporal components of the IBVP.
+where $A_n$ are Fourier coefficients of the initial datum $f(x)$, $\lambda_n$ the eigenvalues of the Sturm-Liouville problem, and $\phi_n(x)$ the corresponding eigenfunctions. Such correspondence to the separated solution is no surprise since the Fokas transform method originated from a deeper form of separation of variables \cite{Fokas1997}\cite{Fokas2009}. This is also reflected in the fact that methods based on transform pairs essentially separate the spatial and temporal components of the IBVP.
 
 \subsubsection{Symbolic computation}\label{sec:symbolic_computation}
 
-In this section, we illustrate how the symbolic formulas provided by the implementation can be useful.
+In this section, we illustrate how the symbolic computation feature of the implementation can be useful.
 
-Applying the Fokas method to IBVPs and beyond depends on two technical lemmas, one concerning the positions of the poles of $F^+_\lambda$, $F^-_\lambda$ (i.e., zeros of $\Delta(\lambda)$), the other concerning the asymptotic decay of $F^+_\lambda$, $F^-_\lambda$. These lemmas are first described in \cite{Smith2012} for IBVPs, and they may assume variations for different types of problems such as those described in the beginning of section \ref{sec:discussion}. These lemmas' precise roles are more clearly articulated in \cite{Miller2018}, which also describes the extension of the Fokas method to a broader class of problems. Thus, in proving these lemmas or their variations (depending on the type of problems the Fokas method is applied to), it would be helpful to have the symbolic formulas for $F^+_\lambda$, $F^-_\lambda$.
+Applying the Fokas method to IBVPs and beyond depends on two technical lemmas, one concerning the positions of the poles of $F^+_\lambda$, $F^-_\lambda$ (i.e., zeros of $\Delta(\lambda)$), the other concerning the asymptotic decay of $F^+_\lambda$, $F^-_\lambda$. These lemmas are first described in \cite{Smith2012} for IBVPs. Their precise roles are more clearly articulated in \cite{Miller2018}, which also describes the extension of the Fokas method to a broader class of problems. These lemmas may assume variations for different types of problems such as those described in the beginning of section \ref{sec:discussion}, but some version of them are always required when applying the Fokas method. Because of the way these lemmas make statements about $F^+_\lambda$ and $F^-_\lambda$, in proving them or their variations, it would be helpful to have the symbolic formulas for $F^+_\lambda$, $F^-_\lambda$.
 
-For the IBVPs \eqref{eq:problem_1} and \eqref{eq:problem_2}, the formulas for $F_\lambda^+$ and $F_\lambda^-$ have been computed by hand in \cite[p. 1-4]{Smith2016}. Symbolic formulas for the same objects have been found by the implementation of the Fokas method following the steps outlined in section \ref{sec:ex1}, with $S$, $a$ as described in section \ref{sec:IBVP}, and
+For the IBVPs \eqref{eq:problem_1} and \eqref{eq:problem_2}, the formulas for $F_\lambda^+$ and $F_\lambda^-$ have been computed by hand in \cite[p. 1-4]{Smith2016}. Symbolic formulas for the same objects have also been computed by the implementation of the Fokas method following the steps outlined in section \ref{sec:ex1}, with $S$, $a$ as described in section \ref{sec:IBVP}, and
 \[M = \begin{bmatrix}1 & 0 & 0\\ 0 & 0 & 0\\ 0 & 1 & 0\end{bmatrix},\quad N = \begin{bmatrix} 0 & 0 & 0\\ 1 & 0 & 0 \\ 0 & -2 & 0\end{bmatrix}\]
 in \eqref{eq:problem_1}, and 
 \[M = \begin{bmatrix}1 & 0 & 0\\ 0 & 0 & 0\\ 0 & 0 & 0\end{bmatrix},\quad N = \begin{bmatrix} 0 & 0 & 0\\ 1 & 0 & 0 \\ 0 & 1 & 0\end{bmatrix}\]
-in \eqref{eq:problem_2}. The symbolic formulas found by the implementation, though not simplified to forms pleasant to the human eye due to limitations of the Julia packages used, have been verified to be equivalent to those derived by hand in \cite{Smith2016} by comparing the coefficients of $\hat{f}(\alpha^{l-1}\lambda) = \int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx$ in \eqref{eq:F_lambda_+-} evaluated at $100$ random values of $\lambda\in\C$ avoiding any zeros of $\Delta(\lambda)$.
+in \eqref{eq:problem_2}. The symbolic formulas found by the implementation, though not simplified to forms pleasant to the human eye due to limitations of the Julia libraries used, have been verified to be equivalent to those derived by hand in \cite{Smith2016} by comparing the coefficients of $\hat{f}(\alpha^{l-1}\lambda) = \int_0^1 e^{-i\alpha^{l-1}\lambda x}f(x)\,dx$ in \eqref{eq:F_lambda_+-}; the coefficients (which depend on $\lambda$) are evaluated at $100$ random values of $\lambda\in\C$ avoiding any zeros of $\Delta(\lambda)$.
 
 \section{Discussion}\label{sec:discussion}
 
 \subsection{Extension to other problems}
 
-This project concerns applying the Fokas method to solving IBVPs. With appropriate modifications, the Fokas method can be extended to other types of problems. These include multipoint problems with conditions that relate the solution's values at different locations \cite{Pelloni2018}; nonlocal problems with conditions that specify a weighted average of the solution over the spatial interval \cite{Miller2018}; interface problems where solution in one domain specifies boundary conditions for neighbouring domains \cite{Sheils2015}, involving the heat equation \cite{Sheils2014}\cite{SheilsSmith2015}, the linear Schr\"{o}dinger equation \cite{SheilsDeconinck2015}, and the linear KdV equation \cite{Deconinck2016}; and PDEs of fractional orders \cite{Fernandez2018}, as breifly mentioned before in section \ref{sec:motivation}. Correspondingly, the implementation of the Fokas method in this project may be extended to problems beyond IBVPs. While modifications need to be made, the design and usefulness of the implementation's functionalities such as those described in section \ref{sec:symbolic_computation} should remain generalizable to applications of the Fokas method in other settings.
+This project concerns applying the Fokas method to solving IBVPs. With appropriate modifications, the Fokas method can be extended to other types of problems. These include multipoint problems with conditions that relate the solution's values at different spatial locations \cite{Pelloni2018}; nonlocal problems with conditions that specify a weighted average of the solution over the spatial interval \cite{Miller2018}; interface problems where solution in one domain specifies boundary conditions for neighbouring domains \cite{Sheils2015}, involving the heat equation \cite{Sheils2014}\cite{SheilsSmith2015}, the linear Schr\"{o}dinger equation \cite{SheilsDeconinck2014}, and the linear KdV equation \cite{Deconinck2016}; and PDEs of fractional orders \cite{Fernandez2018}, as breifly mentioned before in section \ref{sec:motivation}. Correspondingly, the implementation of the Fokas method in this project may be extended to problems beyond IBVPs. While modifications need to be made, the design and usefulness of the implementation's functionalities such as those described in section \ref{sec:symbolic_computation} should remain generalizable to applications of the Fokas method in other settings.
 
 \subsection{Possible improvements}
 
-Currently, this project's implementation of the Fokas method \cite{Xiao} supplies utilities such as contour visualization, symbolic formulas derivation, and numerical evaluation that significantly reduce the time and effort in applying the Fokas method compared to working by hand. Possible directions for further improvement involve wider coverage of automated functionalities and faster computation speed.
+Currently, this project's implementation of the Fokas method \cite{Xiao} supplies utilities such as contour visualization, symbolic computation, and numeric evaluation that significantly reduce the time and effort in applying the Fokas method compared to working by hand. Possible directions for further improvement involve better symbolic computation, wider coverage of automated functionalities, and faster computation speed.
+
+\subsubsection{Symbolic computation}
+
+As mentioned in section \ref{sec:symbolic_computation}, the symbolic formulas derived by the implementation of the Fokas method are not always simplified to a satisfying form due to limitations of the Julia libraries used. This issue may be improved by migrating the implementation to later releases of Julia with better library support for symbolic computation.
 
 \subsubsection{Automatically approximating poles of the integrands}
 
-As mentioned in section \ref{par:approximating_integrand_poles}, to approximate the poles of $F^+_\lambda$ and $F^-_\lambda$, i.e., zeros of $\Delta(\lambda)$, in the region $D(0,d)$ (where $d$ is the number representing the modulus of complex infinity), human judgement is still needed to visually locate the zeros as the intersections of the level curves of $\real(\Delta)(\lambda)=0$ and $\imag(\Delta)(\lambda)=0$. This procedure may be automated based on \cite{Delves1967}, which describes a numerical method to find zeros of an analytic function in a given region using Cauchy's argument principle.
+As mentioned in section \ref{par:approximating_integrand_poles}, to approximate the poles of $F^+_\lambda$ and $F^-_\lambda$, i.e., zeros of $\Delta(\lambda)$, in the region $D(0,d)$ (where $d$ is the number representing the modulus of complex infinity), human judgement is still needed to visually locate the zeros as the intersections of the level curves of $\real(\Delta)(\lambda)=0$ and $\imag(\Delta)(\lambda)=0$. This procedure may be automated based on a numerical method to find zeros of an analytic function in a given region using Cauchy's argument principle \cite{Delves1967}.
 
 By Cauchy's argument principle, if $C$ is a closed curve, $R$ is the interior of $C$, and $f(z)$ is analytic in and on $C$, then the number of zeros of $f(z)$ in $R$ is given by
 \[N_z := \frac{1}{2\pi i}\int_C \frac{f'(z)}{f(z)}\,dz.\]
@@ -1677,11 +1698,11 @@ Thus, to approximate the zeros of $\Delta(\lambda)$, we may divide the region $D
 
 \subsubsection{Computation speed}
 
-Although evaluation of the solution $q(x,t)$ at a single point can now be done in less than a minute with a reasonable estimate of the modulus of complex infinity (as explained at the end of section \ref{sec:ex1}), analyzing the solution in depth usually involves visualizing it, which poses a much higher demand on the evaluation speed of the solution. To plot in reasonable time, evaluation at a single point should ideally be a fraction of a second. The implementation as it is now evaluates $q(x,t)$ as follows. Given $(x_0, t_0)\in (0,1)\times (0,T)$, the integrand $e^{i\lambda x_0}e^{-\alpha \lambda^n t_0}F_\lambda^\pm(f)$ in equation \eqref{eq:q(x,t)_explicit} is defined as a function of $\lambda$, which is then integrated over the four contours $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ as in equation \eqref{eq:q(x,t)_explicit}. This means that when attempting to plot $q(x,t)$ over a domain $D$, at each point $(x_0, t_0)\in D$, a new function corresponding to the integrand is defined, compiled, and evaluated. The problem here is that compilation time could be several orders of magnitude higher than evaluation time, and the more so for complicated functions. For instance, the compilation time issue would be prominent if the Chebyshev approximation of $f(x)$ used in section \ref{par:approximate_integral_chebyshev} has many coefficients; in this case the symbolic formulas for $F_\lambda^+$, $F_\lambda^-$ would be complicated, meaning that they would take much time to compile, making it impractical to plot $q(x,t)$ in reasonable time.
+Although evaluation of the solution $q(x,t)$ at a single point can now be done in less than a minute with a reasonable estimate of the modulus of complex infinity (as explained at the end of section \ref{sec:ex1}), analyzing the solution in depth usually involves visualizing it, which poses a much higher demand on the speed of evaluating the solution. To plot in reasonable time, evaluating the solution at a single point should ideally take no more than a fraction of a second. The implementation as it is now evaluates the solution $q(x,t)$ as follows. Given $(x_0, t_0)\in (0,1)\times (0,T)$, the integrand $e^{i\lambda x_0}e^{-\alpha \lambda^n t_0}F_\lambda^\pm(f)$ in equation \eqref{eq:q(x,t)_explicit} is defined as a function of $\lambda$, which is then integrated over the four contours $\Gamma_a^+$, $\Gamma_a^-$, $\Gamma_0^+$, and $\Gamma_0^-$ as in equation \eqref{eq:q(x,t)_explicit}. This means that when attempting to plot $q(x,t)$ over a domain $D$, at each point $(x_0, t_0)\in D$, a new function corresponding to the integrand is defined, compiled, and evaluated. The problem here is that in Julia, compilation time could be several orders of magnitude higher than evaluation time, and the more so for complicated functions. For instance, the compilation time issue would be prominent if the Chebyshev approximation of $f(x)$ used in section \ref{par:approximate_integral_chebyshev} has many coefficients; in this case the symbolic formulas for $F_\lambda^+$, $F_\lambda^-$ would be complicated, meaning that they would take much time to compile, making it impractical to plot the solution $q(x,t)$ in reasonable time.
 
 Another problem that contributes to the speed issue is that, if the circular contours around zeros of $\Delta(\lambda)$ have very small diameter $\epsilon$ (given our choice of $\epsilon$ in section \ref{sec:constructing_contours}, this would be the case if two distinct zeros are very close to each other, or there is a zero that is close to the boundary of some sector), the integration contours would be very close to the zeros which they are supposed to avoid. As discussed in section \ref{sec:constructing_contours}, zeros of $\Delta(\lambda)$ are poles of the integrands $F^+_\lambda$ and $F^-_\lambda$, and so the integrands easily become numerically unstable near them, yielding very large numbers when evaluated. As a result, the integration itself becomes slow.
 
-One possible solution to the above speed issues is to develop a custom integrator tailored to these contour integrals by exploiting the mathematical properties of the integrands $F^+_\lambda$, $F^-_\lambda$ and the contours $\Gamma$. Analysis of the behaviour of $F_\lambda^+$ and $F_\lambda^-$ over $\Gamma$ could help identify the components of the integrand that contributes significantly to the integral at different parts of the contour $\Gamma$. In this way, we could reduce the time it takes to evaluate $q(x,t)$ by discarding components of the integrand whose contribution to the integral is insignificant.
+Currently, the implementation of the Fokas method in this project uses the native Julia integrator \texttt{quadgk}. One possible solution to the speed issue is to develop a custom integrator tailored to evaluating the contour integrals in equation \eqref{eq:q(x,t)_explicit} by exploiting the mathematical properties of the integrands $F^+_\lambda$, $F^-_\lambda$ and the contours $\Gamma$. Analysis of the behaviour of $F_\lambda^+$ and $F_\lambda^-$ over $\Gamma$ could help identifying the components of the integrands that contribute significantly to the integral at different parts of the contour $\Gamma$. In this way, we could reduce the time it takes to evaluate $q(x,t)$ by dynamically ``trimming'' the integrands as we move along the contours.
 
 \newpage
 \pagenumbering{gobble}
