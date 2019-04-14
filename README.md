@@ -1,3 +1,3 @@
 # Capstone
 
-Developing a library in Julia that supplies computer aid in the process of solving initial-boundary value problems using the Fokas method.
+Developing a library in Julia that supplies computer aid in the process of applying the Fokas method to solve initial-boundary value problems.
