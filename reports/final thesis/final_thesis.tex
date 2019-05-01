@@ -6,7 +6,11 @@
 \usepackage{graphicx}
 %\usepackage{physics}
 %\usepackage{float}
-\usepackage[margin=1.in]{geometry}
+% \usepackage[margin=1.in]{geometry}
+\usepackage{geometry}
+\geometry{a4paper,top=2.5cm,bottom=2.5cm,right=2.5cm,left=4cm}
+\usepackage{setspace}
+\doublespacing
 \usepackage{tocloft}
 \renewcommand{\cfttoctitlefont}{\hfill\Large\bfseries}
 \renewcommand{\cftaftertoctitle}{\hfill\hfill}
@@ -19,37 +23,39 @@
 \setcounter{tocdepth}{5}    % how many sectioning levels to show in ToC
 % --------------------------------------------------------------------------
 \begin{document}
-\begin{titlepage}
-\pagenumbering{gobble}
-% \addcontentsline{toc}{section}{Abstract}
-\begin{center}
-\vspace{1cm}
-\LARGE
-\textbf{Algorithmic Solution of\\ High Order Partial Differential Equations\\
-in Julia\\ via the Fokas Transform Method}
+% \begin{titlepage}
+% \pagenumbering{gobble}
+% % \addcontentsline{toc}{section}{Abstract}
+% \begin{center}
+% \vspace{1cm}
+% \LARGE
+% \textbf{Algorithmic Solution of\\ High Order Partial Differential Equations\\
+% in Julia\\ via the Fokas Transform Method}
 
-\Large
-\vspace{.5cm}
-Capstone Thesis for BSc (Honours) in
-Mathematical, Computational and Statistical Sciences\\
-\vspace{.5cm}
-\textbf{Linfan Xiao}\\
-\vspace{.5cm}
-\Large
-\vspace{.5cm}
-\Large
-% \textbf{Abstract}
-\end{center}
+% \Large
+% \vspace{.5cm}
+% Capstone Thesis for BSc (Honours) in
+% Mathematical, Computational and Statistical Sciences\\
+% \vspace{.5cm}
+% \textbf{Linfan Xiao}\\
+% \vspace{.5cm}
+% \Large
+% \vspace{.5cm}
+% \Large
+% % \textbf{Abstract}
+% \end{center}
 
-\vfill
-\large
-\begin{center}	
-Mathematical, Computational, and Statistical Sciences\\
-Under the supervision of Prof. Dave Smith\\
-Yale-NUS College\\
-AY 2018/2019\\
-\end{center}
-\end{titlepage}
+% \vfill
+% \large
+% \begin{center}	
+% Mathematical, Computational, and Statistical Sciences\\
+% Under the supervision of Prof. Dave Smith\\
+% Yale-NUS College\\
+% AY 2018/2019\\
+% \end{center}
+% \end{titlepage}
+\includepdf[pages={1}]{title_page.pdf}
+\includepdf[pages={1}]{declaration_form_signed.pdf}
 \pagenumbering{gobble}
 \tableofcontents
 % \listoffigures
